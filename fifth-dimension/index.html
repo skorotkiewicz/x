@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A reality-warping interface from the fifth dimension." />
+  <title>FIFTH // DIMENSION</title>
+  <style>
+    :root { --hue: 276; --chaos: 12px; --pulse: 1; }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh; margin: 0; overflow: hidden; color: #f5efff;
+      font: 14px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #07020f radial-gradient(circle at 50% 45%, hsl(var(--hue) 100% 18%), transparent 36%);
+    }
+    body::before, body::after { content: ""; position: fixed; inset: -30%; pointer-events: none; }
+    body::before { background: repeating-radial-gradient(ellipse at center, transparent 0 23px, hsl(var(--hue) 100% 70% / .08) 24px 25px); animation: fold 18s linear infinite; }
+    body::after { background: linear-gradient(115deg, transparent 40%, hsl(calc(var(--hue) + 70) 100% 70% / .15), transparent 60%); transform: translateX(-70%); animation: scan 8s ease-in-out infinite; }
+    @keyframes fold { to { transform: rotate(360deg) scale(1.45); } }
+    @keyframes scan { 50% { transform: translateX(70%); } }
+    .stars, .stars::before, .stars::after { position: fixed; inset: 0; content: ""; pointer-events: none; background-image: radial-gradient(#fff 1px, transparent 1.5px); background-size: 83px 109px; opacity: .52; animation: drift 12s linear infinite; }
+    .stars::before { background-size: 143px 127px; transform: translate(37px, 11px); opacity: .45; }
+    .stars::after { background-size: 51px 89px; transform: translate(-21px, 30px); opacity: .2; }
+    @keyframes drift { to { background-position: 83px 109px; } }
+    main { position: relative; z-index: 1; min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; padding: clamp(20px, 4vw, 56px); }
+    header { display: flex; justify-content: space-between; align-items: center; letter-spacing: .12em; color: #cbb4ff; }
+    .signal { display: flex; align-items: center; gap: 9px; font-size: 11px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #89ffbc; box-shadow: 0 0 14px #89ffbc; animation: blink 1.5s ease-in-out infinite; }
+    @keyframes blink { 50% { opacity: .25; } }
+    .hero { display: grid; place-items: center; text-align: center; padding: 24px 0; }
+    .eyebrow { margin: 0 0 18px; color: hsl(calc(var(--hue) + 60) 100% 77%); letter-spacing: .3em; font-size: 11px; }
+    h1 { max-width: 1000px; margin: 0; font: 900 clamp(55px, 13vw, 170px)/.76 Impact, Haettenschweiler, sans-serif; letter-spacing: -.06em; text-transform: uppercase; text-shadow: 0 0 20px hsl(var(--hue) 100% 65% / .65), 6px 0 #ff43ce, -6px 0 #49f8ff; animation: fracture 3.5s steps(1) infinite; }
+    @keyframes fracture { 8%, 10% { transform: skewX(-4deg) translateX(5px); } 9%, 11%, 100% { transform: none; } }
+    .subhead { max-width: 520px; margin: 27px auto 0; color: #d8c9eb; font-size: clamp(14px, 2vw, 17px); }
+    .console { width: min(760px, 100%); margin: 36px auto 0; display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 13px; border: 1px solid hsl(var(--hue) 100% 75% / .4); background: #120724a8; box-shadow: 0 0 50px hsl(var(--hue) 100% 50% / .16), inset 0 0 30px #6e22ad1f; backdrop-filter: blur(10px); }
+    .console label { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 0 8px; color: #dfd0f2; text-align: left; }
+    input { width: 48%; accent-color: hsl(var(--hue) 100% 65%); cursor: pointer; }
+    button { border: 0; padding: 13px 18px; color: #12021d; background: #e9dfff; font: inherit; font-weight: 900; letter-spacing: .08em; cursor: pointer; transition: transform .2s, background .2s; }
+    button:hover { transform: translateY(-2px); background: #fff; }
+    button:focus-visible, input:focus-visible { outline: 2px solid #86f7ff; outline-offset: 3px; }
+    .readout { grid-column: 1 / -1; margin: 0; min-height: 17px; color: hsl(calc(var(--hue) + 60) 100% 76%); font-size: 11px; text-align: left; }
+    footer { display: flex; justify-content: space-between; gap: 20px; color: #9c86b5; font-size: 10px; letter-spacing: .08em; }
+    .manifestation { position: fixed; z-index: 3; left: 50%; top: 50%; font: 900 120px/1 Impact, sans-serif; color: #fff; text-shadow: 0 0 25px #fff, 0 0 55px #fa3cff; pointer-events: none; animation: appear 1.6s ease-out forwards; }
+    @keyframes appear { 0% { transform: translate(-50%, -50%) scale(.1) rotate(-40deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.2) rotate(25deg); opacity: 0; } }
+    body.inverted { filter: invert(1) hue-rotate(155deg); }
+    @media (max-width: 580px) { .console { grid-template-columns: 1fr; } .console label { padding: 4px; } input { width: 58%; } footer { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+  <main>
+    <header><span>F//D_∞</span><span class="signal"><i class="dot"></i> REALITY UNLOCKED</span></header>
+    <section class="hero" aria-labelledby="title">
+      <div>
+        <p class="eyebrow">WELCOME, THREE-DIMENSIONAL VISITOR</p>
+        <h1 id="title">Reality<br>is editable.</h1>
+        <p class="subhead">You have crossed the thin, embarrassing boundary between what is and what could be. Please do not press everything at once.</p>
+        <div class="console">
+          <label for="chaos">CHAOS COEFFICIENT <input id="chaos" type="range" min="0" max="100" value="42" /></label>
+          <button id="manifest" type="button">MANIFEST ✦</button>
+          <p class="readout" id="readout" role="status">STABILITY: 58% · PARADOXES: ACCEPTABLE</p>
+        </div>
+      </div>
+    </section>
+    <footer><span>DIMENSION 05 / NONLINEAR TIME</span><span>© ∞ THE IMPOSSIBLE OFFICE</span></footer>
+  </main>
+  <script>
+    const chaos = document.querySelector('#chaos');
+    const readout = document.querySelector('#readout');
+    const messages = ['A SMALL MOON HAS BEEN APPROVED.', 'YOUR TUESDAY NOW HAS TWO ENDINGS.', 'GRAVITY HAS BEEN MOVED 3 INCHES LEFT.', 'A PARADOX IS WATCHING YOU POLITELY.', 'THE FOURTH WALL IS NOW A WINDOW.'];
+    chaos.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--hue', 240 + Number(chaos.value));
+      document.documentElement.style.setProperty('--chaos', `${chaos.value / 3}px`);
+      readout.textContent = `STABILITY: ${100 - chaos.value}% · PARADOXES: ${chaos.value > 70 ? 'EXQUISITE' : 'ACCEPTABLE'}`;
+    });
+    document.querySelector('#manifest').addEventListener('click', () => {
+      const glyph = document.createElement('div');
+      glyph.className = 'manifestation'; glyph.textContent = ['✦', '∞', '◈', '☄', '⧖'][Math.floor(Math.random() * 5)];
+      document.body.append(glyph); setTimeout(() => glyph.remove(), 1600);
+      document.body.classList.toggle('inverted');
+      readout.textContent = messages[Math.floor(Math.random() * messages.length)];
+    });
+  </script>
+</body>
+</html>

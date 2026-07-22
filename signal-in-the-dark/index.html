@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signal in the Dark — Searchlight vs Beacon</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #eef4ff;
+      --muted: #9ba8bd;
+      --panel: rgba(8, 13, 22, 0.88);
+      --line: rgba(255, 255, 255, 0.10);
+      --search: #8fd8ff;
+      --beacon: #ffd56a;
+      --danger: #ff806d;
+      --ok: #7fe2a7;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #03060b; }
+    body { font: 14px/1.35 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); }
+    button, input, select { font: inherit; }
+    canvas { display: block; }
+
+    #app { position: fixed; inset: 0; }
+    #viewport { position: absolute; inset: 0; }
+
+    .glass {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 60px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(16px);
+    }
+
+    #title-card {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      width: min(430px, calc(100vw - 390px));
+      padding: 16px 18px;
+      border-radius: 16px;
+      pointer-events: none;
+    }
+
+    #title-card h1 { margin: 0; font-size: 19px; letter-spacing: 0.01em; }
+    #title-card p { margin: 6px 0 0; color: var(--muted); font-size: 12px; max-width: 56ch; }
+
+    #live-card {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      min-width: 280px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      pointer-events: none;
+    }
+
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.13em; color: var(--muted); font-size: 10px; font-weight: 750; }
+    #live-mode { margin-top: 4px; font-size: 18px; font-weight: 780; }
+    #live-status { margin-top: 7px; color: var(--muted); }
+    .live-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px; }
+    .metric strong { display: block; font-size: 17px; }
+    .metric span { color: var(--muted); font-size: 11px; }
+
+    #panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      bottom: 14px;
+      width: 350px;
+      border-radius: 18px;
+      overflow: auto;
+      padding: 16px;
+    }
+
+    .section + .section { border-top: 1px solid var(--line); margin-top: 15px; padding-top: 15px; }
+    .section-title { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .section-title h2 { font-size: 12px; margin: 0; text-transform: uppercase; letter-spacing: .11em; }
+    .section-title span { color: var(--muted); font-size: 11px; }
+
+    .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--ink);
+      background: rgba(255,255,255,.045);
+      padding: 9px 10px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+    button:hover { border-color: rgba(255,255,255,.23); background: rgba(255,255,255,.075); }
+    button:active { transform: translateY(1px); }
+    button.active[data-strategy="search"] { background: rgba(104, 192, 255, .16); border-color: rgba(143, 216, 255, .60); }
+    button.active[data-strategy="beacon"] { background: rgba(255, 203, 92, .16); border-color: rgba(255, 213, 106, .62); }
+    button.primary { width: 100%; font-weight: 760; background: rgba(255,255,255,.10); padding: 11px 12px; }
+    button.small { padding: 7px 9px; font-size: 12px; }
+
+    .preset-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+
+    .control { margin: 11px 0; }
+    .control label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .control label span:first-child { color: #dfe7f4; }
+    .value { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+    input[type="range"] { width: 100%; accent-color: #c9d5e7; }
+    select { width: 100%; padding: 8px; border-radius: 9px; border: 1px solid var(--line); background: #111826; color: var(--ink); }
+
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .result-card { border: 1px solid var(--line); border-radius: 12px; padding: 11px; background: rgba(255,255,255,.025); }
+    .result-card.search { box-shadow: inset 0 2px 0 rgba(143,216,255,.55); }
+    .result-card.beacon { box-shadow: inset 0 2px 0 rgba(255,213,106,.55); }
+    .result-name { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .result-rate { font-size: 25px; font-weight: 820; margin: 5px 0 1px; font-variant-numeric: tabular-nums; }
+    .result-sub { color: var(--muted); font-size: 11px; }
+    .bar { height: 7px; border-radius: 99px; background: rgba(255,255,255,.07); overflow: hidden; margin: 10px 0 2px; }
+    .bar > div { height: 100%; width: 0%; border-radius: inherit; background: currentColor; transition: width .35s ease; }
+    .search-color { color: var(--search); }
+    .beacon-color { color: var(--beacon); }
+    #verdict { margin-top: 10px; border-radius: 11px; padding: 10px 11px; background: rgba(255,255,255,.04); color: #d9e1ee; min-height: 58px; }
+    #progress { margin-top: 8px; color: var(--muted); font-size: 11px; min-height: 15px; }
+
+    .legend { display: flex; gap: 15px; margin-top: 8px; color: var(--muted); font-size: 11px; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 99px; margin-right: 5px; }
+    .dot.rescuer { background: #e9f4ff; box-shadow: 0 0 12px #e9f4ff; }
+    .dot.lost { background: var(--danger); box-shadow: 0 0 12px var(--danger); }
+
+    .note { color: var(--muted); font-size: 11px; margin: 9px 0 0; }
+    kbd { padding: 1px 5px; border-radius: 5px; border: 1px solid var(--line); background: rgba(255,255,255,.05); font-size: 10px; color: #dce6f5; }
+
+    @media (max-width: 850px) {
+      #panel { width: min(330px, calc(100vw - 24px)); top: auto; max-height: 52vh; }
+      #title-card { width: calc(100vw - 36px); }
+      #live-card { bottom: calc(52vh + 28px); }
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div id="viewport"></div>
+
+    <div id="title-card" class="glass">
+      <h1>Signal in the Dark</h1>
+      <p>A toy simulation of two strategies: actively sweep a narrow beam until it illuminates the missing person, or become a stationary omnidirectional beacon they can navigate toward.</p>
+    </div>
+
+    <div id="live-card" class="glass">
+      <div class="eyebrow">Live trial</div>
+      <div id="live-mode">Searchlight</div>
+      <div id="live-status">Searching…</div>
+      <div class="live-grid">
+        <div class="metric"><strong id="live-time">0.0 s</strong><span>elapsed</span></div>
+        <div class="metric"><strong id="live-distance">0 m</strong><span>separation</span></div>
+        <div class="metric"><strong id="live-los">blocked</strong><span>line of sight</span></div>
+      </div>
+      <div class="legend"><span><i class="dot rescuer"></i>rescuer</span><span><i class="dot lost"></i>missing person</span></div>
+    </div>
+
+    <aside id="panel" class="glass">
+      <div class="section">
+        <div class="section-title"><h2>Live strategy</h2><span><kbd>1</kbd> / <kbd>2</kbd></span></div>
+        <div class="segmented">
+          <button data-strategy="search" class="active">Sweep searchlight</button>
+          <button data-strategy="beacon">Raise beacon</button>
+        </div>
+        <button id="new-trial" class="primary" style="margin-top:8px">New matched trial</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><h2>Scenario</h2><span>shared by A/B</span></div>
+        <div class="preset-row">
+          <button class="small" data-preset="hiker">Mobile hiker</button>
+          <button class="small" data-preset="injured">Injured</button>
+          <button class="small" data-preset="forest">Dense forest</button>
+        </div>
+
+        <div class="control">
+          <label><span>Obstacle density</span><span class="value" id="density-v"></span></label>
+          <input id="density" type="range" min="0" max="1" step="0.05" value="0.42" />
+        </div>
+        <div class="control">
+          <label><span>Missing-person speed</span><span class="value" id="mobility-v"></span></label>
+          <input id="mobility" type="range" min="0" max="1.8" step="0.1" value="1.1" />
+        </div>
+        <div class="control">
+          <label><span>Disorientation</span><span class="value" id="confusion-v"></span></label>
+          <input id="confusion" type="range" min="0" max="1" step="0.05" value="0.25" />
+        </div>
+        <div class="control">
+          <label><span>Searchlight reach</span><span class="value" id="beam-v"></span></label>
+          <input id="beam" type="range" min="10" max="32" step="1" value="22" />
+        </div>
+        <div class="control">
+          <label><span>Beacon visibility</span><span class="value" id="beacon-v"></span></label>
+          <input id="beacon" type="range" min="15" max="60" step="1" value="42" />
+        </div>
+        <div class="control">
+          <label><span>Trial timeout</span><span class="value" id="timeout-v"></span></label>
+          <input id="timeout" type="range" min="60" max="300" step="30" value="180" />
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><h2>Monte Carlo comparison</h2><span>matched random worlds</span></div>
+        <div class="control">
+          <label><span>Number of worlds</span></label>
+          <select id="runs">
+            <option value="100">100 — quick</option>
+            <option value="500" selected>500 — useful</option>
+            <option value="1500">1,500 — slower</option>
+          </select>
+        </div>
+        <button id="compare" class="primary">Run A/B comparison</button>
+        <div id="progress"></div>
+        <div class="result-grid">
+          <div class="result-card search">
+            <div class="result-name">Searchlight</div>
+            <div id="search-rate" class="result-rate search-color">—</div>
+            <div id="search-time" class="result-sub">median —</div>
+            <div class="bar search-color"><div id="search-bar"></div></div>
+          </div>
+          <div class="result-card beacon">
+            <div class="result-name">Beacon</div>
+            <div id="beacon-rate" class="result-rate beacon-color">—</div>
+            <div id="beacon-time" class="result-sub">median —</div>
+            <div class="bar beacon-color"><div id="beacon-bar"></div></div>
+          </div>
+        </div>
+        <div id="verdict">Run the comparison. Change one assumption, then run it again.</div>
+        <p class="note">This is a conceptual experiment, not validated search-and-rescue guidance. Real emergencies depend on terrain, weather, injury, equipment, protocols, and communication.</p>
+      </div>
+    </aside>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const WORLD_SIZE = 52;
+    const HALF = WORLD_SIZE / 2;
+    const PERSON_RADIUS = 0.42;
+    const SUCCESS_DISTANCE = 1.25;
+    const FIXED_DT = 0.12;
+
+    class RNG {
+      constructor(seed = 1) { this.state = (seed >>> 0) || 1; }
+      next() {
+        let t = this.state += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      }
+      range(a, b) { return a + (b - a) * this.next(); }
+      sign() { return this.next() < 0.5 ? -1 : 1; }
+    }
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function lerpAngle(a, b, t) {
+      const d = Math.atan2(Math.sin(b - a), Math.cos(b - a));
+      return a + d * clamp(t, 0, 1);
+    }
+    function dist(a, b) { return Math.hypot(a.x - b.x, a.z - b.z); }
+    function median(values) {
+      if (!values.length) return null;
+      const s = [...values].sort((a, b) => a - b);
+      const m = Math.floor(s.length / 2);
+      return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+    }
+    function segmentCircleBlocked(ax, az, bx, bz, cx, cz, r) {
+      const abx = bx - ax, abz = bz - az;
+      const ab2 = abx * abx + abz * abz;
+      if (ab2 < 1e-9) return false;
+      const t = clamp(((cx - ax) * abx + (cz - az) * abz) / ab2, 0, 1);
+      const px = ax + abx * t, pz = az + abz * t;
+      return (px - cx) ** 2 + (pz - cz) ** 2 < r * r;
+    }
+
+    function readSettings() {
+      return {
+        density: Number(document.querySelector('#density').value),
+        mobility: Number(document.querySelector('#mobility').value),
+        confusion: Number(document.querySelector('#confusion').value),
+        beamRange: Number(document.querySelector('#beam').value),
+        beaconRange: Number(document.querySelector('#beacon').value),
+        timeout: Number(document.querySelector('#timeout').value),
+      };
+    }
+
+    class Simulation {
+      constructor(strategy, settings, seed) {
+        this.strategy = strategy;
+        this.settings = { ...settings };
+        this.seed = seed >>> 0;
+        this.rng = new RNG(this.seed);
+        this.elapsed = 0;
+        this.finished = false;
+        this.success = false;
+        this.phase = 'searching';
+        this.recognition = 0;
+        this.targetHasCue = false;
+        this.rescuerDistance = 0;
+        this.targetDistance = 0;
+        this.generateWorld();
+      }
+
+      generateWorld() {
+        this.obstacles = [];
+        const count = Math.round(this.settings.density * 92);
+        for (let i = 0; i < count; i++) {
+          let placed = false;
+          for (let attempt = 0; attempt < 60 && !placed; attempt++) {
+            const r = this.rng.range(0.55, 1.28);
+            const candidate = {
+              x: this.rng.range(-HALF + 2, HALF - 2),
+              z: this.rng.range(-HALF + 2, HALF - 2),
+              r,
+              h: this.rng.range(3.2, 7.2),
+              crown: this.rng.range(1.2, 2.2),
+            };
+            if (this.obstacles.every(o => Math.hypot(candidate.x - o.x, candidate.z - o.z) > candidate.r + o.r + 0.45)) {
+              this.obstacles.push(candidate);
+              placed = true;
+            }
+          }
+        }
+
+        this.rescuer = this.randomOpenPoint();
+        this.rescuer.heading = this.rng.range(-Math.PI, Math.PI);
+
+        for (let tries = 0; tries < 200; tries++) {
+          this.target = this.randomOpenPoint();
+          if (dist(this.rescuer, this.target) >= 18) break;
+        }
+        this.target.heading = this.rng.range(-Math.PI, Math.PI);
+        this.target.turnTimer = this.rng.range(1, 5);
+        this.target.initial = { x: this.target.x, z: this.target.z };
+        this.rescuer.initial = { x: this.rescuer.x, z: this.rescuer.z };
+
+        this.spiral = {
+          dir: 0,
+          legLength: 1,
+          legsAtLength: 0,
+          stepsRemaining: 0,
+          gridX: 0,
+          gridZ: 0,
+          waypoint: { x: this.rescuer.x, z: this.rescuer.z },
+        };
+        this.nextSpiralWaypoint();
+      }
+
+      randomOpenPoint() {
+        for (let i = 0; i < 500; i++) {
+          const p = { x: this.rng.range(-HALF + 2, HALF - 2), z: this.rng.range(-HALF + 2, HALF - 2) };
+          if (!this.collides(p.x, p.z, PERSON_RADIUS + 0.2)) return p;
+        }
+        return { x: 0, z: 0 };
+      }
+
+      collides(x, z, radius = PERSON_RADIUS) {
+        if (x < -HALF + radius || x > HALF - radius || z < -HALF + radius || z > HALF - radius) return true;
+        return this.obstacles.some(o => Math.hypot(x - o.x, z - o.z) < o.r + radius);
+      }
+
+      hasLOS(a, b) {
+        return !this.obstacles.some(o => segmentCircleBlocked(a.x, a.z, b.x, b.z, o.x, o.z, o.r * 1.02));
+      }
+
+      nextSpiralWaypoint() {
+        const s = this.spiral;
+        const dirs = [[1,0], [0,1], [-1,0], [0,-1]];
+        if (s.stepsRemaining <= 0) {
+          s.stepsRemaining = s.legLength;
+          if (s.legsAtLength >= 2) {
+            s.legLength++;
+            s.legsAtLength = 0;
+          }
+          s.legsAtLength++;
+        }
+        const [dx, dz] = dirs[s.dir];
+        s.gridX += dx;
+        s.gridZ += dz;
+        s.stepsRemaining--;
+        if (s.stepsRemaining <= 0) s.dir = (s.dir + 1) % 4;
+
+        const step = 5.2;
+        let x = clamp(this.rescuer.initial.x + s.gridX * step, -HALF + 1.2, HALF - 1.2);
+        let z = clamp(this.rescuer.initial.z + s.gridZ * step, -HALF + 1.2, HALF - 1.2);
+        if (this.collides(x, z, PERSON_RADIUS)) {
+          for (let i = 0; i < 10; i++) {
+            const a = this.rng.range(-Math.PI, Math.PI);
+            const rr = this.rng.range(1.2, 3.6);
+            const tx = clamp(x + Math.cos(a) * rr, -HALF + 1.2, HALF - 1.2);
+            const tz = clamp(z + Math.sin(a) * rr, -HALF + 1.2, HALF - 1.2);
+            if (!this.collides(tx, tz, PERSON_RADIUS)) { x = tx; z = tz; break; }
+          }
+        }
+        s.waypoint = { x, z };
+      }
+
+      move(agent, desiredHeading, speed, dt) {
+        let heading = lerpAngle(agent.heading, desiredHeading, dt * 3.4);
+        const attempts = [0, 0.50, -0.50, 0.95, -0.95, Math.PI];
+        for (const offset of attempts) {
+          const a = heading + offset;
+          const nx = agent.x + Math.cos(a) * speed * dt;
+          const nz = agent.z + Math.sin(a) * speed * dt;
+          if (!this.collides(nx, nz, PERSON_RADIUS)) {
+            agent.x = nx;
+            agent.z = nz;
+            agent.heading = a;
+            return speed * dt;
+          }
+        }
+        agent.heading += this.rng.sign() * dt * 2.5;
+        return 0;
+      }
+
+      updateTargetWander(dt) {
+        const speed = this.settings.mobility * 0.34;
+        if (speed <= 0.001) return;
+        this.target.turnTimer -= dt;
+        if (this.target.turnTimer <= 0) {
+          const confusionTurn = 0.45 + this.settings.confusion * 2.4;
+          this.target.heading += this.rng.range(-confusionTurn, confusionTurn);
+          this.target.turnTimer = this.rng.range(1.4, 5.5 - this.settings.confusion * 2.2);
+        }
+        this.targetDistance += this.move(this.target, this.target.heading, speed, dt);
+      }
+
+      updateSearch(dt) {
+        if (this.phase === 'found') {
+          const angle = Math.atan2(this.target.z - this.rescuer.z, this.target.x - this.rescuer.x);
+          this.rescuerDistance += this.move(this.rescuer, angle, 2.2, dt);
+          if (dist(this.rescuer, this.target) <= SUCCESS_DISTANCE) this.complete(true);
+          return;
+        }
+
+        this.updateTargetWander(dt);
+        const wp = this.spiral.waypoint;
+        if (Math.hypot(wp.x - this.rescuer.x, wp.z - this.rescuer.z) < 0.9) this.nextSpiralWaypoint();
+        const desired = Math.atan2(this.spiral.waypoint.z - this.rescuer.z, this.spiral.waypoint.x - this.rescuer.x);
+        this.rescuerDistance += this.move(this.rescuer, desired, 2.35, dt);
+
+        this.beamHeading = this.rescuer.heading + Math.sin(this.elapsed * 1.75) * 1.25;
+        const d = dist(this.rescuer, this.target);
+        const bearing = Math.atan2(this.target.z - this.rescuer.z, this.target.x - this.rescuer.x);
+        const delta = Math.abs(Math.atan2(Math.sin(bearing - this.beamHeading), Math.cos(bearing - this.beamHeading)));
+        const illuminated = d <= this.settings.beamRange && delta <= THREE.MathUtils.degToRad(13) && this.hasLOS(this.rescuer, this.target);
+
+        if (illuminated) {
+          this.recognition += dt * (1.55 - this.settings.confusion * 0.65);
+        } else {
+          this.recognition = Math.max(0, this.recognition - dt * 1.6);
+        }
+        if (this.recognition >= 0.55) {
+          this.phase = 'found';
+          this.targetHasCue = true;
+        }
+      }
+
+      updateBeacon(dt) {
+        const d = dist(this.rescuer, this.target);
+        const canSee = d <= this.settings.beaconRange && this.hasLOS(this.target, this.rescuer);
+
+        if (canSee) {
+          this.recognition += dt * (1.20 - this.settings.confusion * 0.78);
+          if (this.recognition >= 0.8 + this.settings.confusion * 1.8) this.targetHasCue = true;
+        } else {
+          this.recognition = Math.max(0, this.recognition - dt * 0.35);
+          if (this.settings.confusion > 0.72 && this.rng.next() < dt * 0.045 * this.settings.confusion) this.targetHasCue = false;
+        }
+
+        if (this.targetHasCue && this.settings.mobility > 0.001) {
+          let desired = Math.atan2(this.rescuer.z - this.target.z, this.rescuer.x - this.target.x);
+          const error = this.settings.confusion * Math.sin(this.elapsed * 0.73 + this.seed) * 0.52;
+          desired += error;
+          this.targetDistance += this.move(this.target, desired, this.settings.mobility, dt);
+        } else {
+          this.updateTargetWander(dt);
+        }
+
+        if (dist(this.rescuer, this.target) <= SUCCESS_DISTANCE) this.complete(true);
+      }
+
+      complete(success) {
+        this.finished = true;
+        this.success = success;
+        this.phase = success ? 'reunited' : 'timed-out';
+      }
+
+      step(dt = FIXED_DT) {
+        if (this.finished) return;
+        this.elapsed += dt;
+        if (this.strategy === 'search') this.updateSearch(dt);
+        else this.updateBeacon(dt);
+        if (this.elapsed >= this.settings.timeout && !this.finished) this.complete(false);
+      }
+    }
+
+    class WorldView {
+      constructor(container) {
+        this.container = container;
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x02050a);
+        this.scene.fog = new THREE.FogExp2(0x02050a, 0.022);
+
+        this.camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.1, 180);
+        this.camera.position.set(32, 36, 32);
+        this.camera.lookAt(0, 0, 0);
+
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+        this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        this.renderer.setSize(innerWidth, innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        container.appendChild(this.renderer.domElement);
+
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.target.set(0, 0, 0);
+        this.controls.minDistance = 14;
+        this.controls.maxDistance = 85;
+        this.controls.maxPolarAngle = Math.PI * 0.47;
+
+        this.scene.add(new THREE.HemisphereLight(0x1b2a44, 0x030508, 0.34));
+        const moon = new THREE.DirectionalLight(0x93b8ff, 0.48);
+        moon.position.set(-16, 24, 10);
+        moon.castShadow = true;
+        moon.shadow.mapSize.set(1024, 1024);
+        moon.shadow.camera.left = -35;
+        moon.shadow.camera.right = 35;
+        moon.shadow.camera.top = 35;
+        moon.shadow.camera.bottom = -35;
+        this.scene.add(moon);
+
+        const ground = new THREE.Mesh(
+          new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE, 1, 1),
+          new THREE.MeshStandardMaterial({ color: 0x111a1a, roughness: 1 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        this.scene.add(ground);
+
+        const grid = new THREE.GridHelper(WORLD_SIZE, 26, 0x28403b, 0x162723);
+        grid.position.y = 0.015;
+        grid.material.transparent = true;
+        grid.material.opacity = 0.24;
+        this.scene.add(grid);
+
+        this.worldGroup = new THREE.Group();
+        this.scene.add(this.worldGroup);
+        this.rescuerMesh = this.makePerson(0xeaf6ff, 0xb9e8ff);
+        this.targetMesh = this.makePerson(0xff7868, 0xffa197);
+        this.worldGroup.add(this.rescuerMesh, this.targetMesh);
+
+        this.beamWedge = this.makeBeamWedge(22, THREE.MathUtils.degToRad(13));
+        this.scene.add(this.beamWedge);
+        this.beamWedge.visible = false;
+
+        this.spotTarget = new THREE.Object3D();
+        this.scene.add(this.spotTarget);
+        this.spot = new THREE.SpotLight(0xa9dcff, 65, 28, THREE.MathUtils.degToRad(16), 0.48, 1.2);
+        this.spot.castShadow = false;
+        this.spot.target = this.spotTarget;
+        this.scene.add(this.spot);
+
+        this.beaconLight = new THREE.PointLight(0xffca59, 125, 48, 1.4);
+        this.scene.add(this.beaconLight);
+        this.beaconRings = [];
+        for (let i = 0; i < 3; i++) {
+          const ring = new THREE.Mesh(
+            new THREE.RingGeometry(0.94, 1.0, 64),
+            new THREE.MeshBasicMaterial({ color: 0xffd56a, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false })
+          );
+          ring.rotation.x = -Math.PI / 2;
+          this.scene.add(ring);
+          this.beaconRings.push(ring);
+        }
+
+        this.clock = new THREE.Clock();
+        this.visualTime = 0;
+        this.renderer.setAnimationLoop(() => this.render());
+        addEventListener('resize', () => this.resize());
+      }
+
+      makePerson(bodyColor, glowColor) {
+        const group = new THREE.Group();
+        const body = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.34, 0.72, 6, 12),
+          new THREE.MeshStandardMaterial({ color: bodyColor, emissive: glowColor, emissiveIntensity: 0.22, roughness: 0.65 })
+        );
+        body.position.y = 0.86;
+        body.castShadow = true;
+        group.add(body);
+        const halo = new THREE.Mesh(
+          new THREE.RingGeometry(0.50, 0.58, 36),
+          new THREE.MeshBasicMaterial({ color: glowColor, transparent: true, opacity: 0.62, side: THREE.DoubleSide, depthWrite: false })
+        );
+        halo.rotation.x = -Math.PI / 2;
+        halo.position.y = 0.05;
+        group.add(halo);
+        return group;
+      }
+
+      makeBeamWedge(range, halfAngle) {
+        const segments = 34;
+        const vertices = [0, 0.08, 0];
+        for (let i = 0; i <= segments; i++) {
+          const a = -halfAngle + (i / segments) * halfAngle * 2;
+          vertices.push(Math.cos(a) * range, 0.08, Math.sin(a) * range);
+        }
+        const indices = [];
+        for (let i = 1; i <= segments; i++) indices.push(0, i, i + 1);
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        return new THREE.Mesh(
+          geometry,
+          new THREE.MeshBasicMaterial({ color: 0x8fd8ff, transparent: true, opacity: 0.105, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })
+        );
+      }
+
+      clearTrees() {
+        for (const child of [...this.worldGroup.children]) {
+          if (child.userData.tree) {
+            this.worldGroup.remove(child);
+            child.traverse(o => { o.geometry?.dispose?.(); o.material?.dispose?.(); });
+          }
+        }
+      }
+
+      loadSimulation(sim) {
+        this.sim = sim;
+        this.clearTrees();
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x30231d, roughness: 1 });
+        const crownMat = new THREE.MeshStandardMaterial({ color: 0x10251d, roughness: 1 });
+        for (const o of sim.obstacles) {
+          const tree = new THREE.Group();
+          tree.userData.tree = true;
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(o.r * 0.48, o.r * 0.62, o.h * 0.58, 8), trunkMat.clone());
+          trunk.position.y = o.h * 0.29;
+          trunk.castShadow = true;
+          const crown = new THREE.Mesh(new THREE.ConeGeometry(o.crown, o.h * 0.68, 9), crownMat.clone());
+          crown.position.y = o.h * 0.68;
+          crown.castShadow = true;
+          tree.position.set(o.x, 0, o.z);
+          tree.add(trunk, crown);
+          this.worldGroup.add(tree);
+        }
+        this.update(0);
+      }
+
+      update(t) {
+        if (!this.sim) return;
+        const sim = this.sim;
+        this.rescuerMesh.position.set(sim.rescuer.x, 0, sim.rescuer.z);
+        this.rescuerMesh.rotation.y = -sim.rescuer.heading;
+        this.targetMesh.position.set(sim.target.x, 0, sim.target.z);
+        this.targetMesh.rotation.y = -sim.target.heading;
+
+        const isSearch = sim.strategy === 'search';
+        this.spot.visible = isSearch;
+        this.beamWedge.visible = isSearch;
+        this.beaconLight.visible = !isSearch;
+        this.beaconRings.forEach(r => r.visible = !isSearch);
+
+        if (isSearch) {
+          const heading = sim.beamHeading ?? sim.rescuer.heading;
+          this.spot.position.set(sim.rescuer.x, 1.25, sim.rescuer.z);
+          this.spot.distance = sim.settings.beamRange + 3;
+          this.spotTarget.position.set(sim.rescuer.x + Math.cos(heading) * 10, 0.3, sim.rescuer.z + Math.sin(heading) * 10);
+          this.beamWedge.position.set(sim.rescuer.x, 0.02, sim.rescuer.z);
+          this.beamWedge.rotation.y = -heading;
+          const scale = sim.settings.beamRange / 22;
+          this.beamWedge.scale.set(scale, 1, scale);
+        } else {
+          const pulse = 0.82 + Math.sin(t * 3.7) * 0.18;
+          this.beaconLight.intensity = 110 + pulse * 45;
+          this.beaconLight.distance = sim.settings.beaconRange + 6;
+          this.beaconLight.position.set(sim.rescuer.x, 1.45, sim.rescuer.z);
+          this.beaconRings.forEach((ring, i) => {
+            const phase = ((t * 0.32 + i / 3) % 1);
+            const scale = 1.2 + phase * 8.5;
+            ring.position.set(sim.rescuer.x, 0.05, sim.rescuer.z);
+            ring.scale.setScalar(scale);
+            ring.material.opacity = (1 - phase) * 0.30;
+          });
+        }
+      }
+
+      render() {
+        const frameDt = Math.min(this.clock.getDelta(), 0.05);
+        this.visualTime += frameDt;
+        const t = this.visualTime;
+        if (liveSim && !paused) {
+          accumulator += frameDt * timeScale;
+          while (accumulator >= FIXED_DT && !liveSim.finished) {
+            liveSim.step(FIXED_DT);
+            accumulator -= FIXED_DT;
+          }
+        }
+        this.update(t);
+        updateLiveUI();
+        this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+      }
+
+      resize() {
+        this.camera.aspect = innerWidth / innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(innerWidth, innerHeight);
+      }
+    }
+
+    const els = {
+      mode: document.querySelector('#live-mode'),
+      status: document.querySelector('#live-status'),
+      time: document.querySelector('#live-time'),
+      distance: document.querySelector('#live-distance'),
+      los: document.querySelector('#live-los'),
+      progress: document.querySelector('#progress'),
+      verdict: document.querySelector('#verdict'),
+      searchRate: document.querySelector('#search-rate'),
+      beaconRate: document.querySelector('#beacon-rate'),
+      searchTime: document.querySelector('#search-time'),
+      beaconTime: document.querySelector('#beacon-time'),
+      searchBar: document.querySelector('#search-bar'),
+      beaconBar: document.querySelector('#beacon-bar'),
+    };
+
+    const valueLabels = [
+      ['density', 'density-v', v => v < .15 ? 'open' : v < .4 ? 'sparse' : v < .7 ? 'wooded' : 'dense'],
+      ['mobility', 'mobility-v', v => v === 0 ? 'stationary' : `${v.toFixed(1)} m/s`],
+      ['confusion', 'confusion-v', v => `${Math.round(v * 100)}%`],
+      ['beam', 'beam-v', v => `${v} m`],
+      ['beacon', 'beacon-v', v => `${v} m`],
+      ['timeout', 'timeout-v', v => `${v} s`],
+    ];
+    function refreshLabels() {
+      for (const [id, out, fmt] of valueLabels) {
+        const v = Number(document.querySelector(`#${id}`).value);
+        document.querySelector(`#${out}`).textContent = fmt(v);
+      }
+    }
+
+    let currentSeed = (Date.now() ^ 0xA53C9E17) >>> 0;
+    let currentStrategy = 'search';
+    let liveSim;
+    let accumulator = 0;
+    let paused = false;
+    const timeScale = 2.1;
+    const view = new WorldView(document.querySelector('#viewport'));
+
+    function startLive(strategy = currentStrategy, newSeed = false) {
+      if (newSeed) currentSeed = (Math.random() * 0xffffffff) >>> 0;
+      currentStrategy = strategy;
+      liveSim = new Simulation(strategy, readSettings(), currentSeed);
+      accumulator = 0;
+      paused = false;
+      view.loadSimulation(liveSim);
+      document.querySelectorAll('[data-strategy]').forEach(b => b.classList.toggle('active', b.dataset.strategy === strategy));
+      updateLiveUI();
+    }
+
+    function updateLiveUI() {
+      if (!liveSim) return;
+      els.mode.textContent = liveSim.strategy === 'search' ? 'Sweep searchlight' : 'Raised beacon';
+      const status = liveSim.finished
+        ? (liveSim.success ? 'Reunited.' : 'Timed out.')
+        : liveSim.strategy === 'search'
+          ? (liveSim.phase === 'found' ? 'Person illuminated—closing the distance…' : 'Following a search pattern and sweeping the beam…')
+          : (liveSim.targetHasCue ? 'Person sees the beacon and is approaching…' : 'Beacon raised; waiting for recognition…');
+      els.status.textContent = status;
+      els.status.style.color = liveSim.success ? 'var(--ok)' : liveSim.finished ? 'var(--danger)' : 'var(--muted)';
+      els.time.textContent = `${liveSim.elapsed.toFixed(1)} s`;
+      els.distance.textContent = `${dist(liveSim.rescuer, liveSim.target).toFixed(1)} m`;
+      els.los.textContent = liveSim.hasLOS(liveSim.rescuer, liveSim.target) ? 'clear' : 'blocked';
+    }
+
+    async function runComparison() {
+      const button = document.querySelector('#compare');
+      button.disabled = true;
+      const runs = Number(document.querySelector('#runs').value);
+      const settings = readSettings();
+      const results = {
+        search: { success: 0, times: [], distance: 0 },
+        beacon: { success: 0, times: [], distance: 0 },
+      };
+      els.progress.textContent = `0 / ${runs} matched worlds`;
+
+      const base = (Date.now() ^ currentSeed) >>> 0;
+      for (let i = 0; i < runs; i++) {
+        const seed = (base + Math.imul(i + 1, 2654435761)) >>> 0;
+        for (const strategy of ['search', 'beacon']) {
+          const sim = new Simulation(strategy, settings, seed);
+          while (!sim.finished) sim.step(FIXED_DT);
+          if (sim.success) {
+            results[strategy].success++;
+            results[strategy].times.push(sim.elapsed);
+          }
+          results[strategy].distance += sim.rescuerDistance + sim.targetDistance;
+        }
+        if ((i + 1) % 20 === 0 || i === runs - 1) {
+          els.progress.textContent = `${i + 1} / ${runs} matched worlds`;
+          await new Promise(requestAnimationFrame);
+        }
+      }
+
+      const sRate = results.search.success / runs * 100;
+      const bRate = results.beacon.success / runs * 100;
+      const sMed = median(results.search.times);
+      const bMed = median(results.beacon.times);
+      els.searchRate.textContent = `${sRate.toFixed(1)}%`;
+      els.beaconRate.textContent = `${bRate.toFixed(1)}%`;
+      els.searchTime.textContent = `median ${sMed == null ? '—' : sMed.toFixed(1) + ' s'}`;
+      els.beaconTime.textContent = `median ${bMed == null ? '—' : bMed.toFixed(1) + ' s'}`;
+      els.searchBar.style.width = `${sRate}%`;
+      els.beaconBar.style.width = `${bRate}%`;
+
+      const gap = Math.abs(sRate - bRate);
+      if (gap < 2) {
+        els.verdict.textContent = 'Near tie under these assumptions. Small changes in movement, visibility, or obstacles can reverse the result.';
+      } else if (sRate > bRate) {
+        els.verdict.textContent = `Searchlight wins by ${gap.toFixed(1)} points here—usually because the missing person cannot reliably navigate to a fixed light.`;
+      } else {
+        els.verdict.textContent = `Beacon wins by ${gap.toFixed(1)} points here—its long-range cue lets a mobile person do much of the closing distance.`;
+      }
+      els.progress.textContent = `Complete · average travel: search ${(results.search.distance / runs).toFixed(0)} m, beacon ${(results.beacon.distance / runs).toFixed(0)} m`;
+      button.disabled = false;
+    }
+
+    document.querySelectorAll('[data-strategy]').forEach(button => {
+      button.addEventListener('click', () => startLive(button.dataset.strategy, false));
+    });
+    document.querySelector('#new-trial').addEventListener('click', () => startLive(currentStrategy, true));
+    document.querySelector('#compare').addEventListener('click', runComparison);
+
+    document.querySelectorAll('input[type="range"]').forEach(input => {
+      input.addEventListener('input', refreshLabels);
+      input.addEventListener('change', () => startLive(currentStrategy, false));
+    });
+
+    document.querySelectorAll('[data-preset]').forEach(button => {
+      button.addEventListener('click', () => {
+        const preset = button.dataset.preset;
+        const values = preset === 'hiker'
+          ? { density: .28, mobility: 1.3, confusion: .15, beam: 22, beacon: 45, timeout: 180 }
+          : preset === 'injured'
+            ? { density: .35, mobility: 0, confusion: .35, beam: 24, beacon: 45, timeout: 180 }
+            : { density: .84, mobility: .9, confusion: .45, beam: 18, beacon: 34, timeout: 240 };
+        for (const [id, value] of Object.entries(values)) document.querySelector(`#${id}`).value = value;
+        refreshLabels();
+        startLive(currentStrategy, true);
+      });
+    });
+
+    addEventListener('keydown', event => {
+      if (event.key === '1') startLive('search', false);
+      if (event.key === '2') startLive('beacon', false);
+      if (event.key.toLowerCase() === 'r') startLive(currentStrategy, true);
+      if (event.code === 'Space') { event.preventDefault(); paused = !paused; }
+    });
+
+    refreshLabels();
+    startLive('search', true);
+  </script>
+</body>
+</html>

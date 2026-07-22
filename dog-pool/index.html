@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Lifeguard on the Brown Couch</title>
+  <meta name="description" content="A short story inspired by an old mastiff watching over a backyard pool.">
+  <link rel="icon" href="assets/favicon.png" type="image/png" sizes="64x64">
+  <!--<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">-->
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #211a14;
+      --muted: #6d6258;
+      --paper: #fff8ec;
+      --linen: #efe1ca;
+      --pool: #167d9a;
+      --fern: #446b3f;
+      --brick: #9a5d38;
+      --shadow: 0 24px 70px rgba(22, 16, 10, .24);
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 88vh;
+      display: grid;
+      align-items: end;
+      overflow: hidden;
+      background: #201912;
+    }
+
+    .hero img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to top, rgba(12, 10, 8, .82), rgba(12, 10, 8, .2) 58%, rgba(12, 10, 8, .05)),
+        linear-gradient(to right, rgba(12, 10, 8, .46), rgba(12, 10, 8, 0) 60%);
+    }
+
+    .hero__text {
+      position: relative;
+      z-index: 1;
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 96px 0 64px;
+      color: #fff8ec;
+    }
+
+    .kicker {
+      margin: 0 0 12px;
+      color: #9cdce7;
+      font-size: .78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 820px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 4.8rem;
+      line-height: .95;
+      font-weight: 700;
+    }
+
+    .hero__dek {
+      max-width: 660px;
+      margin: 22px 0 0;
+      color: rgba(255, 248, 236, .9);
+      font-size: 1.18rem;
+    }
+
+    .music-dock {
+      margin-top: 12px;
+    }
+
+    .support-dock {
+      margin-top: 24px;
+    }
+
+    .music-toggle,
+    .paypal-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 46px;
+      padding: 0 18px;
+      border: 1px solid rgba(255, 248, 236, .42);
+      border-radius: 999px;
+      color: #fff8ec;
+      background: rgba(22, 125, 154, .78);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, .22);
+    }
+
+    .paypal-button {
+      padding: 0 16px;
+      text-decoration: none;
+      background: #003087;
+    }
+
+    .paypal-button:hover {
+      background: #012169;
+    }
+
+    .paypal-button svg {
+      flex: 0 0 auto;
+      margin-top: 4px;
+    }
+
+    .paypal-button span {
+      color: #fff;
+      font-size: .9rem;
+    }
+
+    .read-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      margin-top: 22px;
+      padding: 0 16px;
+      border: 1px solid rgba(255, 248, 236, .24);
+      border-radius: 999px;
+      color: #fff8ec;
+      background: rgba(255, 248, 236, .08);
+      font: inherit;
+      font-size: .95rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .read-toggle:hover {
+      border-color: rgba(156, 220, 231, .58);
+      background: rgba(156, 220, 231, .14);
+    }
+
+    .read-toggle::before {
+      content: "";
+      width: 0;
+      height: 0;
+      flex: 0 0 auto;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid currentColor;
+    }
+
+    .read-toggle[aria-pressed="true"]::before {
+      width: 10px;
+      height: 10px;
+      border: 0;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .read-toggle:focus-visible {
+      outline: 3px solid rgba(156, 220, 231, .72);
+      outline-offset: 3px;
+    }
+
+    .music-toggle:hover {
+      background: rgba(22, 125, 154, .92);
+    }
+
+    .music-toggle::before {
+      content: "";
+      width: 0;
+      height: 0;
+      flex: 0 0 auto;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 11px solid currentColor;
+    }
+
+    .music-toggle[aria-pressed="true"]::before {
+      width: 10px;
+      height: 14px;
+      border: 0;
+      background: linear-gradient(to right, currentColor 0 4px, transparent 4px 6px, currentColor 6px 10px);
+    }
+
+    .music-frame {
+      width: 1px;
+      height: 1px;
+      position: absolute;
+      left: -9999px;
+      border: 0;
+    }
+
+    main {
+      background:
+        linear-gradient(180deg, #fff8ec 0, #f6ead8 46%, #fff8ec 100%);
+    }
+
+    section {
+      padding: 72px 0;
+    }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 44px;
+      align-items: center;
+    }
+
+    .intro h2,
+    .story h2 {
+      margin: 0 0 16px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2.35rem;
+      line-height: 1.08;
+    }
+
+    .intro p,
+    .story p {
+      margin: 0 0 20px;
+      font-size: 1.08rem;
+    }
+
+    .intro p {
+      color: var(--muted);
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    figure {
+      margin: 0;
+    }
+
+    .comparison figure {
+      overflow: hidden;
+      border: 1px solid rgba(33, 26, 20, .15);
+      background: #fffaf2;
+      box-shadow: var(--shadow);
+    }
+
+    .comparison img {
+      aspect-ratio: 4 / 3;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    figcaption {
+      padding: 12px 14px 14px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .story-band {
+      padding: 72px 0;
+      background: #211a14;
+      color: #fff8ec;
+    }
+
+    .story {
+      display: grid;
+      grid-template-columns: minmax(0, 260px) minmax(0, 720px);
+      gap: 76px;
+      align-items: start;
+    }
+
+    .story__note {
+      position: sticky;
+      top: 24px;
+      padding-top: 8px;
+      color: rgba(255, 248, 236, .72);
+    }
+
+    .story__note p {
+      margin: 0;
+      font-size: .95rem;
+    }
+
+    .story__body {
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .story__title-cue {
+      margin: 0 0 30px;
+      color: rgba(156, 220, 231, .62);
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    .story__body p {
+      font-size: 1.18rem;
+      line-height: 1.78;
+    }
+
+    .story__title-cue,
+    .story__body p,
+    .pullquote {
+      border-radius: 2px;
+      transition: color .2s ease, background-color .2s ease, box-shadow .2s ease;
+    }
+
+    .story__body [data-start] {
+      cursor: pointer;
+    }
+
+    .story__body [data-start]:hover {
+      background: rgba(156, 220, 231, .07);
+      box-shadow: 0 0 0 12px rgba(156, 220, 231, .07);
+    }
+
+    .story__body.is-reading-active [data-start]:hover:not(.is-reading) {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .story__body [data-start]:focus-visible {
+      outline: 3px solid rgba(156, 220, 231, .72);
+      outline-offset: 8px;
+    }
+
+    .story__body .is-reading {
+      color: #fff;
+      background: rgba(156, 220, 231, .1);
+      box-shadow: 0 0 0 12px rgba(156, 220, 231, .1);
+    }
+
+    .pullquote {
+      margin: 44px 0;
+      padding: 28px 0 28px 28px;
+      border-left: 4px solid var(--pool);
+      color: #9cdce7;
+      font-size: 1.7rem;
+      line-height: 1.22;
+    }
+
+    .closing {
+      padding: 68px 0 78px;
+      background: #f2e0c5;
+    }
+
+    .closing .wrap {
+      display: grid;
+      grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+      gap: 36px;
+      align-items: center;
+    }
+
+    .closing img {
+      border: 10px solid #fff8ec;
+      box-shadow: var(--shadow);
+    }
+
+    .closing p {
+      margin: 0;
+      color: #45382c;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2rem;
+      line-height: 1.24;
+    }
+
+    @media (max-width: 850px) {
+      .hero {
+        min-height: 82vh;
+      }
+
+      .hero__text {
+        padding: 84px 0 52px;
+      }
+
+      h1 {
+        font-size: 3rem;
+        line-height: 1;
+      }
+
+      .hero__dek {
+        font-size: 1rem;
+      }
+
+      .music-dock {
+        margin-top: 12px;
+      }
+
+      section {
+        padding: 52px 0;
+      }
+
+      .story-band {
+        padding: 52px 0;
+      }
+
+      .intro,
+      .story,
+      .closing .wrap {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .story__note {
+        position: static;
+      }
+
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison img {
+        aspect-ratio: 16 / 10;
+      }
+
+      .pullquote {
+        padding-left: 18px;
+        font-size: 1.35rem;
+      }
+
+      .closing p {
+        font-size: 1.55rem;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .wrap,
+      .hero__text {
+        width: min(100% - 28px, var(--max));
+      }
+
+      h1 {
+        font-size: 2.45rem;
+      }
+
+      .intro h2,
+      .story h2 {
+        font-size: 2rem;
+      }
+
+      .story__body p {
+        font-size: 1.08rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <img src="assets/ChatGPT_Image.png" alt="A mastiff on a brown patio couch watching a blue backyard pool." fetchpriority="high">
+    <div class="hero__text">
+      <p class="kicker">A backyard fable</p>
+      <h1>The Lifeguard on the Brown Couch</h1>
+      <p class="hero__dek">An old mastiff keeps watch over the pool, the slide, the chairs, and the small hinge hidden inside an ordinary summer day.</p>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="wrap intro">
+        <div>
+          <h2>From photo to story, then back into an image.</h2>
+          <p>The original picture has the whole quiet scene already in it: the dog, the wicker couch, the glass table, the blue pool, and the slide waiting in the sun.</p>
+          <p>The generated image keeps that same poolside kingdom, but turns the moment into the warmer, storybook version imagined by the text.</p>
+        </div>
+
+        <div class="comparison">
+          <figure>
+            <img src="assets/dog-pool.jpg" alt="Original photo of a mastiff sitting on outdoor furniture beside a pool." loading="lazy" decoding="async">
+            <figcaption>Original photo: the quiet poolside watch.</figcaption>
+          </figure>
+
+          <figure>
+            <img src="assets/ChatGPT_Image.png" alt="Generated illustration of the same mastiff poolside scene." loading="lazy" decoding="async">
+            <figcaption>Story image: the same scene, made royal.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <div class="story-band">
+      <article class="wrap story">
+        <header class="story__note">
+          <h2>The Story</h2>
+          <p>Read with the main image in mind: the dog is still, but the whole afternoon is about to open.</p>
+          <button class="read-toggle" type="button" aria-pressed="false" aria-controls="story-audio" data-read-toggle>
+            <span data-read-label>Read Story</span>
+          </button>
+          <audio id="story-audio" preload="metadata" hidden>
+            <source src="assets/story.m4a" type="audio/mp4">
+          </audio>
+        </header>
+
+        <div class="story__body">
+          <h3 class="story__title-cue" data-start="0.08" data-end="2.98">The Lifeguard on the Brown Couch</h3>
+
+          <p data-start="2.98" data-end="10.96">The old mastiff had chosen the middle cushion because it was not the most comfortable place to sit, which made it, naturally, the most important.</p>
+
+          <p data-start="11.56" data-end="13.88">From there, he could see nearly everything.</p>
+
+          <p data-start="14.50" data-end="40.64">He could see the pool, blue and square and full of trembling sunlight, doing its best impression of the ocean despite being fenced in by white bars and polite paving stones. He could see the lounge chairs lined up along the far side, turquoise cushions waiting with the confidence of creatures who had never been told no. He could see the umbrellas, closed for now, standing upright like guests who had arrived too early and did not know where to put their hands.</p>
+
+          <p data-start="41.50" data-end="44.06">Most importantly, he could see the slide.</p>
+
+          <p data-start="44.76" data-end="46.18">The slide was silent.</p>
+
+          <p data-start="47.08" data-end="47.94">This was suspicious.</p>
+
+          <p data-start="48.68" data-end="67.90">It curved into the water with the bland innocence of something that had definitely caused shouting before. The old mastiff knew its kind. Children climbed it with wet feet and wild plans. Grown-ups pretended they were too dignified for it, right up until somebody said, “Come on, just once,” and then dignity became a towel abandoned on a chair.</p>
+
+          <p data-start="68.94" data-end="76.74">Today, though, the slide waited. The pool waited. The whole backyard waited in that odd hush that comes just before people arrive with snacks.</p>
+
+          <p data-start="77.66" data-end="95.62">The mastiff’s name was probably something noble. Brutus, perhaps. Or Duke. Or Winston, if the family had a sense of theater and a fondness for giving serious names to animals who drooled on outdoor furniture. Whatever his name was, he wore it loosely, the way he wore his collar: as a fact, not a burden.</p>
+
+          <p data-start="96.92" data-end="110.32">He sat with his back curved slightly, his heavy paws folded together, his face turned toward the water. He was not sad, exactly. He had the look of someone remembering a rule he had invented himself and was now too honorable to break.</p>
+
+          <p data-start="110.32" data-end="112.22">No dogs in the pool.</p>
+
+          <p data-start="112.76" data-end="125.04">This rule had been spoken many times by many people in many tones. Firmly. Lovingly. With a finger raised. With a towel already in hand. Once, long ago, with a voice that tried very hard not to laugh.</p>
+
+          <p data-start="125.80" data-end="126.87">He remembered that day.</p>
+
+          <p data-start="126.87" data-end="148.08">Not in the way people remember things, with dates and weather and who said what first. Dogs remember with the body. The slick shock of tile. The cold blue surprise. The great splash. The shouting. The taste of chlorine. The admiration of one small child who had whispered, “He’s like a bear,” as if bears were known for their excellent pool manners.</p>
+
+          <p data-start="148.86" data-end="150.94">Since then, he had taken up supervision.</p>
+
+          <p data-start="151.64" data-end="152.40">It suited him.</p>
+
+          <p data-start="153.16" data-end="179.48">The patio was shaded beneath a roof held by stone pillars, and the wicker furniture had been arranged in a square, as though the family often gathered there to discuss serious matters such as hamburgers, sunscreen, and whether anyone had seen the good pool goggles. A glass-topped table sat in front of him, reflecting his broad shape in a softened, watery way. In the reflection he looked almost ghostly, a second dog beneath the surface, watching from another room.</p>
+
+          <p data-start="180.18" data-end="180.94">He ignored it.</p>
+
+          <p data-start="181.40" data-end="198.42">A younger dog might have barked at himself. A younger dog might have tried to step on the table, or lick the glass, or accuse the reflection of trespassing. But age brings wisdom, or at least a tired politeness. He had met the dog in the table before. Neither of them was going anywhere.</p>
+
+          <p data-start="199.18" data-end="210.34">Beyond the fence, the water moved in small private conversations. A breeze passed over it, then through the plants, then beneath the umbrellas, then under the mastiff’s ears. He lifted his nose, considering the day.</p>
+
+          <p data-start="210.50" data-end="227.18">There was damp stone. Warm dust. The faint chemical cleanness of the pool. A flower somewhere. A bird with poor judgment. The memory of bacon from breakfast, still clinging to the house though breakfast itself had vanished under mysterious human circumstances.</p>
+
+          <p data-start="227.82" data-end="229.32">And there was something else.</p>
+
+          <p data-start="229.32" data-end="230.66">A sound from inside.</p>
+
+          <p data-start="230.66" data-end="243.24">Not a loud sound. Not yet. Just a sliding drawer. A cabinet. The soft thump of a cooler being set down. The clink of ice, which to people meant drinks and to dogs meant that summer had begun arranging itself.</p>
+
+          <p data-start="243.84" data-end="244.68">His ears shifted.</p>
+
+          <p data-start="245.22" data-end="246.12">He did not move.</p>
+
+          <p data-start="246.76" data-end="248.42">This was the discipline of a professional.</p>
+
+          <p data-start="249.10" data-end="266.70">Inside, the people were preparing. They believed they were in charge of the afternoon. They had made lists. They had bought paper plates. Someone had remembered napkins, though no one would remember where they put them. Someone had said, “We’ll keep it simple,” which was how people summoned complexity.</p>
+
+          <p data-start="267.64" data-end="269.56">The mastiff had seen all this before.</p>
+
+          <p data-start="270.22" data-end="291.18">Soon the gate would open. Voices would spill across the patio. Feet would slap against stone. The quiet lounge chairs would be claimed, abandoned, claimed again. The slide would begin its work. The pool would receive cannonballs, apologies, lost toys, and at least one adult who would insist the water was “fine” while making the face of a person betrayed by nature.</p>
+
+          <p data-start="291.68" data-end="295.23">And somewhere in the middle of it, someone would put down a plate.</p>
+
+          <p data-start="295.23" data-end="296.82">Not carelessly. Not exactly.</p>
+
+          <p data-start="296.82" data-end="297.71">Just low.</p>
+
+          <p data-start="297.71" data-end="299.48">Just for a moment.</p>
+
+          <p data-start="300.26" data-end="301.52">The mastiff blinked slowly.</p>
+
+          <p data-start="301.92" data-end="312.72">He had no plan. Plans were for cats and people with calendars. He had only a deep respect for opportunity and a lifetime of being underestimated by those who confused slowness with innocence.</p>
+
+          <p data-start="313.96" data-end="315.28">Still, that was later.</p>
+
+          <p data-start="316.12" data-end="317.68">For now, the moment held.</p>
+
+          <p data-start="318.18" data-end="339.86">The backyard seemed to belong to him alone, and he carried it with the solemn care of an old king presiding over a kingdom of cushions and tile. There was comfort in the way everything stayed where it had been put. The blue chairs in the sun. The potted plant on the ledge. The little dark drain in the patio floor, round as a button, waiting to swallow whatever the day spilled.</p>
+
+          <p data-start="340.72" data-end="343.22">He looked at the pool, and the pool looked back.</p>
+
+          <p data-start="344.10" data-end="357.42">Perhaps he was thinking of the family. Perhaps he was watching for the first small person to appear at the door. Perhaps he was listening for the voice that always called him “buddy” in a tone reserved for both dogs and inconvenient furniture.</p>
+
+          <p data-start="358.14" data-end="365.64">Or perhaps, in the large quiet chamber of his doggish heart, he understood something people often miss while setting out cups.</p>
+
+          <p data-start="365.64" data-end="369.20">That every ordinary day has a small hinge hidden inside it.</p>
+
+          <p data-start="369.78" data-end="384.34">A door opens. A child laughs. Ice shifts in a cooler. A wet hand lands on an old dog’s head. Nothing grand announces itself. No trumpet sounds over the patio. The umbrellas do not unfurl in recognition. The slide does not bow.</p>
+
+          <p data-start="384.74" data-end="385.86">But the day changes.</p>
+
+          <p data-start="386.48" data-end="391.62">So he waited on the middle cushion, where he could see nearly everything, and guarded the blue water from silence.</p>
+
+          <p data-start="391.62" data-end="397.72">And when the first voice finally called from inside, “Where is he?” the old mastiff did not turn around.</p>
+
+          <p data-start="398.12" data-end="400.78">He only wagged his tail once, against the wicker.</p>
+
+          <blockquote class="pullquote" data-start="401.42" data-end="404.00">A soft, royal knock.<br>The kingdom was open.</blockquote>
+        </div>
+      </article>
+    </div>
+
+    <div class="closing">
+      <div class="wrap">
+        <img src="assets/dog-pool.jpg" alt="The original backyard pool photo that inspired the story." loading="lazy" decoding="async">
+        <div>
+          <p>The original scene stays simple: one dog, one couch, one blue pool. The story turns that stillness into a whole afternoon.</p>
+          <div class="support-dock">
+            <a class="paypal-button" target="_blank" rel="noopener" href="https://paypal.me/skorotkiewicz">
+              <svg width="27" height="27" viewBox="0 0 24 32" aria-hidden="true">
+                <path fill="#009cde" d="M20.905 9.5C21.185 7.4 20.905 6 19.782 4.7 18.564 3.3 16.411 2.6 13.697 2.6H5.739C5.271 2.6 4.71 3.1 4.615 3.6L1.339 25.8C1.339 26.2 1.62 26.7 2.088 26.7H6.956L6.675 28.9C6.581 29.3 6.862 29.6 7.236 29.6h4.12C11.825 29.6 12.292 29.3 12.386 28.8V28.5L13.228 23.3V23.1C13.322 22.6 13.79 22.2 14.258 22.2H14.821C18.845 22.2 21.935 20.5 22.871 15.5 23.339 13.4 23.153 11.7 22.029 10.5 21.748 10.1 21.279 9.8 20.905 9.5"></path>
+                <path fill="#012169" d="M20.905 9.5C21.185 7.4 20.905 6 19.782 4.7 18.564 3.3 16.411 2.6 13.697 2.6H5.739C5.271 2.6 4.71 3.1 4.615 3.6L1.339 25.8C1.339 26.2 1.62 26.7 2.088 26.7H6.956L8.267 18.4 8.173 18.7C8.267 18.1 8.735 17.7 9.296 17.7h2.34C16.224 17.7 19.782 15.7 20.905 10.1 20.812 9.8 20.905 9.7 20.905 9.5"></path>
+                <path fill="#003087" d="M9.485 9.5C9.577 9.2 9.765 8.9 10.046 8.7 10.232 8.7 10.326 8.6 10.513 8.6h6.179C17.442 8.6 18.189 8.7 18.753 8.8 18.939 8.8 19.127 8.8 19.314 8.9S19.688 9 19.782 9.1C19.875 9.1 19.968 9.1 20.063 9.1 20.343 9.2 20.624 9.4 20.905 9.5 21.185 7.4 20.905 6 19.782 4.6 18.658 3.2 16.506 2.6 13.79 2.6H5.739C5.271 2.6 4.71 3 4.615 3.6L1.339 25.8C1.339 26.2 1.62 26.7 2.088 26.7H6.956L8.267 18.4 9.485 9.5z"></path>
+              </svg>
+              <span>Support via PayPal</span>
+            </a>
+          </div>
+          <div class="music-dock">
+            <button class="music-toggle" type="button" aria-pressed="false" data-music-toggle>
+              <span data-music-label>Play Song</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>
+    const musicToggle = document.querySelector("[data-music-toggle]");
+    const musicLabel = document.querySelector("[data-music-label]");
+    const readToggle = document.querySelector("[data-read-toggle]");
+    const readLabel = document.querySelector("[data-read-label]");
+    const storyAudio = document.getElementById("story-audio");
+    const storyBody = document.querySelector(".story__body");
+    const storySegments = [...document.querySelectorAll(".story__body [data-start]")];
+    const songUrl = "https://www.youtube.com/embed/5QU0yP-RjqU?autoplay=1&playsinline=1";
+    let songFrame;
+    let storyTimings = [];
+    let activeSegment;
+    let pendingStart;
+
+    const clearReadHighlight = () => {
+      activeSegment?.classList.remove("is-reading");
+      storyBody.classList.remove("is-reading-active");
+      activeSegment = null;
+    };
+
+    const buildStoryTimings = () => {
+      storyTimings = storySegments.map((segment) => {
+        return {
+          segment,
+          start: Number(segment.dataset.start),
+          end: Number(segment.dataset.end),
+        };
+      });
+
+      if (!storyTimings.every(({ start, end }) => Number.isFinite(start) && Number.isFinite(end) && end > start)) {
+        storyTimings = [];
+      }
+    };
+
+    const syncReadHighlight = () => {
+      if (!storyTimings.length) buildStoryTimings();
+
+      const current = storyTimings.find(({ start, end }) => {
+        return storyAudio.currentTime >= start && storyAudio.currentTime < end;
+      })?.segment;
+
+      if (current === activeSegment) return;
+      clearReadHighlight();
+
+      if (current) {
+        current.classList.add("is-reading");
+        storyBody.classList.add("is-reading-active");
+        activeSegment = current;
+      }
+    };
+
+    const resetReadToggle = () => {
+      storyAudio.currentTime = 0;
+      clearReadHighlight();
+      readToggle.setAttribute("aria-pressed", "false");
+      readLabel.textContent = "Read Story";
+    };
+
+    const startReading = () => {
+      return storyAudio.play().then(() => {
+        readToggle.setAttribute("aria-pressed", "true");
+        readLabel.textContent = "Stop Reading";
+      }).catch(resetReadToggle);
+    };
+
+    const readFromSegment = (segment) => {
+      const start = Number(segment.dataset.start);
+      if (!Number.isFinite(start)) return;
+
+      pendingStart = start;
+      if (storyAudio.readyState < 1) {
+        storyAudio.addEventListener("loadedmetadata", () => {
+          if (pendingStart == null) return;
+
+          const nextStart = pendingStart;
+          pendingStart = null;
+          storyAudio.currentTime = nextStart;
+          syncReadHighlight();
+          startReading();
+        }, { once: true });
+        storyAudio.load();
+        return;
+      }
+
+      pendingStart = null;
+      storyAudio.currentTime = start;
+      syncReadHighlight();
+      startReading();
+    };
+
+    musicToggle.addEventListener("click", () => {
+      const isPlaying = musicToggle.getAttribute("aria-pressed") === "true";
+
+      if (isPlaying) {
+        songFrame.remove();
+        songFrame = null;
+        musicToggle.setAttribute("aria-pressed", "false");
+        musicLabel.textContent = "Play Song";
+        return;
+      }
+
+      songFrame = document.createElement("iframe");
+      songFrame.className = "music-frame";
+      songFrame.title = "The Kingdom Was Open";
+      songFrame.tabIndex = -1;
+      songFrame.setAttribute("aria-hidden", "true");
+      songFrame.allow = "autoplay; encrypted-media";
+      songFrame.src = songUrl;
+      document.body.append(songFrame);
+      musicToggle.setAttribute("aria-pressed", "true");
+      musicLabel.textContent = "Stop Song";
+    });
+
+    readToggle.addEventListener("click", () => {
+      const isReading = readToggle.getAttribute("aria-pressed") === "true";
+
+      if (isReading) {
+        storyAudio.pause();
+        resetReadToggle();
+        return;
+      }
+
+      startReading();
+    });
+
+    storySegments.forEach((segment) => {
+      segment.tabIndex = 0;
+    });
+
+    storyBody.addEventListener("click", (event) => {
+      const segment = event.target.closest("[data-start]");
+      if (segment) readFromSegment(segment);
+    });
+
+    storyBody.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+
+      const segment = event.target.closest("[data-start]");
+      if (!segment) return;
+
+      event.preventDefault();
+      readFromSegment(segment);
+    });
+
+    storyAudio.addEventListener("loadedmetadata", buildStoryTimings);
+    storyAudio.addEventListener("timeupdate", syncReadHighlight);
+    storyAudio.addEventListener("ended", resetReadToggle);
+  </script>
+</body>
+</html>

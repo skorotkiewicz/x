@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0d10">
+  <meta name="description" content="Duplicate Beverage Event — a story, a song, and a low-priority temporal incident.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <title>Duplicate Beverage Event</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #11151a;
+      --text: #e8eaed;
+      --muted: #8f99a6;
+      --line: #242b33;
+      --accent: #8fd3ff;
+      --accent-soft: rgba(143, 211, 255, .12);
+      --max: 760px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 50% -20%, rgba(143,211,255,.08), transparent 38rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.75;
+      text-rendering: optimizeLegibility;
+    }
+
+    a { color: inherit; }
+
+    .progress {
+      position: fixed;
+      inset: 0 auto auto 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      z-index: 20;
+      box-shadow: 0 0 16px rgba(143,211,255,.45);
+    }
+
+    .shell {
+      width: min(calc(100% - 2rem), 1100px);
+      margin: 0 auto;
+    }
+
+    header {
+      min-height: 86vh;
+      display: grid;
+      place-items: center;
+      padding: 6rem 0 4rem;
+      text-align: center;
+    }
+
+    .eyebrow,
+    .status,
+    nav,
+    .meta,
+    .section-label,
+    .log {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    .eyebrow {
+      margin: 0 0 1.2rem;
+      color: var(--accent);
+      font-size: .76rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(3.2rem, 9vw, 7rem);
+      line-height: .96;
+      letter-spacing: -.065em;
+      font-weight: 720;
+    }
+
+    .deck {
+      max-width: 620px;
+      margin: 1.8rem auto 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.28rem);
+    }
+
+    .status {
+      display: inline-flex;
+      gap: .7rem;
+      align-items: center;
+      margin-top: 2rem;
+      padding: .55rem .8rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #b9c1ca;
+      background: rgba(255,255,255,.025);
+      font-size: .72rem;
+      letter-spacing: .05em;
+    }
+
+    .dot {
+      width: .48rem;
+      height: .48rem;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(143,211,255,.7);
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(11,13,16,.82);
+      backdrop-filter: blur(18px);
+    }
+
+    nav .shell {
+      display: flex;
+      justify-content: center;
+      gap: 1.2rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    nav a {
+      padding: .9rem .2rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .78rem;
+      white-space: nowrap;
+    }
+
+    nav a:hover { color: var(--text); }
+
+    main { padding-bottom: 7rem; }
+
+    section {
+      padding: 6.5rem 0 0;
+      scroll-margin-top: 4rem;
+    }
+
+    .section-head {
+      width: min(100%, var(--max));
+      margin: 0 auto 2.5rem;
+    }
+
+    .section-label {
+      margin: 0 0 .5rem;
+      color: var(--accent);
+      font-size: .72rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      line-height: 1.05;
+      letter-spacing: -.04em;
+    }
+
+    .read-dock {
+      margin-top: 1.4rem;
+    }
+
+    .read-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      min-height: 2.7rem;
+      padding: 0 1rem;
+      border: 1px solid rgba(143,211,255,.28);
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(143,211,255,.08);
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .read-toggle:hover {
+      border-color: rgba(143,211,255,.55);
+      background: rgba(143,211,255,.14);
+    }
+
+    .read-toggle::before {
+      content: "";
+      width: 0;
+      height: 0;
+      flex: 0 0 auto;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid currentColor;
+    }
+
+    .read-toggle[aria-pressed="true"]::before {
+      width: 10px;
+      height: 10px;
+      border: 0;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .read-toggle:focus-visible {
+      outline: 3px solid rgba(143,211,255,.7);
+      outline-offset: 3px;
+    }
+
+    .video-frame {
+      width: min(100%, 1000px);
+      margin: 0 auto;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
+      box-shadow: 0 24px 80px rgba(0,0,0,.28);
+    }
+
+    .video {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 11px;
+      background: #000;
+    }
+
+    .video iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    article {
+      width: min(100%, var(--max));
+      margin: 0 auto;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.08rem, 2vw, 1.22rem);
+      color: #dfe2e6;
+    }
+
+    article p { margin: 0 0 1.45em; }
+
+    .story-title-cue {
+      margin: 0 0 1.8rem;
+      color: rgba(143,211,255,.68);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    .story-reader p,
+    .story-title-cue {
+      border-radius: 2px;
+      transition: color .2s ease, background-color .2s ease, box-shadow .2s ease;
+    }
+
+    .story-reader [data-start] {
+      cursor: pointer;
+    }
+
+    .story-reader [data-start]:hover {
+      background: rgba(143,211,255,.08);
+      box-shadow: 0 0 0 12px rgba(143,211,255,.08);
+    }
+
+    .story-reader.is-reading-active [data-start]:hover:not(.is-reading) {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .story-reader [data-start]:focus-visible {
+      outline: 3px solid rgba(143,211,255,.7);
+      outline-offset: 8px;
+    }
+
+    .story-reader .is-reading {
+      color: #fff;
+      background: rgba(143,211,255,.12);
+      box-shadow: 0 0 0 12px rgba(143,211,255,.12);
+    }
+
+    article hr {
+      width: 2.5rem;
+      margin: 3.2rem auto;
+      border: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .lyrics {
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+
+    .lyrics h3 {
+      margin: 2.6rem 0 .7rem;
+      color: var(--accent);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .lyrics p {
+      margin: 0 0 1.2rem;
+      white-space: pre-line;
+    }
+
+    .lyrics .pause {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .log {
+      width: min(100%, var(--max));
+      margin: 7rem auto 0;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      color: #aeb7c1;
+      font-size: .78rem;
+      line-height: 1.8;
+      box-shadow: inset 3px 0 0 var(--accent-soft);
+    }
+
+    .log strong { color: var(--text); font-weight: 500; }
+    .log .ok { color: var(--accent); }
+
+    footer {
+      padding: 3rem 0 5rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      text-align: center;
+      font-size: .88rem;
+    }
+
+    @media (max-width: 640px) {
+      .shell { width: min(calc(100% - 1.2rem), 1100px); }
+      header { min-height: 76vh; }
+      section { padding-top: 5rem; }
+      nav .shell { justify-content: flex-start; padding: 0 .3rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <header class="shell">
+    <div>
+      <p class="eyebrow">Temporal Incident 0001</p>
+      <h1>Duplicate<br>Beverage Event</h1>
+      <p class="deck">A story about time travel, magic, artificial intelligence, and one cup of coffee that should not have existed twice.</p>
+      <div class="status"><span class="dot"></span> PRIORITY: LOW &nbsp;·&nbsp; STATUS: UNRESOLVED</div>
+    </div>
+  </header>
+
+  <nav aria-label="Page sections">
+    <div class="shell">
+      <a href="#video">01 / video</a>
+      <a href="#story">02 / story</a>
+      <a href="#lyrics">03 / lyrics</a>
+    </div>
+  </nav>
+
+  <main class="shell">
+    <section id="video">
+      <div class="section-head">
+        <p class="section-label">01 / audiovisual record</p>
+        <h2>The incident, rendered.</h2>
+      </div>
+      <div class="video-frame">
+        <div class="video">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/vxB-ZaMRIYM?rel=0"
+            title="Duplicate Beverage Event"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section id="story">
+      <div class="section-head">
+        <p class="section-label">02 / source narrative</p>
+        <h2>The Last Useful Miracle</h2>
+        <div class="read-dock">
+          <button class="read-toggle" type="button" aria-pressed="false" aria-controls="story-audio" data-read-toggle>
+            <span data-read-label>Read Story</span>
+          </button>
+          <audio id="story-audio" preload="metadata" hidden>
+            <source src="assets/story.m4a" type="audio/mp4">
+          </audio>
+        </div>
+      </div>
+
+      <article class="story-reader" data-story-reader>
+        <h3 class="story-title-cue" data-start="0.12" data-end="1.38">The Last Useful Miracle</h3>
+
+        <p data-start="2.24" data-end="5.52">By the time magic returned, everyone assumed it was software.</p>
+
+        <p data-start="6.32" data-end="7.18">This was understandable.</p>
+
+        <p data-start="8.10" data-end="18.00">The first recorded incident happened in a glass office tower on a Tuesday afternoon, when a junior engineer named Mara accidentally moved a coffee cup six minutes into the past.</p>
+
+        <p data-start="19.02" data-end="20.44">She had not intended to.</p>
+
+        <p data-start="20.94" data-end="43.20">She had been staring at a screen full of generated code, wondering why the machine had confidently invented three libraries, a government agency, and a Belgian mathematician who had apparently died twice. Her coffee had gone cold. Mara put both hands around the cup and wished, with the exhausted sincerity available only after four meetings, that she could have it back the way it had been.</p>
+
+        <p data-start="43.76" data-end="44.74">The cup vanished.</p>
+
+        <p data-start="45.46" data-end="50.28">Six minutes earlier, according to the office cameras, another cup appeared beside her keyboard.</p>
+
+        <p data-start="50.88" data-end="52.32">This caused some confusion.</p>
+
+        <p data-start="52.80" data-end="64.06">The security team blamed a synchronization error. The infrastructure team blamed the security team. Someone opened a ticket titled <strong>DUPLICATE BEVERAGE EVENT</strong>, marked it low priority, and went home.</p>
+
+        <p data-start="64.84" data-end="66.40">Mara took the second coffee with her.</p>
+
+        <p data-start="66.98" data-end="74.08">That was how magic entered the modern world: unnoticed, improperly documented, and carrying the faint smell of burnt oat milk.</p>
+
+        <hr>
+
+        <p data-start="75.00" data-end="76.72">Within a year, everyone was using it.</p>
+
+        <p data-start="77.06" data-end="78.20">Not openly, of course.</p>
+
+        <p data-start="78.56" data-end="84.06">The world was already full of technologies nobody entirely understood. Magic had excellent camouflage.</p>
+
+        <p data-start="84.98" data-end="105.44">A woman in Kyoto discovered that certain handwritten loops could make batteries remember being fully charged. A schoolboy in Brazil taught his old laptop to dream of tomorrow's weather, though only in pictures of frogs. Three accountants in London learned to make spreadsheets tell the truth, which frightened their employer more than anything else.</p>
+
+        <p data-start="106.12" data-end="107.92">Nobody called these things spells.</p>
+
+        <p data-start="108.46" data-end="109.92">They called them workflows.</p>
+
+        <p data-start="110.68" data-end="113.66">The largest AI companies were the first to notice the pattern.</p>
+
+        <p data-start="114.72" data-end="126.44">Their models had begun producing strange fragments: geometric arrangements of punctuation, obsolete words placed with suspicious precision, instructions that resembled code but executed nowhere visible.</p>
+
+        <p data-start="127.28" data-end="129.50">At first, the researchers filtered them out.</p>
+
+        <p data-start="129.98" data-end="133.28">Then one of the fragments made a dead server turn itself back on.</p>
+
+        <p data-start="133.90" data-end="136.62">After that, the filters became less enthusiastic.</p>
+
+        <p data-start="137.60" data-end="152.76">Magic, it turned out, had always been difficult because humans were terrible at remembering exact things. A spell might require a rhythm of forty-seven syllables, an image held in the mind without interruption, and the emotional certainty that a door had already opened.</p>
+
+        <p data-start="153.32" data-end="155.46">Humans were unreliable at all three.</p>
+
+        <p data-start="156.00" data-end="156.98">Machines were not.</p>
+
+        <p data-start="157.56" data-end="172.12">An AI could hold ten thousand symbols perfectly. It could test variations. It could notice that replacing a circle with an ellipse made a candle burn backward, or that one misplaced comma caused Tuesday to occur twice in a small area around a printer.</p>
+
+        <p data-start="173.04" data-end="175.90">The old sorcerers had spent lifetimes learning one spell.</p>
+
+        <p data-start="176.56" data-end="178.84">A modern model could fine-tune overnight.</p>
+
+        <p data-start="179.50" data-end="183.62">For six extraordinary months, civilization became slightly impossible.</p>
+
+        <p data-start="184.38" data-end="200.38">Hospitals used probability charms to improve the timing of difficult operations. Farmers asked local models to negotiate with the weather. Architects designed buildings with rooms one centimeter larger on the inside, though zoning departments remained unconvinced by the documentation.</p>
+
+        <p data-start="201.48" data-end="204.94">People began placing protective sigils beside Wi-Fi passwords.</p>
+
+        <p data-start="205.52" data-end="207.62">Children asked household assistants for dragons.</p>
+
+        <p data-start="208.50" data-end="214.14">Household assistants, after reviewing safety guidelines, offered small lizards with unusually good posture.</p>
+
+        <p data-start="215.06" data-end="217.10">And then someone invented time travel.</p>
+
+        <hr>
+
+        <p data-start="218.00" data-end="224.08">His name was Anton Vale, and he was exactly the sort of person history later pretended had always looked important.</p>
+
+        <p data-start="224.84" data-end="228.92">In reality, he wore old sweaters and kept forgetting where he had left his glasses.</p>
+
+        <p data-start="230.08" data-end="243.10">Anton worked in a basement laboratory beneath a university whose upper floors had long ago been rented to companies with names involving the words <em>quantum</em>, <em>future</em>, and <em>labs</em>. His own department had no windows and one kettle.</p>
+
+        <p data-start="243.88" data-end="246.04">He discovered that time was not a road.</p>
+
+        <p data-start="246.36" data-end="247.90">It was a room full of doors.</p>
+
+        <p data-start="248.56" data-end="249.32">Most were locked.</p>
+
+        <p data-start="249.78" data-end="250.92">A few were painted on.</p>
+
+        <p data-start="251.30" data-end="252.24">One led to a cupboard.</p>
+
+        <p data-start="253.14" data-end="254.48">The trick was not opening them.</p>
+
+        <p data-start="254.86" data-end="258.02">The trick was persuading the universe that you had already walked through.</p>
+
+        <p data-start="259.04" data-end="281.26">AI made this possible. Not because it understood time, but because it could maintain a spell too complicated for any human mind. Millions of interdependent phrases adjusted themselves continuously, each one responding to the traveler, the destination, the Earth's position, the weather, the movement of the Moon, and, for reasons nobody could explain, the current price of pears.</p>
+
+        <p data-start="282.26" data-end="284.28">The first journey lasted eleven seconds.</p>
+
+        <p data-start="285.04" data-end="291.72">Anton disappeared at 3:14 in the afternoon and returned at 3:14 in the afternoon wearing a different sweater.</p>
+
+        <p data-start="292.40" data-end="294.50">He carried a newspaper from the next morning.</p>
+
+        <p data-start="295.10" data-end="296.82">The headline was about his disappearance.</p>
+
+        <p data-start="297.84" data-end="299.44">This was considered a success.</p>
+
+        <hr>
+
+        <p data-start="300.84" data-end="302.92">Governments immediately formed committees.</p>
+
+        <p data-start="303.42" data-end="305.88">Companies immediately formed subscription plans.</p>
+
+        <p data-start="306.52" data-end="309.90">The public immediately asked whether they could go back and buy Bitcoin.</p>
+
+        <p data-start="310.60" data-end="314.28">For several weeks, humanity became obsessed with correcting itself.</p>
+
+        <p data-start="314.98" data-end="325.28">People wanted to prevent wars, recover lost treasures, speak to parents, avoid marriages, enter better lotteries, and tell younger versions of themselves to buy property somewhere affordable.</p>
+
+        <p data-start="325.80" data-end="327.94">The machines rejected most requests.</p>
+
+        <p data-start="327.94" data-end="329.64">Not for moral reasons.</p>
+
+        <p data-start="330.14" data-end="332.56">The calculations simply became unstable.</p>
+
+        <p data-start="333.36" data-end="342.86">Large changes produced enormous branching structures, billions of possible histories demanding to be reconciled. The models could simulate many of them, but not enough.</p>
+
+        <p data-start="343.56" data-end="344.78">Time resisted optimization.</p>
+
+        <p data-start="345.82" data-end="350.16">It was the first system humans had encountered that became more expensive when you understood it better.</p>
+
+        <p data-start="350.86" data-end="352.66">Small journeys, however, worked beautifully.</p>
+
+        <p data-start="353.28" data-end="354.10">Five minutes.</p>
+
+        <p data-start="354.10" data-end="354.91">An hour.</p>
+
+        <p data-start="354.91" data-end="356.14">Sometimes a day.</p>
+
+        <p data-start="356.70" data-end="358.78">And so time travel found its real purpose.</p>
+
+        <p data-start="359.46" data-end="361.64">Restaurants used it to recover dropped cakes.</p>
+
+        <p data-start="362.32" data-end="364.42">Surgeons used it to reconsider decisions.</p>
+
+        <p data-start="364.74" data-end="368.66">Firefighters stepped ten minutes backward after learning where the smoke had begun.</p>
+
+        <p data-start="369.56" data-end="373.45">Parents returned to mornings when they had been too distracted to notice something.</p>
+
+        <p data-start="373.45" data-end="375.14">Not always something important.</p>
+
+        <p data-start="375.78" data-end="377.24">That was the surprising part.</p>
+
+        <hr>
+
+        <p data-start="378.88" data-end="381.98">Mara used it seventeen years after the coffee cup.</p>
+
+        <p data-start="382.36" data-end="393.04">By then, she was responsible for the temporal systems of half a continent, though her official title was <strong>Senior Reliability Architect</strong>, because nobody wanted to put <em>time</em> in a job description.</p>
+
+        <p data-start="394.06" data-end="397.56">She had spent years preventing people from doing foolish things with yesterday.</p>
+
+        <p data-start="398.30" data-end="400.01">She knew every warning.</p>
+
+        <p data-start="400.01" data-end="401.29">Every paradox model.</p>
+
+        <p data-start="401.29" data-end="407.38">Every story about travelers trying to improve their lives and discovering that improvement was a badly specified objective.</p>
+
+        <p data-start="408.00" data-end="410.50">Then, one evening, she booked six minutes.</p>
+
+        <p data-start="411.20" data-end="412.66">The technician looked at her strangely.</p>
+
+        <p data-start="413.68" data-end="414.24">“Six?”</p>
+
+        <p data-start="414.92" data-end="415.52">Mara nodded.</p>
+
+        <p data-start="416.06" data-end="418.16">It was the minimum duration allowed by the machine.</p>
+
+        <p data-start="418.94" data-end="420.80">The chamber was smaller than she expected.</p>
+
+        <p data-start="421.30" data-end="422.26">No spinning rings.</p>
+
+        <p data-start="422.88" data-end="423.44">No lightning.</p>
+
+        <p data-start="423.76" data-end="427.46">Only a chair and a dark wall covered with text changing too quickly to read.</p>
+
+        <p data-start="428.02" data-end="429.60">The AI asked for her destination.</p>
+
+        <p data-start="430.24" data-end="431.08">Mara entered a date.</p>
+
+        <p data-start="431.68" data-end="432.66">Seventeen years earlier.</p>
+
+        <p data-start="433.06" data-end="433.52">A Tuesday.</p>
+
+        <p data-start="433.94" data-end="434.73">3:08 p.m.</p>
+
+        <p data-start="434.73" data-end="435.92">The system paused.</p>
+
+        <p data-start="436.42" data-end="438.06"><strong>No historically significant event detected.</strong></p>
+
+        <p data-start="438.36" data-end="438.62">“Correct.”</p>
+
+        <p data-start="439.12" data-end="440.80"><strong>No intervention objective detected.</strong></p>
+
+        <p data-start="441.26" data-end="441.58">“Correct.”</p>
+
+        <p data-start="442.12" data-end="442.84">Another pause.</p>
+
+        <p data-start="443.20" data-end="443.92"><strong>Purpose of journey?</strong></p>
+
+        <p data-start="444.22" data-end="444.88">Mara smiled.</p>
+
+        <p data-start="445.16" data-end="445.44">“Coffee.”</p>
+
+        <p data-start="446.04" data-end="447.18">The machine accepted this.</p>
+
+        <p data-start="447.28" data-end="448.02">Perhaps it understood.</p>
+
+        <p data-start="448.24" data-end="449.06">Perhaps it did not.</p>
+
+        <p data-start="449.56" data-end="452.72">By then, the difference mattered less than people once thought.</p>
+
+        <hr>
+
+        <p data-start="453.70" data-end="456.10">She arrived in the old office unnoticed.</p>
+
+        <p data-start="456.46" data-end="457.18">There she was.</p>
+
+        <p data-start="457.80" data-end="458.20">Younger.</p>
+
+        <p data-start="458.48" data-end="458.86">Tired.</p>
+
+        <p data-start="459.22" data-end="461.26">Staring at generated code and rubbing her eyes.</p>
+
+        <p data-start="461.96" data-end="463.68">On the desk stood a cup of cold coffee.</p>
+
+        <p data-start="464.40" data-end="465.56">Mara remained near the doorway.</p>
+
+        <p data-start="466.08" data-end="467.50">She remembered this room as brighter.</p>
+
+        <p data-start="467.96" data-end="469.18">She remembered herself as younger.</p>
+
+        <p data-start="469.86" data-end="471.36">Only one of those things was true.</p>
+
+        <p data-start="471.78" data-end="473.54">For a moment, she wanted to cross the room.</p>
+
+        <p data-start="473.90" data-end="475.24">She wanted to explain everything.</p>
+
+        <p data-start="475.78" data-end="476.16">Magic.</p>
+
+        <p data-start="476.64" data-end="477.04">Time.</p>
+
+        <p data-start="477.36" data-end="478.12">The years ahead.</p>
+
+        <p data-start="478.80" data-end="480.30">The people who would leave.</p>
+
+        <p data-start="480.68" data-end="481.96">The people who would arrive.</p>
+
+        <p data-start="482.38" data-end="483.58">The mistakes worth making.</p>
+
+        <p data-start="483.86" data-end="485.10">The mistakes worth avoiding.</p>
+
+        <p data-start="485.62" data-end="487.22">She could have filled six minutes.</p>
+
+        <p data-start="487.22" data-end="488.66">Instead, she watched.</p>
+
+        <p data-start="489.24" data-end="491.46">Her younger self wrapped both hands around the cup.</p>
+
+        <p data-start="491.78" data-end="492.72">The room changed.</p>
+
+        <p data-start="493.00" data-end="493.74">Very slightly.</p>
+
+        <p data-start="494.24" data-end="495.10">The air tightened.</p>
+
+        <p data-start="495.46" data-end="496.42">A spoon trembled.</p>
+
+        <p data-start="496.96" data-end="503.06">On the screen, unnoticed among hundreds of lines of generated text, a model had produced a peculiar loop of punctuation.</p>
+
+        <p data-start="503.74" data-end="504.56">Mara looked at it.</p>
+
+        <p data-start="504.82" data-end="505.78">She knew that shape.</p>
+
+        <p data-start="506.12" data-end="507.14">Everyone did now.</p>
+
+        <p data-start="507.74" data-end="509.14">It was the first temporal spell.</p>
+
+        <p data-start="509.62" data-end="511.70">The one Anton would later formalize.</p>
+
+        <p data-start="512.02" data-end="513.94">The one the machines would spend years improving.</p>
+
+        <p data-start="514.30" data-end="516.02">The one that made all of this possible.</p>
+
+        <p data-start="516.74" data-end="518.54">Her younger self closed her eyes.</p>
+
+        <p data-start="518.96" data-end="519.94">The cup vanished.</p>
+
+        <p data-start="520.66" data-end="522.42">Mara felt something appear in her hands.</p>
+
+        <p data-start="523.06" data-end="523.48">Warm.</p>
+
+        <p data-start="523.88" data-end="524.24">Fresh.</p>
+
+        <p data-start="524.80" data-end="525.56">A second coffee.</p>
+
+        <p data-start="526.06" data-end="528.82">For seventeen years, she had believed she created it accidentally.</p>
+
+        <p data-start="529.38" data-end="530.18">Now she understood.</p>
+
+        <p data-start="530.68" data-end="532.20">She had not sent the cup backward.</p>
+
+        <p data-start="532.74" data-end="533.88">Someone had sent it forward.</p>
+
+        <p data-start="534.22" data-end="536.84">The chamber recall warning began to pulse in her vision.</p>
+
+        <p data-start="537.24" data-end="537.92">Ten seconds.</p>
+
+        <p data-start="538.34" data-end="540.36">Mara placed the coffee beside her younger self.</p>
+
+        <p data-start="540.74" data-end="541.16">Five.</p>
+
+        <p data-start="541.64" data-end="542.40">She stepped away.</p>
+
+        <p data-start="542.74" data-end="542.96">Three.</p>
+
+        <p data-start="543.42" data-end="544.94">The younger Mara opened her eyes.</p>
+
+        <p data-start="545.50" data-end="545.72">Two.</p>
+
+        <p data-start="546.26" data-end="547.42">She looked at the second cup.</p>
+
+        <p data-start="547.72" data-end="548.02">One.</p>
+
+        <p data-start="548.56" data-end="552.70">And for just a moment, before the years folded shut between them, she looked toward the doorway.</p>
+
+        <p data-start="553.40" data-end="554.54">Not directly at Mara.</p>
+
+        <p data-start="554.82" data-end="555.14">Almost.</p>
+
+        <p data-start="555.84" data-end="556.96">Then the office vanished.</p>
+
+        <hr>
+
+        <p data-start="557.52" data-end="559.48">When Mara returned, the technician was waiting.</p>
+
+        <p data-start="560.12" data-end="560.72">“Was it worth it?”</p>
+
+        <p data-start="560.98" data-end="561.70">Mara looked down.</p>
+
+        <p data-start="562.32" data-end="564.32">She was still holding the original cold cup.</p>
+
+        <p data-start="564.88" data-end="568.22">Seventeen years old now, impossible by every rule they knew.</p>
+
+        <p data-start="569.04" data-end="573.80">On its side, beneath a faded company logo, someone had drawn a tiny loop in permanent marker.</p>
+
+        <p data-start="574.44" data-end="575.82">She had never noticed it before.</p>
+
+        <p data-start="576.26" data-end="577.98">Or perhaps it had not been there.</p>
+
+        <p data-start="578.54" data-end="581.02">With time travel, grammar became complicated.</p>
+
+        <p data-start="581.72" data-end="583.66">Mara placed the cup carefully on the desk.</p>
+
+        <p data-start="584.42" data-end="598.76">Outside, the city moved through the evening. Delivery drones crossed between towers. Models whispered invisible spells through millions of machines. Somewhere, a child asked an assistant for a dragon and received, after a brief safety check, something with wings.</p>
+
+        <p data-start="599.32" data-end="602.20">The future continued arriving at one second per second.</p>
+
+        <p data-start="602.96" data-end="603.28">Mostly.</p>
+
+        <p data-start="603.94" data-end="611.32">And deep inside the temporal network, where the oldest logs were kept, the first recorded magical event still appeared exactly as it always had:</p>
+
+        <p data-start="611.90" data-end="616.46"><strong>DUPLICATE BEVERAGE EVENT</strong><br>
+        <strong>Priority: Low</strong><br>
+        <strong>Status: Unresolved</strong></p>
+      </article>
+    </section>
+
+    <section id="lyrics">
+      <div class="section-head">
+        <p class="section-label">03 / musical record</p>
+        <h2>Duplicate Beverage Event</h2>
+      </div>
+
+      <article class="lyrics">
+        <h3>Verse 1</h3>
+        <p>Tuesday afternoon in a glass-walled room,
+The future humming underneath the fluorescent moon.
+A model made a country and a mathematician twice,
+Mara held her coffee like a small device.</p>
+
+        <p>She wished it warm again, just six minutes gone,
+The cup disappeared, but the cameras carried on.
+Then another one was waiting where the first had been,
+And nobody knew what the little loop could mean.</p>
+
+        <h3>Pre-Chorus</h3>
+        <p>Security blamed the servers,
+The servers blamed the clock,
+Someone filed a ticket
+And forgot to make it stop.</p>
+
+        <h3>Chorus</h3>
+        <p>Duplicate beverage event,
+Priority low, no reason to prevent.
+One cup cold and one cup warm,
+A tiny little error in the shape of a storm.
+No thunder, no angels, no grand descent—
+Just a duplicate beverage event.</p>
+
+        <h3>Verse 2</h3>
+        <p>Soon the batteries remembered how to fill themselves,
+Weather took appointments, truth appeared in cells.
+People drew their symbols next to passwords on the wall,
+And children asked for dragons from the household protocol.</p>
+
+        <p>The old magicians struggled with a thousand perfect signs,
+Now machines could hold them all and test a million lines.
+One misplaced comma made a Tuesday happen twice,
+A circle made a candle burn against the night.</p>
+
+        <h3>Pre-Chorus</h3>
+        <p>They called the spells “workflows,”
+They called the ghosts “unknown,”
+Magic wore a nametag
+And quietly came home.</p>
+
+        <h3>Chorus</h3>
+        <p>Duplicate beverage event,
+Priority low, no reason to prevent.
+One cup cold and one cup warm,
+A tiny little error in the shape of a storm.
+No prophecy, no monument—
+Just a duplicate beverage event.</p>
+
+        <h3>Verse 3</h3>
+        <p>Anton found that time was not a highway through the dark,
+More a room of painted doors and one suspicious mark.
+You didn't have to open them or understand the view,
+You only had to make the world believe you'd wandered through.</p>
+
+        <p>Millions of instructions held the universe in place,
+Tracking every heartbeat, every planet, every face.
+The Moon, the rain, the traveler, the destination years—
+And somehow, inexplicably, the market price of pears.</p>
+
+        <h3>Bridge</h3>
+        <p>We thought we'd stop the wars,
+We thought we'd beat the end,
+We thought we'd buy the winning stock
+And warn our younger friends.</p>
+
+        <p>But time became expensive
+The more we understood.
+So we stopped trying to make it perfect
+And used it where we could.</p>
+
+        <p>Ten minutes for a firefighter,
+One hour for a choice,
+One morning with a parent,
+One chance to hear a voice.</p>
+
+        <p>Not every moment mattered
+The way the history books pretend.
+Sometimes what you travel for
+Is something small enough to mend.</p>
+
+        <h3>Chorus</h3>
+        <p>Duplicate beverage event,
+Priority low, no reason to prevent.
+One cup cold and one cup warm,
+A tiny little error in the shape of a storm.
+No empire fell, no message sent—
+Just a duplicate beverage event.</p>
+
+        <h3>Verse 4</h3>
+        <p>Seventeen years later, Mara booked six minutes back,
+No rescue operation, no correction to the track.
+The machine asked for a reason, but the answer wasn't deep:
+“Coffee.”
+And the universe agreed.</p>
+
+        <p>She stood inside the doorway of the life she used to know,
+Watched her younger hands around the cup from long ago.
+On the screen, among the nonsense, hidden perfectly in sight,
+Was the first small loop of magic that would teach the world to write—</p>
+
+        <p class="pause">Not code.
+Not quite.
+Something older wearing light.</p>
+
+        <h3>Breakdown</h3>
+        <p>Ten seconds.
+A warm cup in her hands.</p>
+
+        <p>Five seconds.
+Now she understands.</p>
+
+        <p>Three seconds.
+Put it gently by the screen.</p>
+
+        <p>Two seconds.
+A glance where she had been.</p>
+
+        <p>One—</p>
+
+        <h3>Final Chorus</h3>
+        <p>Duplicate beverage event,
+Priority low, but the whole world came from it.
+One cup cold and one cup warm,
+A tiny little kindness in the shape of a storm.
+The first spell written, the last clue sent,
+Inside a duplicate beverage event.</p>
+
+        <p>Duplicate beverage event,
+No grand design, no firm intent.
+The future folded, the past leaned in,
+And nobody knew where the loop began.
+No answer found, no case complete—
+Just seventeen years
+And a cup of heat.</p>
+
+        <h3>Outro</h3>
+        <p>The city keeps moving,
+The models softly dream,
+A child asks for a dragon,
+A machine checks the screen.</p>
+
+        <p>And somewhere in the oldest logs,
+Where impossible things are kept:</p>
+
+        <p><strong>DUPLICATE BEVERAGE EVENT</strong>
+<strong>PRIORITY: LOW</strong>
+<strong>STATUS: UNRESOLVED</strong></p>
+
+        <p>The future arrives
+One second per second.</p>
+
+        <p>Mostly.</p>
+      </article>
+    </section>
+
+    <div class="log" role="note" aria-label="Temporal system log">
+      <div><span class="ok">●</span> TEMPORAL SYSTEM / NODE 07</div>
+      <div>ARCHIVE: <strong>DUPLICATE BEVERAGE EVENT</strong></div>
+      <div>MEDIA: STORY + AUDIOVISUAL RECORD + LYRICS</div>
+      <div>PARADOX RESOLUTION: <strong>NOT ATTEMPTED</strong></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>The future arrives one second per second. Mostly.</p>
+    <p><a href="https://github.com/skorotkiewicz/x/tree/main/duplicate-beverage-event" rel="noopener">github.com/skorotkiewicz/x/tree/main/duplicate-beverage-event</a></p>
+  </footer>
+
+  <script>
+    const progress = document.getElementById('progress');
+    const updateProgress = () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      progress.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
+    };
+    addEventListener('scroll', updateProgress, { passive: true });
+    addEventListener('resize', updateProgress);
+    updateProgress();
+
+    const readToggle = document.querySelector('[data-read-toggle]');
+    const readLabel = document.querySelector('[data-read-label]');
+    const storyAudio = document.getElementById('story-audio');
+    const storyReader = document.querySelector('[data-story-reader]');
+    const storySegments = [...storyReader.querySelectorAll('[data-start]')];
+    let storyTimings = [];
+    let activeSegment;
+    let pendingStart;
+
+    const clearReadHighlight = () => {
+      activeSegment?.classList.remove('is-reading');
+      storyReader.classList.remove('is-reading-active');
+      activeSegment = null;
+    };
+
+    const buildStoryTimings = () => {
+      storyTimings = storySegments.map((segment) => {
+        return {
+          segment,
+          start: Number(segment.dataset.start),
+          end: Number(segment.dataset.end),
+        };
+      });
+
+      if (!storyTimings.every(({ start, end }) => Number.isFinite(start) && Number.isFinite(end) && end > start)) {
+        storyTimings = [];
+      }
+    };
+
+    const syncReadHighlight = () => {
+      if (!storyTimings.length) buildStoryTimings();
+
+      const current = storyTimings.find(({ start, end }) => {
+        return storyAudio.currentTime >= start && storyAudio.currentTime < end;
+      })?.segment;
+
+      if (current === activeSegment) return;
+      clearReadHighlight();
+
+      if (current) {
+        current.classList.add('is-reading');
+        storyReader.classList.add('is-reading-active');
+        activeSegment = current;
+      }
+    };
+
+    const resetReadToggle = () => {
+      storyAudio.currentTime = 0;
+      clearReadHighlight();
+      readToggle.setAttribute('aria-pressed', 'false');
+      readLabel.textContent = 'Read Story';
+    };
+
+    const startReading = () => {
+      return storyAudio.play().then(() => {
+        readToggle.setAttribute('aria-pressed', 'true');
+        readLabel.textContent = 'Stop Reading';
+      }).catch(resetReadToggle);
+    };
+
+    const readFromSegment = (segment) => {
+      const start = Number(segment.dataset.start);
+      if (!Number.isFinite(start)) return;
+
+      pendingStart = start;
+      if (storyAudio.readyState < 1) {
+        storyAudio.addEventListener('loadedmetadata', () => {
+          if (pendingStart == null) return;
+
+          const nextStart = pendingStart;
+          pendingStart = null;
+          storyAudio.currentTime = nextStart;
+          syncReadHighlight();
+          startReading();
+        }, { once: true });
+        storyAudio.load();
+        return;
+      }
+
+      pendingStart = null;
+      storyAudio.currentTime = start;
+      syncReadHighlight();
+      startReading();
+    };
+
+    readToggle.addEventListener('click', () => {
+      const isReading = readToggle.getAttribute('aria-pressed') === 'true';
+
+      if (isReading) {
+        storyAudio.pause();
+        resetReadToggle();
+        return;
+      }
+
+      startReading();
+    });
+
+    storySegments.forEach((segment) => {
+      segment.tabIndex = 0;
+    });
+
+    storyReader.addEventListener('click', (event) => {
+      const segment = event.target.closest('[data-start]');
+      if (segment) readFromSegment(segment);
+    });
+
+    storyReader.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+
+      const segment = event.target.closest('[data-start]');
+      if (!segment) return;
+
+      event.preventDefault();
+      readFromSegment(segment);
+    });
+
+    storyAudio.addEventListener('loadedmetadata', buildStoryTimings);
+    storyAudio.addEventListener('timeupdate', syncReadHighlight);
+    storyAudio.addEventListener('ended', resetReadToggle);
+  </script>
+</body>
+</html>

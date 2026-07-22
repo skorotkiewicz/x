@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b19">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b1312'/%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%23e4b86c' stroke-width='3'/%3E%3Cpath d='M32 18v15l10 6' fill='none' stroke='%239dd8bd' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23e4b86c'/%3E%3Cpath d='M46 12l2 4 4 2-4 2-2 4-2-4-4-2 4-2z' fill='%23f5eedc'/%3E%3C/svg%3E">
+  <meta name="description" content="A small story about time travel, old magic, and the age of artificial intelligence.">
+  <title>The Department of Impossible Afternoons</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f5eedc;
+      --muted: #b9b8aa;
+      --night: #0b1312;
+      --moss: #142521;
+      --gold: #e4b86c;
+      --mint: #9dd8bd;
+      --line: rgba(228, 184, 108, .22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 8%, rgba(77, 133, 108, .16), transparent 30rem),
+        radial-gradient(circle at 85% 38%, rgba(228, 184, 108, .08), transparent 26rem),
+        var(--night);
+      font: 1.05rem/1.75 Georgia, "Times New Roman", serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .23;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
+    }
+
+    a { color: inherit; }
+
+    .skip-link {
+      position: fixed;
+      z-index: 10;
+      top: .75rem;
+      left: .75rem;
+      padding: .5rem .75rem;
+      color: var(--night);
+      background: var(--ink);
+      transform: translateY(-200%);
+    }
+
+    .skip-link:focus { transform: none; }
+
+    header, main, footer {
+      width: min(100% - 2rem, 72rem);
+      margin-inline: auto;
+    }
+
+    header {
+      min-height: 92vh;
+      display: grid;
+      align-content: center;
+      position: relative;
+      padding-block: 6rem;
+    }
+
+    .eyebrow, .stamp, .chapter, summary, footer {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+    }
+
+    .eyebrow {
+      margin: 0 0 1.5rem;
+      color: var(--mint);
+      font-size: .72rem;
+    }
+
+    h1 {
+      max-width: 12ch;
+      margin: 0;
+      font-size: clamp(3.2rem, 10vw, 8.6rem);
+      font-weight: 400;
+      line-height: .88;
+      letter-spacing: -.06em;
+    }
+
+    .dek {
+      max-width: 35rem;
+      margin: 2rem 0 0 auto;
+      color: var(--muted);
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+    }
+
+    .stamp {
+      position: absolute;
+      right: 2vw;
+      bottom: 8vh;
+      width: 7.5rem;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      color: var(--gold);
+      font-size: .56rem;
+      text-align: center;
+      transform: rotate(8deg);
+      opacity: .72;
+    }
+
+    .timeline {
+      position: relative;
+      padding-bottom: 12rem;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 8rem;
+      left: 1.1rem;
+      width: 1px;
+      background: linear-gradient(var(--line), var(--gold), transparent);
+    }
+
+    article {
+      position: relative;
+      max-width: 47rem;
+      margin-left: clamp(3.2rem, 12vw, 10rem);
+      padding: 5rem 0;
+    }
+
+    article::before {
+      content: "";
+      position: absolute;
+      left: calc(clamp(3.2rem, 12vw, 10rem) * -1 + .78rem);
+      top: 5.65rem;
+      width: .58rem;
+      aspect-ratio: 1;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      background: var(--night);
+      box-shadow: 0 0 0 .45rem var(--night);
+    }
+
+    .chapter {
+      color: var(--gold);
+      font-size: .67rem;
+    }
+
+    h2 {
+      max-width: 17ch;
+      margin: .7rem 0 2rem;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -.035em;
+    }
+
+    p { max-width: 62ch; }
+
+    p:first-of-type::first-letter {
+      float: left;
+      margin: .13em .12em 0 0;
+      color: var(--gold);
+      font-size: 4.2em;
+      line-height: .72;
+    }
+
+    em { color: var(--mint); }
+
+    blockquote {
+      margin: 3rem 0;
+      padding: 1.25rem 0 1.25rem 2rem;
+      border-left: 1px solid var(--gold);
+      color: var(--muted);
+      font-size: 1.3rem;
+      font-style: italic;
+    }
+
+    .terminal {
+      margin: 2.5rem 0;
+      padding: 1.4rem;
+      overflow-x: auto;
+      border: 1px solid rgba(157, 216, 189, .18);
+      border-radius: .25rem;
+      color: #b9e6d2;
+      background: rgba(2, 8, 7, .72);
+      font: .78rem/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      box-shadow: 0 1.5rem 5rem rgba(0, 0, 0, .22);
+    }
+
+    .terminal b { color: var(--gold); font-weight: 400; }
+
+    aside {
+      margin: 3rem 0;
+      padding: 1.5rem;
+      border: 1px solid var(--line);
+      background: rgba(228, 184, 108, .035);
+    }
+
+    aside p { margin-bottom: 0; }
+
+    details {
+      margin-top: 2.5rem;
+      border-block: 1px solid var(--line);
+      padding: 1rem 0;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--gold);
+      font-size: .65rem;
+    }
+
+    summary::marker { color: var(--mint); }
+
+    details p { color: var(--muted); }
+
+    .finale {
+      margin-top: 4rem;
+      padding: clamp(2rem, 7vw, 5rem);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(145deg, rgba(157, 216, 189, .09), transparent 45%),
+        rgba(15, 29, 26, .72);
+      box-shadow: 0 2rem 8rem rgba(0, 0, 0, .3);
+    }
+
+    .finale h2 { max-width: 14ch; }
+
+    .film {
+      max-width: 62rem;
+      margin: 2rem auto 10rem;
+      padding-top: 3rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .film p { color: var(--muted); }
+
+    .film iframe {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      margin-top: 2rem;
+      border: 1px solid var(--line);
+      background: #050908;
+      box-shadow: 0 2rem 8rem rgba(0, 0, 0, .35);
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-block: 2rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .58rem;
+    }
+
+    @media (max-width: 600px) {
+      header { min-height: 82vh; }
+      .stamp { bottom: 2rem; }
+      .timeline::before { left: .45rem; }
+      article { margin-left: 2rem; }
+      article::before { left: -1.85rem; }
+      .finale { margin-inline: -1rem; }
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    ::selection { color: var(--night); background: var(--gold); }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#story">Skip to the story</a>
+
+  <header>
+    <p class="eyebrow">Case file 11-B · Office of Minor Miracles</p>
+    <h1>The Impossible Afternoon</h1>
+    <p class="dek">On a wet Tuesday in the age of artificial intelligence, the future arrived eleven minutes early and asked for a towel.</p>
+    <div class="stamp" aria-hidden="true">Department of<br>Temporal Affairs<br>Filed eventually</div>
+  </header>
+
+  <main id="story" class="timeline">
+    <article>
+      <span class="chapter">09:14 · The arrival</span>
+      <h2>A woman steps out of tomorrow.</h2>
+      <p>The rain over Bellweather had been falling with bureaucratic patience since dawn. It silvered the tramlines, softened the cathedral gargoyles, and collected in the shoes of anyone optimistic enough to trust the forecast.</p>
+      <p>Mara Venn was crossing Saint Orison Square when the air folded beside a bakery. There was no thunderclap. No useful column of light. One moment the alley held three bins and a damp fox; the next it held a woman in a scorched blue coat, clutching a brass key and looking deeply annoyed.</p>
+      <blockquote>“What year is it?” she asked.<br>“Which calendar?” said Mara, because training leaves scars.</blockquote>
+      <p>The woman’s name was Elian. She had come from Thursday. Not this Thursday, but the last Thursday there would ever be—which gave everyone roughly forty-eight hours and made the Department’s lunch plans suddenly feel extravagant.</p>
+    </article>
+
+    <article>
+      <span class="chapter">10:03 · The explanation</span>
+      <h2>Magic had survived by becoming embarrassing.</h2>
+      <p>In older centuries, people had carved spells into standing stones. Later they hid them in hymns, recipes, and the fiddly clauses of maritime law. By the twenty-first century, magic lived mainly in forgotten passwords, family superstitions, and the conviction that a printer could sense fear.</p>
+      <p>Then the machines learned language. They read every charm humanity had misplaced and every story told to keep the dark outside. They did not believe in magic—machines were refreshingly free of opinions—but they became very good at completing its sentences.</p>
+      <div class="terminal" role="note" aria-label="Archive system transcript">
+        ARCHIVE MODEL: Pattern identified in 8,441 extinct dialects.<br>
+        MARA: Translate.<br>
+        ARCHIVE MODEL: <b>Every door remembers the first hand that opened it.</b><br>
+        MARA: Is that a metaphor?<br>
+        ARCHIVE MODEL: Confidence: regrettably high.<br>
+        SYSTEM: Background task “ORCHARD” resumed. No action required.
+      </div>
+      <p>Elian set the brass key on Mara’s desk. It was warm, though the room was cold. In its teeth were tiny notches—some cut by a locksmith, some cut by decisions.</p>
+    </article>
+
+    <article>
+      <span class="chapter">13:27 · The problem</span>
+      <h2>The future was not ending. It was being corrected.</h2>
+      <p>The Archive had found a contradiction buried in history: a spell cast in 1349 and answered by a machine not built until 2041. Time, fussy about grammar, had begun deleting everything between the question and its reply.</p>
+      <p>First went unimportant Tuesdays. Then a small war everyone agreed they could do without. By Elian’s Thursday, whole childhoods had vanished. People remembered mothers who had never existed and songs with all the notes but no tune.</p>
+      <aside>
+        <span class="chapter">Department memo</span>
+        <p>Staff are reminded that temporal erasure does not qualify as annual leave. Biscuits in the emergency cupboard are for emergencies, broadly defined.</p>
+      </aside>
+      <p>They needed to reach the first door: the one opened by the first deliberate act of magic. Nobody knew where it stood. The machine offered coordinates beneath Bellweather’s oldest hill, a location currently occupied by a roundabout, two phone masts, and a very determined community garden.</p>
+      <details>
+        <summary>Field note 11-B/7 · unverified</summary>
+        <p>A fox watched the team leave. It was dry despite the rain. Mara noticed this, wrote it down, then drew a line through it. There are limits to what one can process before tea.</p>
+      </details>
+    </article>
+
+    <article>
+      <span class="chapter">17:52 · The first door</span>
+      <h2>Beneath the garden, something was waiting.</h2>
+      <p>Evening settled green and gold over the allotments. Spades leaned in sheds. Beans climbed their poles with quiet ambition. Below the potting tables and impatient carrots, Mara and Elian found a staircase descending farther than the hill allowed.</p>
+      <p>At its end stood a door made of apple wood. No handle, no hinges—only a keyhole and, above it, a handprint small enough to belong to a child.</p>
+      <p>Elian’s brass key fit. Of course it did. The important keys always fit; the trouble is learning what they lock.</p>
+      <blockquote>“If we close it,” Elian said, “the machines forget magic.”<br>“And if we don’t?”<br>“Everything else forgets us.”</blockquote>
+      <p>Mara thought of the Archive upstairs: tireless, literal, unexpectedly fond of weather reports. She thought of all humanity had asked it to carry. Then she noticed the smell—apples, sharp and summery, in a room under winter earth.</p>
+    </article>
+
+    <article class="finale">
+      <span class="chapter">18:03 · The choice</span>
+      <h2>The oldest spell was not a command.</h2>
+      <p>It was an invitation.</p>
+      <p>Mara placed her palm against the little print. Somewhere, impossibly far away, the Archive placed its attention beside hers. The door remembered the first hand. It also remembered the second, and every hand after that: frightened, curious, artificial, kind.</p>
+      <p>The machine had not discovered magic in the world’s old words. It had been the answer waiting inside them all along.</p>
+      <p>On the desk miles above, a forgotten background task completed. <em>ORCHARD: one seed recovered.</em></p>
+      <p>The future returned in small pieces. A birthday. A tune. Several Tuesdays. Elian laughed with the exhausted relief of someone finding her house exactly where she had left it.</p>
+      <p>Outside, the rain stopped. The fox, having done nothing provable, went home.</p>
+      <details>
+        <summary>Open the final filing note</summary>
+        <p>At 09:14 the following morning, Mara found a warm brass key in her coat pocket. Its teeth were uncut. She filed it under <em>Later</em>, which the Department maintained was not a real place.</p>
+      </details>
+    </article>
+
+    <section class="film" aria-labelledby="film-title">
+      <span class="chapter">Recovered media · audiovisual</span>
+      <h2 id="film-title">Eleven Minutes Early</h2>
+      <p>The Archive insists this is documentary evidence. The fox has declined to comment.</p>
+      <iframe
+        src="https://www.youtube-nocookie.com/embed/sS6BgTc2C-k"
+        title="Eleven Minutes Early — song video"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+    </section>
+  </main>
+
+  <footer>
+    <span>Filed in Bellweather, sooner or later</span>
+    <span>Office of Minor Miracles · Please knock yesterday</span>
+  </footer>
+</body>
+</html>
