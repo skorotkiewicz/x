@@ -606,7 +606,7 @@ function reroll(){if(G.sync<25)return;G.sync-=25;SFX.ui();
 function closeUpgrade(){
   showScreen(null);
   if(G.upg.nano)G.hp=Math.min(G.maxHp,G.hp+1);
-  G.sync=0;G.countT=1.0;G.state='play';
+  G.sync=0;G.countT=1.0;G.state='play';AE.c.resume();
 }
 
 /* ================= SPAWNING / COMBAT ================= */
