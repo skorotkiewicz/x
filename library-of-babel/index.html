@@ -114,6 +114,30 @@
 				gap: 10px;
 				align-items: center;
 			}
+			.library-search {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				align-items: center;
+				margin-top: 10px;
+			}
+			.start-search {
+				margin-top: 16px;
+			}
+			.library-search label {
+				display: inline-flex;
+				align-items: center;
+				gap: 7px;
+				min-width: min(100%, 270px);
+			}
+			.library-search-input {
+				width: min(260px, 100%);
+				text-align: left;
+			}
+			.search-result-status {
+				flex-basis: 100%;
+				overflow-wrap: anywhere;
+			}
 			.start-grid {
 				display: grid;
 				grid-template-columns: 1fr 1fr;
@@ -361,13 +385,18 @@
 				</p>
 				<div class="row" aria-label="starting room controls">
 					<span class="pill">Start hex room</span>
-					<label>Q <input id="startQ" type="number" value="0" step="1" /></label>
-					<label>R <input id="startR" type="number" value="0" step="1" /></label>
+					<label>Q <input id="startQ" type="text" inputmode="numeric" value="0" /></label>
+					<label>R <input id="startR" type="text" inputmode="numeric" value="0" /></label>
 					<button id="enterBtn">Enter Library</button>
 					<button id="randomBtn" title="Pick a deterministic-looking but random entry room">
 						Random Hex
 					</button>
 				</div>
+				<form class="library-search start-search">
+					<label>Find <input class="library-search-input" type="search" placeholder="Text in the library" autocomplete="off" maxlength="3200" required /></label>
+					<button type="submit">Search all</button>
+					<div class="small search-result-status">Search computes a location directly.</div>
+				</form>
 				<div class="start-grid">
 					<div class="info-box">
 						<strong>Explore</strong><br />
@@ -392,6 +421,11 @@
 					<button id="jumpBtn">Enter another hex room</button>
 					<button id="resetBtn">Return to 0,0</button>
 				</div>
+				<form class="library-search">
+					<label>Find <input class="library-search-input" type="search" placeholder="Text in the library" autocomplete="off" maxlength="3200" required /></label>
+					<button type="submit">Search all</button>
+					<div class="small search-result-status">Search computes a location directly.</div>
+				</form>
 			</div>
 		</div>
 
@@ -450,7 +484,7 @@
 						<button id="nextPage">Next page</button>
 						<button id="copyAddress">Copy address</button>
 					</div>
-					<span class="small">Alphabet: 22 letters, comma, period, and space.</span>
+					<span class="small">Alphabet: 26 letters, comma, period, and space.</span>
 				</div>
 			</div>
 		</div>
@@ -466,8 +500,8 @@
 				</div>
 				<div class="modal-main">
 					<div class="row">
-						<label>Q <input id="jumpQ" type="number" value="0" step="1" /></label>
-						<label>R <input id="jumpR" type="number" value="0" step="1" /></label>
+						<label>Q <input id="jumpQ" type="text" inputmode="numeric" value="0" /></label>
+						<label>R <input id="jumpR" type="text" inputmode="numeric" value="0" /></label>
 						<button id="goJump">Enter</button>
 					</div>
 				</div>
@@ -494,17 +528,34 @@
 			const SHELVES_PER_WALL = 5;
 			const VOLUMES_PER_SHELF = 32;
 			const PAGES_PER_VOLUME = 410;
-			const ALPHABET = 'abcdefghijklmnopqrstuv, .';
-			const LETTERS = 'abcdefghijklmnopqrstuv';
+			const ALPHABET = 'abcdefghijklmnopqrstuvwxyz, .';
+			const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
+			const PAGE_LINE_COUNT = 40;
+			const PAGE_COLUMN_COUNT = 80;
+			const PAGE_SYMBOL_COUNT = PAGE_LINE_COUNT * PAGE_COLUMN_COUNT;
+			const PAGE_RADIX = BigInt(ALPHABET.length);
+			const PAGE_HALF_SYMBOL_COUNT = PAGE_SYMBOL_COUNT / 2;
+			const PAGE_HALF_SPACE = PAGE_RADIX ** BigInt(PAGE_HALF_SYMBOL_COUNT);
+			const PAGE_SPACE = PAGE_HALF_SPACE * PAGE_HALF_SPACE;
+			const PAGES_PER_ROOM = BigInt(4 * SHELVES_PER_WALL * VOLUMES_PER_SHELF * PAGES_PER_VOLUME);
+			const PAGE_LCG_A = PAGE_SPACE - (1n << 1024n) + 2n;
+			const PAGE_LCG_C = PAGE_SPACE - (1n << 768n) + 2n;
+			const PAGE_FEISTEL_KEYS = [
+				0x9e3779b97f4a7c15n,
+				0xbf58476d1ce4e5b9n,
+				0x94d049bb133111ebn,
+				0x2545f4914f6cdd1dn,
+				0xda942042e4dd58b5n
+			];
 			const PASSAGE_SIDES = [0, 3];
 			const BOOK_SIDES = [1, 2, 4, 5];
 			const axialDirections = [
-				{ q: 1, r: 0, name: '+Q' },
-				{ q: 0, r: 1, name: '+R' },
-				{ q: -1, r: 1, name: '-Q +R' },
-				{ q: -1, r: 0, name: '-Q' },
-				{ q: 0, r: -1, name: '-R' },
-				{ q: 1, r: -1, name: '+Q -R' }
+				{ q: 1n, r: 0n, name: '+Q' },
+				{ q: 0n, r: 1n, name: '+R' },
+				{ q: -1n, r: 1n, name: '-Q +R' },
+				{ q: -1n, r: 0n, name: '-Q' },
+				{ q: 0n, r: -1n, name: '-R' },
+				{ q: 1n, r: -1n, name: '+Q -R' }
 			];
 
 			// ----------------------------
@@ -545,6 +596,9 @@
 			const copyAddress = $('copyAddress');
 			const toast = $('toast');
 			const hoverLabel = $('hoverLabel');
+			const librarySearchForms = [...document.querySelectorAll('.library-search')];
+			const librarySearchInputs = [...document.querySelectorAll('.library-search-input')];
+			const librarySearchStatuses = [...document.querySelectorAll('.search-result-status')];
 
 			function showToast(message) {
 				toast.textContent = message;
@@ -560,14 +614,50 @@
 				const n = Number.parseInt(value, 10);
 				return Number.isFinite(n) ? n : fallback;
 			}
+			function parseRoomCoordinate(value, fallback = 0n) {
+				const text = String(value).trim();
+				if (!/^-?\d+$/.test(text)) return fallback;
+				try {
+					return BigInt(text);
+				} catch {
+					return fallback;
+				}
+			}
+			function formatCoordinateCompact(value, maxLength = 22) {
+				const text = value.toString();
+				if (text.length <= maxLength) return text;
+				const sign = text.startsWith('-') ? '-' : '';
+				const unsigned = sign ? text.slice(1) : text;
+				const headLength = Math.max(4, Math.floor((maxLength - sign.length - 3) / 2));
+				const tailLength = Math.max(4, maxLength - sign.length - 3 - headLength);
+				return `${sign}${unsigned.slice(0, headLength)}...${unsigned.slice(-tailLength)}`;
+			}
+			function formatCoordinatePrefix(value, digits = 3) {
+				const text = value.toString();
+				const sign = text.startsWith('-') ? '-' : '';
+				const unsigned = sign ? text.slice(1) : text;
+				if (unsigned.length <= digits) return text;
+				return `${sign}${unsigned.slice(0, digits)}...`;
+			}
+			function roomAddressDisplay(room) {
+				return `Q ${formatCoordinateCompact(room.q)} · R ${formatCoordinateCompact(room.r)} · S ${formatCoordinateCompact(-room.q - room.r)}`;
+			}
 			function saveLastRoom(room) {
 				try {
-					localStorage.setItem('babel:lastRoom', JSON.stringify(room));
+					localStorage.setItem(
+						'babel:lastRoom',
+						JSON.stringify({ q: room.q.toString(), r: room.r.toString() })
+					);
 				} catch {}
 			}
 			function loadLastRoom() {
 				try {
-					return JSON.parse(localStorage.getItem('babel:lastRoom') || 'null');
+					const stored = JSON.parse(localStorage.getItem('babel:lastRoom') || 'null');
+					if (!stored) return null;
+					return {
+						q: parseRoomCoordinate(stored.q),
+						r: parseRoomCoordinate(stored.r)
+					};
 				} catch {
 					return null;
 				}
@@ -615,22 +705,181 @@
 				return out.join(' ');
 			}
 			function generatePageText(book, page) {
-				const key = `${book.q},${book.r}|w${book.wall}|s${book.shelf}|v${book.volume}|p${page}`;
-				const rand = mulberry32(fnv1a(key));
+				let state = permutePageState(pageAddressIndex(book, page));
 				const lines = [];
-				for (let line = 0; line < 40; line++) {
-					let s = '';
-					for (let col = 0; col < 80; col++) {
-						const idx = Math.floor(rand() * ALPHABET.length);
-						s += ALPHABET[idx];
+				for (let line = 0; line < PAGE_LINE_COUNT; line++) {
+					let text = '';
+					for (let column = 0; column < PAGE_COLUMN_COUNT; column++) {
+						const index = Number(state % PAGE_RADIX);
+						text += ALPHABET[index];
+						state /= PAGE_RADIX;
 					}
-					lines.push(s);
+					lines.push(text);
 				}
 				return lines.join('\n');
+			}
+			function pageAddressIndex(book, page) {
+				const roomIndex = cantorPair(signedToNatural(book.q), signedToNatural(book.r));
+				const wallIndex = BigInt(book.wall - 1);
+				const shelfIndex = BigInt(book.shelf - 1);
+				const volumeIndex = BigInt(book.volume - 1);
+				const pageIndex = BigInt(clamp(parseIntSafe(page, 1), 1, PAGES_PER_VOLUME) - 1);
+				const bookPageIndex =
+					((wallIndex * BigInt(SHELVES_PER_WALL) + shelfIndex) * BigInt(VOLUMES_PER_SHELF) +
+						volumeIndex) *
+						BigInt(PAGES_PER_VOLUME) +
+					pageIndex;
+				return (roomIndex * PAGES_PER_ROOM + bookPageIndex) % PAGE_SPACE;
+			}
+			function findTextInLibrary(text) {
+				const pageState = encodeSearchPageState(text);
+				return decodePageAddress(invertPageState(pageState));
+			}
+			function encodeSearchPageState(text) {
+				const random = mulberry32(fnv1a(`${text}|search-fill`));
+				let state = 0n;
+				let place = 1n;
+				for (let position = 0; position < PAGE_SYMBOL_COUNT; position++) {
+					const character =
+						position < text.length
+							? text[position]
+							: ALPHABET[Math.floor(random() * ALPHABET.length)];
+					state += BigInt(ALPHABET.indexOf(character)) * place;
+					place *= PAGE_RADIX;
+				}
+				return state;
+			}
+			function permutePageState(index) {
+				let state = (PAGE_LCG_A * index + PAGE_LCG_C) % PAGE_SPACE;
+				let left = state / PAGE_HALF_SPACE;
+				let right = state % PAGE_HALF_SPACE;
+				for (const key of PAGE_FEISTEL_KEYS) {
+					const mixed = positiveMod(left + pageRoundFunction(right, key), PAGE_HALF_SPACE);
+					left = right;
+					right = mixed;
+				}
+				return left * PAGE_HALF_SPACE + right;
+			}
+			function invertPageState(pageState) {
+				let left = pageState / PAGE_HALF_SPACE;
+				let right = pageState % PAGE_HALF_SPACE;
+				for (let index = PAGE_FEISTEL_KEYS.length - 1; index >= 0; index--) {
+					const key = PAGE_FEISTEL_KEYS[index];
+					const previousLeft = positiveMod(right - pageRoundFunction(left, key), PAGE_HALF_SPACE);
+					right = left;
+					left = previousLeft;
+				}
+				const lcgState = left * PAGE_HALF_SPACE + right;
+				return positiveMod(
+					getPageLcgAInverse() * positiveMod(lcgState - PAGE_LCG_C, PAGE_SPACE),
+					PAGE_SPACE
+				);
+			}
+			function decodePageAddress(index) {
+				let bookPageIndex = index % PAGES_PER_ROOM;
+				const roomIndex = index / PAGES_PER_ROOM;
+				const page = Number(bookPageIndex % BigInt(PAGES_PER_VOLUME)) + 1;
+				bookPageIndex /= BigInt(PAGES_PER_VOLUME);
+				const volume = Number(bookPageIndex % BigInt(VOLUMES_PER_SHELF)) + 1;
+				bookPageIndex /= BigInt(VOLUMES_PER_SHELF);
+				const shelf = Number(bookPageIndex % BigInt(SHELVES_PER_WALL)) + 1;
+				bookPageIndex /= BigInt(SHELVES_PER_WALL);
+				const wall = Number(bookPageIndex) + 1;
+				const [naturalQ, naturalR] = cantorUnpair(roomIndex);
+				const q = naturalToSigned(naturalQ);
+				const r = naturalToSigned(naturalR);
+				const book = {
+					type: 'book',
+					q,
+					r,
+					wall,
+					shelf,
+					volume,
+					title: makeTitle(`${q},${r},${wall},${shelf},${volume}`)
+				};
+				return { book, page };
+			}
+			function pageRoundFunction(value, key) {
+				let mixed = positiveMod(value + key, PAGE_HALF_SPACE);
+				mixed = positiveMod(
+					mixed * (PAGE_LCG_A % PAGE_HALF_SPACE) + PAGE_LCG_C + key,
+					PAGE_HALF_SPACE
+				);
+				mixed ^= mixed >> 97n;
+				mixed = positiveMod(mixed * 0x9e3779b97f4a7c15n + key, PAGE_HALF_SPACE);
+				mixed ^= mixed >> 53n;
+				return positiveMod(mixed, PAGE_HALF_SPACE);
+			}
+			function getPageLcgAInverse() {
+				pageLcgAInverse ??= modularInverse(PAGE_LCG_A, PAGE_SPACE);
+				return pageLcgAInverse;
+			}
+			function modularInverse(value, modulus) {
+				let previousCoefficient = 0n;
+				let coefficient = 1n;
+				let previousRemainder = modulus;
+				let remainder = positiveMod(value, modulus);
+				while (remainder !== 0n) {
+					const quotient = previousRemainder / remainder;
+					[previousCoefficient, coefficient] = [
+						coefficient,
+						previousCoefficient - quotient * coefficient
+					];
+					[previousRemainder, remainder] = [remainder, previousRemainder - quotient * remainder];
+				}
+				if (previousRemainder !== 1n) throw new Error('Page permutation is not invertible.');
+				return positiveMod(previousCoefficient, modulus);
+			}
+			function signedToNatural(value) {
+				return value >= 0n ? value * 2n : -value * 2n - 1n;
+			}
+			function naturalToSigned(value) {
+				return value % 2n === 0n ? value / 2n : -(value + 1n) / 2n;
+			}
+			function cantorPair(a, b) {
+				const sum = a + b;
+				return (sum * (sum + 1n)) / 2n + b;
+			}
+			function cantorUnpair(value) {
+				const diagonal = (integerSqrt(8n * value + 1n) - 1n) / 2n;
+				const diagonalStart = (diagonal * (diagonal + 1n)) / 2n;
+				const b = value - diagonalStart;
+				return [diagonal - b, b];
+			}
+			function integerSqrt(value) {
+				if (value < 0n) throw new Error('Cannot take square root of a negative bigint.');
+				if (value < 2n) return value;
+				let estimate = 1n << BigInt(Math.ceil(value.toString(2).length / 2));
+				while (true) {
+					const next = (estimate + value / estimate) >> 1n;
+					if (next >= estimate) return estimate;
+					estimate = next;
+				}
+			}
+			function positiveMod(value, modulus) {
+				const result = value % modulus;
+				return result >= 0n ? result : result + modulus;
+			}
+			function normalizeLibrarySearchText(input) {
+				const text = input.toLowerCase().replace(/\s+/g, ' ').trim();
+				if (!text) return { text, error: 'Enter text to search.' };
+				if (text.length > PAGE_SYMBOL_COUNT) {
+					return { text, error: `Search text must fit within ${PAGE_SYMBOL_COUNT} symbols.` };
+				}
+				const unsupported = [
+					...new Set([...text].filter((character) => !ALPHABET.includes(character)))
+				];
+				return unsupported.length
+					? { text, error: `Unsupported symbols for this library: ${unsupported.join(' ')}` }
+					: { text, error: '' };
 			}
 			function bookAddressString(book, page = currentBookPage) {
 				const s = -book.q - book.r;
 				return `hex(q:${book.q}, r:${book.r}, s:${s}) / wall:${book.wall} / shelf:${book.shelf} / volume:${book.volume} / page:${page}`;
+			}
+			function compactBookAddressString(book, page = currentBookPage) {
+				const s = -book.q - book.r;
+				return `hex(q:${formatCoordinatePrefix(book.q)}, r:${formatCoordinatePrefix(book.r)}, s:${formatCoordinatePrefix(s)}) / wall:${book.wall} / shelf:${book.shelf} / volume:${book.volume} / page:${page}`;
 			}
 
 			// ----------------------------
@@ -907,12 +1156,13 @@
 			const hoverables = [];
 			const candleFlames = [];
 			let hovered = null;
-			let currentRoom = { q: 0, r: 0 };
+			let currentRoom = { q: 0n, r: 0n };
 			let currentBook = null;
 			let currentBookPage = 1;
 			let currentPageText = '';
 			let searchMatches = [];
 			let activeSearchMatch = -1;
+			let pageLcgAInverse = null;
 
 			const bookGeometry = new THREE.BoxGeometry(0.42, 0.68, 0.3);
 			const shelfGeometry = new THREE.BoxGeometry(1, 0.12, 0.55);
@@ -1025,8 +1275,7 @@
 			function makeRoom(q, r) {
 				currentRoom = { q, r };
 				clearRoom();
-				const s = -q - r;
-				roomAddress.textContent = `Q ${q} · R ${r} · S ${s}`;
+				roomAddress.textContent = roomAddressDisplay(currentRoom);
 				roomHint.textContent = 'Address is deterministic: each book regenerates the same pages.';
 				saveLastRoom(currentRoom);
 
@@ -1290,7 +1539,7 @@
 			function portalLabel(i) {
 				const d = axialDirections[i];
 				const passageNumber = PASSAGE_SIDES.indexOf(i) + 1;
-				return `Passage ${passageNumber}: ${currentRoom.q + d.q}, ${currentRoom.r + d.r}`;
+				return `Passage ${passageNumber}: ${formatCoordinateCompact(currentRoom.q + d.q)}, ${formatCoordinateCompact(currentRoom.r + d.r)}`;
 			}
 
 			// ----------------------------
@@ -1405,7 +1654,7 @@
 				yaw = Math.atan2(-look.x, -look.z);
 				pitch = 0;
 				updateCameraRotation();
-				showToast(`Entered hex room Q ${nextQ}, R ${nextR}, S ${-nextQ - nextR}`);
+				showToast(`Entered ${roomAddressDisplay({ q: nextQ, r: nextR })}`);
 			}
 			function jumpToRoom(q, r) {
 				makeRoom(q, r);
@@ -1413,7 +1662,7 @@
 				yaw = Math.PI;
 				pitch = 0;
 				updateCameraRotation();
-				showToast(`Entered hex room Q ${q}, R ${r}, S ${-q - r}`);
+				showToast(`Entered ${roomAddressDisplay({ q, r })}`);
 			}
 
 			// ----------------------------
@@ -1457,13 +1706,14 @@
 					enterNeighbor(hovered.userData.side);
 				}
 			}
-			function openBook(data) {
+			function openBook(data, page = 1, initialSearch = '') {
 				releaseLookLock();
 				keys.clear();
 				currentBook = { ...data };
-				currentBookPage = 1;
+				currentBookPage = page;
 				pageInput.value = currentBookPage;
-				resetSearch(true);
+				searchInput.value = initialSearch;
+				if (!initialSearch) resetSearch(true);
 				bookTitle.textContent = `“${currentBook.title}”`;
 				bookWall.textContent = `Wall ${currentBook.wall}`;
 				bookShelf.textContent = `Shelf ${currentBook.shelf}`;
@@ -1475,7 +1725,7 @@
 				if (!currentBook) return;
 				currentBookPage = clamp(parseIntSafe(pageInput.value, 1), 1, PAGES_PER_VOLUME);
 				pageInput.value = currentBookPage;
-				bookAddress.textContent = bookAddressString(currentBook, currentBookPage);
+				bookAddress.textContent = compactBookAddressString(currentBook, currentBookPage);
 				currentPageText = generatePageText(currentBook, currentBookPage);
 				activeSearchMatch = -1;
 				const hasSearch = searchInput.value.length > 0;
@@ -1552,6 +1802,39 @@
 					(activeSearchMatch + delta + searchMatches.length) % searchMatches.length;
 				renderSearchHighlights(true);
 			}
+			function setLibrarySearchState(query, status) {
+				for (const input of librarySearchInputs) input.value = query;
+				for (const element of librarySearchStatuses) element.textContent = status;
+			}
+			function searchEntireLibrary(event) {
+				event.preventDefault();
+				const input = event.currentTarget.querySelector('.library-search-input');
+				const normalized = normalizeLibrarySearchText(input.value);
+				if (normalized.error) {
+					setLibrarySearchState(input.value, normalized.error);
+					return;
+				}
+				try {
+					const result = findTextInLibrary(normalized.text);
+					setLibrarySearchState(
+						normalized.text,
+						`Found at ${compactBookAddressString(result.book, result.page)}`
+					);
+					start.style.display = 'none';
+					jumpToRoom(result.book.q, result.book.r);
+					openBook(
+						result.book,
+						result.page,
+						normalized.text.length <= PAGE_COLUMN_COUNT ? normalized.text : ''
+					);
+					showToast('Found passage at line 1, column 1.');
+				} catch (error) {
+					setLibrarySearchState(
+						normalized.text,
+						error instanceof Error ? error.message : 'Library search failed.'
+					);
+				}
+			}
 			function closeModals() {
 				bookModal.classList.remove('open');
 				jumpModal.classList.remove('open');
@@ -1562,6 +1845,13 @@
 				) {
 					document.activeElement.blur();
 				}
+			}
+
+			for (const form of librarySearchForms) form.addEventListener('submit', searchEntireLibrary);
+			for (const input of librarySearchInputs) {
+				input.addEventListener('input', () => {
+					for (const other of librarySearchInputs) other.value = input.value;
+				});
 			}
 
 			closeBook.addEventListener('click', closeModals);
@@ -1611,19 +1901,22 @@
 			jumpBtn.addEventListener('click', () => {
 				releaseLookLock();
 				keys.clear();
-				jumpQ.value = currentRoom.q;
-				jumpR.value = currentRoom.r;
+				jumpQ.value = currentRoom.q.toString();
+				jumpR.value = currentRoom.r.toString();
 				jumpModal.classList.add('open');
 			});
-			resetBtn.addEventListener('click', () => jumpToRoom(0, 0));
+			resetBtn.addEventListener('click', () => jumpToRoom(0n, 0n));
 			goJump.addEventListener('click', () => {
-				jumpToRoom(parseIntSafe(jumpQ.value), parseIntSafe(jumpR.value));
+				jumpToRoom(
+					parseRoomCoordinate(jumpQ.value, currentRoom.q),
+					parseRoomCoordinate(jumpR.value, currentRoom.r)
+				);
 				closeModals();
 			});
 
 			enterBtn.addEventListener('click', () => {
-				const q = parseIntSafe(startQ.value, 0);
-				const r = parseIntSafe(startR.value, 0);
+				const q = parseRoomCoordinate(startQ.value);
+				const r = parseRoomCoordinate(startR.value);
 				keys.clear();
 				start.style.display = 'none';
 				jumpToRoom(q, r);
@@ -1642,14 +1935,14 @@
 
 			// Load last room if present.
 			const last = loadLastRoom();
-			if (last && Number.isFinite(last.q) && Number.isFinite(last.r)) {
-				startQ.value = last.q;
-				startR.value = last.r;
+			if (last) {
+				startQ.value = last.q.toString();
+				startR.value = last.r.toString();
 			}
 			resetSearch(true);
 
 			// Initial room is prepared behind the start screen.
-			makeRoom(parseIntSafe(startQ.value), parseIntSafe(startR.value));
+			makeRoom(parseRoomCoordinate(startQ.value), parseRoomCoordinate(startR.value));
 
 			const clock = new THREE.Clock();
 			function animate() {
