@@ -55,46 +55,66 @@ Use **Previous match** and **Next match** to move between results. You can also 
 
 ## Search from the command line
 
-`search.js` provides a separate Node.js search tool. It requires a Node.js version that supports `BigInt`.
+The project provides two Node.js search tools. Select the tool that matches your use case.
+
+### Search browser pages
+
+`search-web.js` uses the same alphabet, address seed, title generator, and page generator as the browser explorer. Every result identifies the same text in the browser.
 
 Show all options:
 
 ```sh
-node search.js --help
+node search-web.js --help
 ```
 
-### Direct search
+Check generator parity:
 
-Direct search calculates one page that contains the search text. It does not scan existing rooms.
+```sh
+node search-web.js --self-test
+```
+
+Search selected browser pages:
+
+```sh
+node search-web.js "wizard" --q 0 --r 0
+node search-web.js "abc" --radius 1 --max-results 10
+node search-web.js "abc" --rooms 20 --page 1
+node search-web.js "abc" --wall 1 --shelf 3 --volume 8 --page 20
+```
+
+The search is not case-sensitive. Use address filters to keep scans small.
+
+`search-web.js` cannot calculate a guaranteed result directly. The browser generator has only a 32-bit seed and is not invertible.
+
+### Search the separate direct model
+
+`search.js` uses a separate invertible page model. It requires a Node.js version that supports `BigInt`.
+
+Direct search calculates one page that contains the search text:
 
 ```sh
 node search.js "wizard"
 node search.js "wxyz, zzz." --direct
 ```
 
-The direct search alphabet contains lowercase `a` through `z`, a comma, a period, and a space. The tool normalizes uppercase text and repeated whitespace.
-
-### Scan search
-
-Scan mode checks a finite set of generated pages. Use filters to limit the work.
+The separate model also supports finite scans:
 
 ```sh
-node search.js "abc" --scan --q 4 --r -2 --wall 1 --shelf 3
 node search.js "abc" --scan --radius 1 --max-results 10
-node search.js "abc" --scan --rooms 20 --page 1
 ```
 
-The `--case-sensitive` option applies to scan mode. Large scans can take a long time because the tool generates each page during the search.
+Run `node search.js --help` to see all options.
 
 > [!IMPORTANT]
-> The browser explorer and `search.js` currently use different alphabets and page generators. A CLI address does not identify the same text in the browser explorer.
+> `search.js` does not use the browser page generator. Use `search-web.js` when you need an address that matches the browser explorer.
 
 ## Files
 
 | File | Purpose |
 | --- | --- |
 | `index.html` | Contains the interface, Three.js scene, controls, and browser page generator |
-| `search.js` | Provides direct and scan searches from Node.js |
+| `search-web.js` | Scans pages that match the browser generator |
+| `search.js` | Provides direct and scan searches for a separate page model |
 | `README.md` | Describes setup and use |
 
 ## Current limits
