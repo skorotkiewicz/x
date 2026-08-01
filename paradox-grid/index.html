@@ -1439,6 +1439,7 @@ function banner(h,p){
   const b=$('#banner');b.classList.remove('go');void b.offsetWidth;b.classList.add('go');
 }
 function startRun(sc){
+  initAudio();if(AC&&AC.state==='suspended')AC.resume();
   school=sc;player=makePlayer(sc);
   depth=1;kills=0;runShards=0;runTime=0;simTime=0;boonsTaken=[];
   rwCharges=player.rwMax;
@@ -1547,7 +1548,7 @@ function buildSchools(){
   });
 }
 function selectSchool(i){
-  selIdx=i;const s=SCHOOLS[i];
+  selIdx=i;school=SCHOOLS[i];const s=school;
   document.querySelectorAll('.school-row').forEach((el,k)=>el.classList.toggle('sel',k===i));
   $('#pv-name').textContent=s.name;$('#pv-name').style.color=s.color;
   $('#pv-quote').textContent=s.quote;
