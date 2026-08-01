@@ -1,5 +1,7 @@
 # GRIDRUNNER: Pulse
 
+http://sekor.eu.org/x/gridrunner/
+
 GRIDRUNNER: Pulse is a music-driven browser shooter with roguelike upgrades. Ride a solid-light trail across a generated neon track. Shoot enemy ships, force them into trails, and survive the final boss.
 
 The game uses one `index.html` file. It has no build step and no external dependencies.
