@@ -1557,11 +1557,11 @@ function selectSchool(i){
   pvTrail.length=0;pvCol=s.color;
   sfx('ui');
 }
-buildSchools();selectSchool(0);
 
 /* preview canvas */
 const pvc=$('#pv-cv'),pvx=pvc.getContext('2d');
 let pvTrail=[],pvCol=SCHOOLS[0].color,pvT=0;
+buildSchools();selectSchool(0);
 function drawPreview(dt){
   pvT+=dt;
   const w=pvc.width,h=pvc.height;
