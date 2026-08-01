@@ -1,10 +1,105 @@
 # Library of Babel
 
-A Three.js exploration of a deterministic hexagonal library.
+Library of Babel is a browser-based Three.js experiment. It presents a series of connected hexagonal library rooms.
 
-Walk between generated rooms, open volumes, search pages
+The project generates each book title and page from its address. It does not store a library database.
 
-## Notes
+## Run the explorer
 
-- Rooms use axial hex coordinates: `q`, `r`, and calculated `s`.
-- Book text is generated from room, wall, shelf, volume, and page address.
+You need a desktop browser with WebGL support. You also need an internet connection to load Three.js from unpkg.
+
+1. Start a static file server from the project directory.
+
+   ```sh
+   cd library-of-babel
+   python3 -m http.server 8000
+   ```
+
+2. Open <http://localhost:8000>.
+
+The project has no build step and no package installation.
+
+## Controls
+
+| Action | Control |
+| --- | --- |
+| Look around | Move the mouse |
+| Walk | Use `W`, `A`, `S`, `D`, or the arrow keys |
+| Move faster | Hold `Shift` |
+| Open a book | Aim at the book and click |
+| Use a passage | Walk through it or click it |
+| Close a dialog | Press `Escape` |
+
+Select a start room with the `Q` and `R` fields. The explorer calculates `S` as `-Q-R`.
+
+The browser stores the last room coordinates in local storage. It uses these coordinates the next time you open the explorer.
+
+## Library model
+
+Each room contains the following items:
+
+- 4 book walls
+- 5 shelves on each wall
+- 32 volumes on each shelf
+- 410 pages in each volume
+
+Each page contains 40 lines of 80 symbols. The browser alphabet contains letters `a` through `v`, a comma, a period, and a space.
+
+A page address contains the room, wall, shelf, volume, and page numbers. The same address always generates the same title and text.
+
+## Search an open page
+
+Open a book and use the **Find** field to search its current page. The search is not case-sensitive.
+
+Use **Previous match** and **Next match** to move between results. You can also press `Enter` or `Shift+Enter` in the search field.
+
+## Search from the command line
+
+`search.js` provides a separate Node.js search tool. It requires a Node.js version that supports `BigInt`.
+
+Show all options:
+
+```sh
+node search.js --help
+```
+
+### Direct search
+
+Direct search calculates one page that contains the search text. It does not scan existing rooms.
+
+```sh
+node search.js "wizard"
+node search.js "wxyz, zzz." --direct
+```
+
+The direct search alphabet contains lowercase `a` through `z`, a comma, a period, and a space. The tool normalizes uppercase text and repeated whitespace.
+
+### Scan search
+
+Scan mode checks a finite set of generated pages. Use filters to limit the work.
+
+```sh
+node search.js "abc" --scan --q 4 --r -2 --wall 1 --shelf 3
+node search.js "abc" --scan --radius 1 --max-results 10
+node search.js "abc" --scan --rooms 20 --page 1
+```
+
+The `--case-sensitive` option applies to scan mode. Large scans can take a long time because the tool generates each page during the search.
+
+> [!IMPORTANT]
+> The browser explorer and `search.js` currently use different alphabets and page generators. A CLI address does not identify the same text in the browser explorer.
+
+## Files
+
+| File | Purpose |
+| --- | --- |
+| `index.html` | Contains the interface, Three.js scene, controls, and browser page generator |
+| `search.js` | Provides direct and scan searches from Node.js |
+| `README.md` | Describes setup and use |
+
+## Current limits
+
+- The explorer has no touch controls.
+- The browser needs network access for the Three.js module.
+- The generated text is deterministic pseudorandom text.
+- The project has no server, account system, or shared library state.
