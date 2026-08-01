@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Library of Babel — Hexagonal Three.js Explorer</title>
+		<style>
+			:root {
+				color-scheme: dark;
+				--bg: #080706;
+				--panel: rgba(16, 13, 10, 0.82);
+				--panel2: rgba(28, 22, 15, 0.92);
+				--gold: #d7b46a;
+				--gold2: #ffdf8c;
+				--ink: #f5ead4;
+				--muted: #b6a78a;
+				--line: rgba(215, 180, 106, 0.28);
+				--danger: #ff8b7b;
+			}
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				overflow: hidden;
+				background: radial-gradient(circle at 50% 30%, #251a10 0%, #0b0805 55%, #020201 100%);
+				font-family:
+					ui-sans-serif,
+					system-ui,
+					-apple-system,
+					BlinkMacSystemFont,
+					'Segoe UI',
+					sans-serif;
+				color: var(--ink);
+			}
+			canvas {
+				display: block;
+			}
+			button,
+			input,
+			select {
+				font: inherit;
+				border-radius: 10px;
+				border: 1px solid var(--line);
+				background: rgba(255, 255, 255, 0.06);
+				color: var(--ink);
+				padding: 10px 12px;
+				outline: none;
+			}
+			button {
+				cursor: pointer;
+				background: linear-gradient(180deg, rgba(255, 222, 150, 0.19), rgba(120, 83, 32, 0.22));
+				box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+			}
+			button:hover {
+				border-color: rgba(255, 223, 140, 0.7);
+				color: #fff8e8;
+			}
+			button:disabled {
+				cursor: default;
+				opacity: 0.45;
+				color: var(--muted);
+			}
+			button:disabled:hover {
+				border-color: var(--line);
+				color: var(--muted);
+			}
+			input {
+				width: 86px;
+				text-align: center;
+			}
+			.small {
+				font-size: 12px;
+				color: var(--muted);
+			}
+			#start {
+				position: fixed;
+				inset: 0;
+				display: grid;
+				place-items: center;
+				z-index: 20;
+				background:
+					radial-gradient(circle at 50% 35%, rgba(126, 89, 36, 0.22), transparent 36%),
+					linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.92));
+				backdrop-filter: blur(5px);
+			}
+			.start-card {
+				width: min(760px, calc(100vw - 32px));
+				border: 1px solid var(--line);
+				border-radius: 24px;
+				background: linear-gradient(180deg, rgba(33, 25, 16, 0.93), rgba(12, 10, 8, 0.94));
+				box-shadow:
+					0 30px 120px rgba(0, 0, 0, 0.55),
+					0 0 80px rgba(215, 180, 106, 0.08) inset;
+				padding: 28px;
+			}
+			h1 {
+				margin: 0 0 10px;
+				letter-spacing: 0.06em;
+				font-size: clamp(34px, 6vw, 66px);
+				line-height: 0.92;
+				font-family: Georgia, 'Times New Roman', serif;
+				color: var(--gold2);
+				text-shadow: 0 0 18px rgba(255, 223, 140, 0.18);
+			}
+			.subtitle {
+				margin: 0 0 22px;
+				max-width: 64ch;
+				color: var(--muted);
+				line-height: 1.5;
+			}
+			.row {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				align-items: center;
+			}
+			.start-grid {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 18px;
+				margin-top: 20px;
+			}
+			.info-box {
+				border: 1px solid var(--line);
+				border-radius: 16px;
+				background: rgba(0, 0, 0, 0.18);
+				padding: 14px;
+				color: var(--muted);
+				line-height: 1.45;
+			}
+			@media (max-width: 700px) {
+				.start-grid {
+					grid-template-columns: 1fr;
+				}
+			}
+			#hud {
+				position: fixed;
+				left: 14px;
+				top: 14px;
+				z-index: 5;
+				width: min(390px, calc(100vw - 28px));
+				pointer-events: none;
+			}
+			.hud-card {
+				pointer-events: auto;
+				border: 1px solid var(--line);
+				border-radius: 18px;
+				background: var(--panel);
+				box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+				backdrop-filter: blur(10px);
+				padding: 12px;
+				margin-bottom: 10px;
+			}
+			.hud-title {
+				color: var(--gold2);
+				font-weight: 700;
+				letter-spacing: 0.03em;
+			}
+			.address {
+				font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+				color: #fff4d5;
+			}
+			#help {
+				position: fixed;
+				right: 14px;
+				top: 14px;
+				width: min(360px, calc(100vw - 28px));
+				z-index: 5;
+			}
+			details.hud-card summary {
+				cursor: pointer;
+				color: var(--gold2);
+				user-select: none;
+			}
+			#toast {
+				position: fixed;
+				bottom: 18px;
+				left: 50%;
+				transform: translateX(-50%);
+				border: 1px solid var(--line);
+				border-radius: 999px;
+				background: var(--panel2);
+				padding: 10px 16px;
+				color: var(--ink);
+				opacity: 0;
+				pointer-events: none;
+				transition:
+					opacity 220ms ease,
+					transform 220ms ease;
+				z-index: 30;
+				box-shadow: 0 20px 70px rgba(0, 0, 0, 0.36);
+				text-align: center;
+				max-width: calc(100vw - 40px);
+			}
+			#toast.show {
+				opacity: 1;
+				transform: translateX(-50%) translateY(-4px);
+			}
+			#crosshair {
+				position: fixed;
+				left: 50%;
+				top: 50%;
+				width: 18px;
+				height: 18px;
+				transform: translate(-50%, -50%);
+				z-index: 3;
+				pointer-events: none;
+				opacity: 0.85;
+			}
+			#crosshair::before,
+			#crosshair::after {
+				content: '';
+				position: absolute;
+				background: rgba(255, 237, 196, 0.86);
+				box-shadow: 0 0 8px rgba(255, 223, 140, 0.38);
+			}
+			#crosshair::before {
+				width: 18px;
+				height: 1px;
+				top: 8px;
+				left: 0;
+			}
+			#crosshair::after {
+				width: 1px;
+				height: 18px;
+				top: 0;
+				left: 8px;
+			}
+			#bookModal,
+			#jumpModal {
+				position: fixed;
+				inset: 0;
+				display: none;
+				align-items: center;
+				justify-content: center;
+				z-index: 40;
+				background: rgba(0, 0, 0, 0.64);
+				backdrop-filter: blur(5px);
+				padding: 16px;
+			}
+			#bookModal.open,
+			#jumpModal.open {
+				display: flex;
+			}
+			.modal-card {
+				width: min(1040px, calc(100vw - 32px));
+				max-height: min(880px, calc(100vh - 32px));
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+				border: 1px solid rgba(255, 223, 140, 0.32);
+				border-radius: 22px;
+				background: linear-gradient(180deg, rgba(31, 24, 16, 0.98), rgba(9, 7, 5, 0.98));
+				box-shadow:
+					0 36px 160px rgba(0, 0, 0, 0.62),
+					0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+			}
+			.modal-head,
+			.modal-foot {
+				padding: 14px 16px;
+				display: flex;
+				gap: 10px;
+				align-items: center;
+				justify-content: space-between;
+				border-bottom: 1px solid var(--line);
+			}
+			.modal-foot {
+				border-bottom: none;
+				border-top: 1px solid var(--line);
+			}
+			.modal-main {
+				padding: 16px;
+				overflow: auto;
+				min-height: 0;
+			}
+			#pageText {
+				margin: 0;
+				white-space: pre-wrap;
+				word-break: break-word;
+				font-family:
+					ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+				font-size: clamp(12px, 1.55vw, 15px);
+				line-height: 1.55;
+				color: #f6edd9;
+				background:
+					linear-gradient(
+						90deg,
+						rgba(255, 255, 255, 0.035),
+						transparent 18%,
+						transparent 82%,
+						rgba(255, 255, 255, 0.03)
+					),
+					rgba(255, 245, 210, 0.045);
+				border: 1px solid rgba(255, 223, 140, 0.16);
+				border-radius: 16px;
+				padding: 16px;
+			}
+			#searchInput {
+				width: min(280px, 42vw);
+				text-align: left;
+				padding: 6px 8px;
+			}
+			#searchStatus {
+				min-width: 72px;
+			}
+			.search-hit {
+				background: rgba(255, 223, 140, 0.62);
+				color: #231408;
+				border-radius: 3px;
+				padding: 0 1px;
+			}
+			.search-hit.active {
+				background: #ff8b7b;
+				color: #1d0804;
+				box-shadow: 0 0 0 1px rgba(255, 245, 210, 0.5);
+			}
+			.pill {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				border: 1px solid var(--line);
+				border-radius: 999px;
+				padding: 6px 10px;
+				color: var(--muted);
+				background: rgba(255, 255, 255, 0.035);
+				font-size: 12px;
+			}
+			#hoverLabel {
+				position: fixed;
+				left: 50%;
+				bottom: 72px;
+				transform: translateX(-50%);
+				z-index: 4;
+				pointer-events: none;
+				opacity: 0;
+				transition: opacity 120ms ease;
+				border: 1px solid var(--line);
+				border-radius: 999px;
+				background: rgba(9, 7, 5, 0.78);
+				padding: 8px 12px;
+				color: var(--gold2);
+				font-size: 13px;
+				box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+			}
+			#hoverLabel.show {
+				opacity: 1;
+			}
+			a {
+				color: var(--gold2);
+			}
+		</style>
+	</head>
+	<body>
+		<div id="start">
+			<div class="start-card">
+				<h1>Library<br />of Babel</h1>
+				<p class="subtitle">
+					A deterministic, infinite-feeling hexagonal library. Pick an entry hex room, walk through
+					the two passage faces, and open any visible volume. The same room, wall, shelf, volume,
+					and page always produces the same text.
+				</p>
+				<div class="row" aria-label="starting room controls">
+					<span class="pill">Start hex room</span>
+					<label>Q <input id="startQ" type="number" value="0" step="1" /></label>
+					<label>R <input id="startR" type="number" value="0" step="1" /></label>
+					<button id="enterBtn">Enter Library</button>
+					<button id="randomBtn" title="Pick a deterministic-looking but random entry room">
+						Random Hex
+					</button>
+				</div>
+				<div class="start-grid">
+					<div class="info-box">
+						<strong>Explore</strong><br />
+						Move the mouse to look. Use <b>W A S D</b> or arrow keys to walk. Step through either
+						glowing passage to enter the neighboring hex room.
+					</div>
+					<div class="info-box">
+						<strong>Read</strong><br />
+						Aim at a book and click. Each gallery has <b>4 book walls</b>,
+						<b>5 shelves per wall</b>, <b>32 volumes per shelf</b>, and <b>410 pages per volume</b>.
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="hud">
+			<div class="hud-card">
+				<div class="hud-title">Current Hex Room</div>
+				<div class="address" id="roomAddress">Q 0 · R 0 · S 0</div>
+				<div class="small" id="roomHint">Click a book or walk through one of the two passages.</div>
+				<div class="row" style="margin-top: 10px">
+					<button id="jumpBtn">Enter another hex room</button>
+					<button id="resetBtn">Return to 0,0</button>
+				</div>
+			</div>
+		</div>
+
+		<details id="help" class="hud-card">
+			<summary>Controls and rules</summary>
+			<p class="small">
+				Move mouse: look around. W/A/S/D or arrows: move. Shift: faster. Click a book: open volume.
+				Click a passage or walk through it: move to the adjacent hex room. This page stores no
+				library database; book text is generated from its address.
+			</p>
+		</details>
+
+		<div id="crosshair" aria-hidden="true"></div>
+		<div id="hoverLabel"></div>
+		<div id="toast"></div>
+
+		<div id="bookModal" role="dialog" aria-modal="true" aria-labelledby="bookTitle">
+			<div class="modal-card">
+				<div class="modal-head">
+					<div>
+						<div class="hud-title" id="bookTitle">Volume</div>
+						<div class="small address" id="bookAddress"></div>
+					</div>
+					<button id="closeBook">Close</button>
+				</div>
+				<div class="modal-main">
+					<div class="row" style="margin-bottom: 12px">
+						<span class="pill" id="bookWall">Wall</span>
+						<span class="pill" id="bookShelf">Shelf</span>
+						<span class="pill" id="bookVolume">Volume</span>
+						<label class="pill"
+							>Page
+							<input
+								id="pageInput"
+								type="number"
+								min="1"
+								max="410"
+								value="1"
+								style="width: 72px; padding: 6px 8px"
+						/></label>
+					</div>
+					<div class="row" style="margin-bottom: 12px" aria-label="page text search">
+						<label class="pill"
+							>Find <input id="searchInput" type="search" placeholder="Text" autocomplete="off"
+						/></label>
+						<button id="prevMatch">Previous match</button>
+						<button id="nextMatch">Next match</button>
+						<button id="clearSearch">Clear</button>
+						<span class="small" id="searchStatus">No search</span>
+					</div>
+					<pre id="pageText"></pre>
+				</div>
+				<div class="modal-foot">
+					<div class="row">
+						<button id="prevPage">Previous page</button>
+						<button id="nextPage">Next page</button>
+						<button id="copyAddress">Copy address</button>
+					</div>
+					<span class="small">Alphabet: 22 letters, comma, period, and space.</span>
+				</div>
+			</div>
+		</div>
+
+		<div id="jumpModal" role="dialog" aria-modal="true" aria-labelledby="jumpTitle">
+			<div class="modal-card" style="max-width: 520px">
+				<div class="modal-head">
+					<div>
+						<div class="hud-title" id="jumpTitle">Enter a specific hex room</div>
+						<div class="small">Type axial hex coordinates. S is calculated as -Q-R.</div>
+					</div>
+					<button id="closeJump">Close</button>
+				</div>
+				<div class="modal-main">
+					<div class="row">
+						<label>Q <input id="jumpQ" type="number" value="0" step="1" /></label>
+						<label>R <input id="jumpR" type="number" value="0" step="1" /></label>
+						<button id="goJump">Enter</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+				}
+			}
+		</script>
+		<script type="module">
+			import * as THREE from 'three';
+
+			// ----------------------------
+			// Configuration
+			// ----------------------------
+			const HEX_R = 11.4;
+			const APOTHEM = HEX_R * Math.cos(Math.PI / 6);
+			const WALL_HEIGHT = 6.2;
+			const DOOR_WIDTH = 3.0;
+			const SHELVES_PER_WALL = 5;
+			const VOLUMES_PER_SHELF = 32;
+			const PAGES_PER_VOLUME = 410;
+			const ALPHABET = 'abcdefghijklmnopqrstuv, .';
+			const LETTERS = 'abcdefghijklmnopqrstuv';
+			const PASSAGE_SIDES = [0, 3];
+			const BOOK_SIDES = [1, 2, 4, 5];
+			const axialDirections = [
+				{ q: 1, r: 0, name: '+Q' },
+				{ q: 0, r: 1, name: '+R' },
+				{ q: -1, r: 1, name: '-Q +R' },
+				{ q: -1, r: 0, name: '-Q' },
+				{ q: 0, r: -1, name: '-R' },
+				{ q: 1, r: -1, name: '+Q -R' }
+			];
+
+			// ----------------------------
+			// DOM helpers
+			// ----------------------------
+			const $ = (id) => document.getElementById(id);
+			const start = $('start');
+			const startQ = $('startQ');
+			const startR = $('startR');
+			const enterBtn = $('enterBtn');
+			const randomBtn = $('randomBtn');
+			const roomAddress = $('roomAddress');
+			const roomHint = $('roomHint');
+			const jumpBtn = $('jumpBtn');
+			const resetBtn = $('resetBtn');
+			const jumpModal = $('jumpModal');
+			const closeJump = $('closeJump');
+			const goJump = $('goJump');
+			const jumpQ = $('jumpQ');
+			const jumpR = $('jumpR');
+			const bookModal = $('bookModal');
+			const closeBook = $('closeBook');
+			const bookModalMain = bookModal.querySelector('.modal-main');
+			const bookTitle = $('bookTitle');
+			const bookAddress = $('bookAddress');
+			const bookWall = $('bookWall');
+			const bookShelf = $('bookShelf');
+			const bookVolume = $('bookVolume');
+			const pageInput = $('pageInput');
+			const searchInput = $('searchInput');
+			const searchStatus = $('searchStatus');
+			const prevMatch = $('prevMatch');
+			const nextMatch = $('nextMatch');
+			const clearSearch = $('clearSearch');
+			const pageText = $('pageText');
+			const prevPage = $('prevPage');
+			const nextPage = $('nextPage');
+			const copyAddress = $('copyAddress');
+			const toast = $('toast');
+			const hoverLabel = $('hoverLabel');
+
+			function showToast(message) {
+				toast.textContent = message;
+				toast.classList.add('show');
+				clearTimeout(showToast.timer);
+				showToast.timer = setTimeout(() => toast.classList.remove('show'), 1900);
+			}
+
+			function clamp(n, min, max) {
+				return Math.max(min, Math.min(max, n));
+			}
+			function parseIntSafe(value, fallback = 0) {
+				const n = Number.parseInt(value, 10);
+				return Number.isFinite(n) ? n : fallback;
+			}
+			function saveLastRoom(room) {
+				try {
+					localStorage.setItem('babel:lastRoom', JSON.stringify(room));
+				} catch {}
+			}
+			function loadLastRoom() {
+				try {
+					return JSON.parse(localStorage.getItem('babel:lastRoom') || 'null');
+				} catch {
+					return null;
+				}
+			}
+			function isTypingTarget(target) {
+				return (
+					target instanceof HTMLInputElement ||
+					target instanceof HTMLTextAreaElement ||
+					target instanceof HTMLSelectElement ||
+					target?.isContentEditable
+				);
+			}
+
+			// ----------------------------
+			// Deterministic hash and text generator
+			// ----------------------------
+			function fnv1a(str) {
+				let h = 0x811c9dc5;
+				for (let i = 0; i < str.length; i++) {
+					h ^= str.charCodeAt(i);
+					h = Math.imul(h, 0x01000193);
+				}
+				return h >>> 0;
+			}
+			function mulberry32(seed) {
+				return function () {
+					let t = (seed += 0x6d2b79f5);
+					t = Math.imul(t ^ (t >>> 15), t | 1);
+					t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+					return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+				};
+			}
+			// Borgesian gibberish title: deterministic words drawn from the same alphabet
+			// as the pages, so nothing is hardcoded per book.
+			function makeTitle(address) {
+				const rand = mulberry32(fnv1a(address + '|title'));
+				const words = 1 + Math.floor(rand() * 3); // 1-3 words
+				const out = [];
+				for (let w = 0; w < words; w++) {
+					const len = 3 + Math.floor(rand() * 6); // 3-8 letters
+					let word = '';
+					for (let c = 0; c < len; c++) word += LETTERS[Math.floor(rand() * LETTERS.length)];
+					out.push(word);
+				}
+				return out.join(' ');
+			}
+			function generatePageText(book, page) {
+				const key = `${book.q},${book.r}|w${book.wall}|s${book.shelf}|v${book.volume}|p${page}`;
+				const rand = mulberry32(fnv1a(key));
+				const lines = [];
+				for (let line = 0; line < 40; line++) {
+					let s = '';
+					for (let col = 0; col < 80; col++) {
+						const idx = Math.floor(rand() * ALPHABET.length);
+						s += ALPHABET[idx];
+					}
+					lines.push(s);
+				}
+				return lines.join('\n');
+			}
+			function bookAddressString(book, page = currentBookPage) {
+				const s = -book.q - book.r;
+				return `hex(q:${book.q}, r:${book.r}, s:${s}) / wall:${book.wall} / shelf:${book.shelf} / volume:${book.volume} / page:${page}`;
+			}
+
+			// ----------------------------
+			// Three.js scene
+			// ----------------------------
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color(0x140d07);
+			scene.fog = new THREE.FogExp2(0x1a1009, 0.022);
+
+			const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 280);
+			camera.position.set(0, 1.65, 3);
+			camera.rotation.order = 'YXZ';
+
+			const renderer = new THREE.WebGLRenderer({
+				antialias: true,
+				powerPreference: 'high-performance'
+			});
+			renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+			renderer.setSize(innerWidth, innerHeight);
+			renderer.outputColorSpace = THREE.SRGBColorSpace;
+			renderer.toneMapping = THREE.ACESFilmicToneMapping;
+			renderer.toneMappingExposure = 1.35;
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			document.body.appendChild(renderer.domElement);
+
+			const roomGroup = new THREE.Group();
+			const staticGroup = new THREE.Group();
+			scene.add(roomGroup);
+			scene.add(staticGroup);
+
+			const hemi = new THREE.HemisphereLight(0xffe7c4, 0x2a160a, 1.35);
+			scene.add(hemi);
+
+			// Main chandelier glow.
+			const flameLight = new THREE.PointLight(0xffca74, 4.6, 48, 1.6);
+			flameLight.position.set(0, 4.55, 0);
+			flameLight.castShadow = true;
+			flameLight.shadow.mapSize.set(1024, 1024);
+			flameLight.shadow.bias = -0.0008;
+			scene.add(flameLight);
+
+			// Warm pool of light over the reading table.
+			const tableLight = new THREE.PointLight(0xffd9a0, 1.6, 14, 2.0);
+			tableLight.position.set(0, 1.7, 0);
+			scene.add(tableLight);
+
+			const shelfFill = new THREE.PointLight(0xffe0ad, 1.1, 34, 1.35);
+			shelfFill.position.set(0, 2.35, 0);
+			scene.add(shelfFill);
+
+			// ----------------------------
+			// Procedural textures (canvas-based, no external assets)
+			// ----------------------------
+			function noise2(ctx, w, h, amount, rand = Math.random) {
+				const img = ctx.getImageData(0, 0, w, h);
+				const d = img.data;
+				for (let i = 0; i < d.length; i += 4) {
+					const n = (rand() - 0.5) * amount;
+					d[i] = clamp(d[i] + n, 0, 255);
+					d[i + 1] = clamp(d[i + 1] + n, 0, 255);
+					d[i + 2] = clamp(d[i + 2] + n, 0, 255);
+				}
+				ctx.putImageData(img, 0, 0);
+			}
+			function woodTexture(repeat = 4, seed = 0x12345678) {
+				const rand = mulberry32(seed);
+				const c = document.createElement('canvas');
+				c.width = c.height = 512;
+				const ctx = c.getContext('2d');
+				ctx.fillStyle = '#3c2814';
+				ctx.fillRect(0, 0, 512, 512);
+				for (let p = 0; p < 8; p++) {
+					const y = p * 64;
+					const shade = 30 + Math.floor(rand() * 26);
+					ctx.fillStyle = `rgb(${shade + 36},${shade + 18},${Math.floor(shade * 0.5)})`;
+					ctx.fillRect(0, y, 512, 62);
+					for (let g = 0; g < 18; g++) {
+						// grain streaks
+						ctx.strokeStyle = `rgba(20,12,5,${0.05 + rand() * 0.12})`;
+						ctx.lineWidth = 0.5 + rand();
+						ctx.beginPath();
+						const gy = y + rand() * 62;
+						ctx.moveTo(0, gy);
+						ctx.bezierCurveTo(
+							170,
+							gy + (rand() - 0.5) * 8,
+							340,
+							gy + (rand() - 0.5) * 8,
+							512,
+							gy + (rand() - 0.5) * 6
+						);
+						ctx.stroke();
+					}
+					ctx.fillStyle = 'rgba(0,0,0,0.35)';
+					ctx.fillRect(0, y + 62, 512, 2); // plank gap
+				}
+				noise2(ctx, 512, 512, 14, rand);
+				const t = new THREE.CanvasTexture(c);
+				t.wrapS = t.wrapT = THREE.RepeatWrapping;
+				t.repeat.set(repeat, repeat);
+				t.anisotropy = 8;
+				t.colorSpace = THREE.SRGBColorSpace;
+				return t;
+			}
+			function plasterTexture(base = '#6b4a2c', repeat = 2, seed = 0x2468acef) {
+				const rand = mulberry32(seed);
+				const c = document.createElement('canvas');
+				c.width = c.height = 256;
+				const ctx = c.getContext('2d');
+				ctx.fillStyle = base;
+				ctx.fillRect(0, 0, 256, 256);
+				for (let i = 0; i < 1400; i++) {
+					// mottled warm blotches
+					ctx.fillStyle = `rgba(${rand() < 0.5 ? '40,26,12' : '150,110,60'},${rand() * 0.06})`;
+					const r = 4 + rand() * 26;
+					ctx.beginPath();
+					ctx.arc(rand() * 256, rand() * 256, r, 0, 7);
+					ctx.fill();
+				}
+				noise2(ctx, 256, 256, 18, rand);
+				const t = new THREE.CanvasTexture(c);
+				t.wrapS = t.wrapT = THREE.RepeatWrapping;
+				t.repeat.set(repeat, repeat);
+				t.anisotropy = 8;
+				t.colorSpace = THREE.SRGBColorSpace;
+				return t;
+			}
+			function rugTexture(seed = 0x369cf00d) {
+				const rand = mulberry32(seed);
+				const c = document.createElement('canvas');
+				c.width = c.height = 512;
+				const ctx = c.getContext('2d');
+				const cx = 256,
+					cy = 256;
+				ctx.fillStyle = '#5a1c1c';
+				ctx.fillRect(0, 0, 512, 512);
+				const rings = ['#7a2a26', '#caa24a', '#3a5d52', '#caa24a', '#7a2a26'];
+				rings.forEach((col, i) => {
+					ctx.strokeStyle = col;
+					ctx.lineWidth = 14 - i;
+					ctx.beginPath();
+					ctx.arc(cx, cy, 230 - i * 42, 0, 7);
+					ctx.stroke();
+				});
+				ctx.fillStyle = '#caa24a';
+				for (let a = 0; a < 24; a++) {
+					// gilt diamonds on outer band
+					const ang = (a / 24) * Math.PI * 2 + (rand() - 0.5) * 0.08;
+					ctx.save();
+					ctx.translate(cx + Math.cos(ang) * 205, cy + Math.sin(ang) * 205);
+					ctx.rotate(ang);
+					ctx.fillRect(-6, -6, 12, 12);
+					ctx.restore();
+				}
+				ctx.fillStyle = '#caa24a';
+				ctx.beginPath();
+				ctx.arc(cx, cy, 24, 0, 7);
+				ctx.fill();
+				noise2(ctx, 512, 512, 10, rand);
+				const t = new THREE.CanvasTexture(c);
+				t.anisotropy = 8;
+				t.colorSpace = THREE.SRGBColorSpace;
+				return t;
+			}
+
+			const matFloor = new THREE.MeshStandardMaterial({
+				map: woodTexture(5, 0x91e10f5a),
+				color: 0xb89066,
+				roughness: 0.82,
+				metalness: 0.04
+			});
+			const matCeil = new THREE.MeshStandardMaterial({
+				map: plasterTexture('#3a2a1c', 3, 0x3c170b),
+				color: 0x8a6a48,
+				roughness: 0.95
+			});
+			const matWall = new THREE.MeshStandardMaterial({
+				map: plasterTexture('#7a5530', 2, 0x7a5530),
+				color: 0xb89064,
+				roughness: 0.86
+			});
+			const matShelf = new THREE.MeshStandardMaterial({
+				map: woodTexture(2, 0x5e351d),
+				color: 0x8a5e34,
+				roughness: 0.66,
+				metalness: 0.05
+			});
+			const matTrim = new THREE.MeshStandardMaterial({
+				color: 0xc99a52,
+				roughness: 0.42,
+				metalness: 0.55
+			});
+			const matRug = new THREE.MeshStandardMaterial({ map: rugTexture(), roughness: 0.95 });
+			const matCandle = new THREE.MeshStandardMaterial({
+				color: 0xfff0d0,
+				emissive: 0xffb24a,
+				emissiveIntensity: 2.4
+			});
+			const matPortal = new THREE.MeshStandardMaterial({
+				color: 0xffd28a,
+				emissive: 0xb86a18,
+				emissiveIntensity: 0.9,
+				transparent: true,
+				opacity: 0.45,
+				side: THREE.DoubleSide
+			});
+			const matPortalHover = new THREE.MeshStandardMaterial({
+				color: 0xffe7b5,
+				emissive: 0xff9b2d,
+				emissiveIntensity: 1.25,
+				transparent: true,
+				opacity: 0.62,
+				side: THREE.DoubleSide
+			});
+			// Leather spine colours (deep, warm library tones).
+			const SPINE_COLORS = [
+				'#7a2420',
+				'#1f4a6b',
+				'#264f2c',
+				'#6a5320',
+				'#43306f',
+				'#5e3320',
+				'#2c2c38',
+				'#6b2f48'
+			];
+			// Side material (the page-block edges) reused for every book's non-spine faces.
+			const matPaperEdge = new THREE.MeshStandardMaterial({ color: 0xe8d9b0, roughness: 0.92 });
+			// Build a vertical spine texture with a gilt title, deterministic per book.
+			function spineTexture(title, hex) {
+				const W = 64,
+					H = 256; // small: spines are seen from across the room
+				const c = document.createElement('canvas');
+				c.width = W;
+				c.height = H;
+				const ctx = c.getContext('2d');
+				// leather base with a soft vertical sheen
+				const grad = ctx.createLinearGradient(0, 0, W, 0);
+				grad.addColorStop(0, '#000000');
+				grad.addColorStop(0.5, hex);
+				grad.addColorStop(1, '#000000');
+				ctx.fillStyle = hex;
+				ctx.fillRect(0, 0, W, H);
+				ctx.globalAlpha = 0.35;
+				ctx.fillStyle = grad;
+				ctx.fillRect(0, 0, W, H);
+				ctx.globalAlpha = 1;
+				// gilt bands top and bottom
+				ctx.fillStyle = '#caa24a';
+				[20, 36, 220, 236].forEach((y) => ctx.fillRect(6, y, W - 12, 2));
+				// title text, rotated to run up the spine, truncated to fit
+				ctx.save();
+				ctx.translate(W / 2, H / 2);
+				ctx.rotate(-Math.PI / 2);
+				ctx.fillStyle = '#e7c25c';
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.font = '700 15px Georgia, "Times New Roman", serif';
+				let t = title.toUpperCase();
+				while (ctx.measureText(t).width > 150 && t.length > 3) t = t.slice(0, -1);
+				ctx.shadowColor = 'rgba(0,0,0,0.6)';
+				ctx.shadowBlur = 2;
+				ctx.fillText(t, 0, 0);
+				ctx.restore();
+				const tex = new THREE.CanvasTexture(c);
+				tex.anisotropy = 8;
+				tex.colorSpace = THREE.SRGBColorSpace;
+				return tex;
+			}
+			const raycaster = new THREE.Raycaster();
+			const pointerCenter = new THREE.Vector2(0, 0);
+			const books = [];
+			const portals = [];
+			const hoverables = [];
+			const candleFlames = [];
+			let hovered = null;
+			let currentRoom = { q: 0, r: 0 };
+			let currentBook = null;
+			let currentBookPage = 1;
+			let currentPageText = '';
+			let searchMatches = [];
+			let activeSearchMatch = -1;
+
+			const bookGeometry = new THREE.BoxGeometry(0.42, 0.68, 0.3);
+			const shelfGeometry = new THREE.BoxGeometry(1, 0.12, 0.55);
+			const wallGeometry = new THREE.BoxGeometry(1, WALL_HEIGHT, 0.28);
+			const trimGeometry = new THREE.BoxGeometry(1, 0.12, 0.18);
+			const portalGeometry = new THREE.PlaneGeometry(DOOR_WIDTH * 0.82, 3.1);
+
+			// Hexagon geometry is constant: precompute vertices and per-side info once.
+			const HEX_VERTICES = Array.from({ length: 6 }, (_, i) => {
+				const a = Math.PI / 6 + (i * Math.PI) / 3;
+				return new THREE.Vector3(Math.cos(a) * HEX_R, 0, Math.sin(a) * HEX_R);
+			});
+			const SIDES = Array.from({ length: 6 }, (_, i) => {
+				const a = HEX_VERTICES[i];
+				const b = HEX_VERTICES[(i + 1) % 6];
+				const center = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+				const dir = new THREE.Vector3().subVectors(b, a).normalize();
+				const normal = center.clone().normalize(); // outward
+				const inward = normal.clone().multiplyScalar(-1);
+				const len = a.distanceTo(b);
+				const angle = Math.atan2(dir.z, dir.x);
+				return { a, b, center, dir, normal, inward, len, angle };
+			});
+			function sideInfo(i) {
+				return SIDES[i];
+			}
+			function orientAlong(mesh, dir) {
+				mesh.rotation.y = -Math.atan2(dir.z, dir.x);
+			}
+			function isPassageSide(i) {
+				return PASSAGE_SIDES.includes(i);
+			}
+			function bookWallNumber(side) {
+				return BOOK_SIDES.indexOf(side) + 1;
+			}
+			function putBox(mesh, center, dir, y, inwardOffset = 0) {
+				mesh.position
+					.copy(center)
+					.addScaledVector(center.clone().normalize().multiplyScalar(-1), inwardOffset);
+				mesh.position.y = y;
+				orientAlong(mesh, dir);
+			}
+			function disposeMaterial(mat) {
+				if (!mat) return;
+				if (Array.isArray(mat)) return mat.forEach(disposeMaterial);
+				mat.map?.dispose?.();
+				mat.dispose?.();
+			}
+			function clearRoom() {
+				// Dispose per-book spine textures/materials (640 books/room would leak otherwise).
+				for (const b of books) disposeMaterial(b.userData.spineMat);
+				candleFlames.length = 0;
+				while (roomGroup.children.length) {
+					const obj = roomGroup.children[roomGroup.children.length - 1];
+					roomGroup.remove(obj);
+					obj.traverse((node) => {
+						if (
+							node.geometry &&
+							![bookGeometry, shelfGeometry, wallGeometry, trimGeometry, portalGeometry].includes(
+								node.geometry
+							)
+						)
+							node.geometry.dispose();
+						if (node.userData.disposeMaterial) disposeMaterial(node.material);
+					});
+				}
+				books.length = 0;
+				portals.length = 0;
+				hoverables.length = 0;
+				hovered = null;
+				hoverLabel.classList.remove('show');
+			}
+			function createTextSprite(text, size = 0.52) {
+				const canvas = document.createElement('canvas');
+				canvas.width = 512;
+				canvas.height = 128;
+				const ctx = canvas.getContext('2d');
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+				roundRect(ctx, 18, 18, canvas.width - 36, canvas.height - 36, 28);
+				ctx.fill();
+				ctx.strokeStyle = 'rgba(255,223,140,0.45)';
+				ctx.lineWidth = 3;
+				ctx.stroke();
+				ctx.fillStyle = '#ffdf8c';
+				ctx.font = '700 40px ui-monospace, SFMono-Regular, Menlo, monospace';
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+				const texture = new THREE.CanvasTexture(canvas);
+				texture.anisotropy = 4;
+				const mat = new THREE.SpriteMaterial({
+					map: texture,
+					transparent: true,
+					depthWrite: false
+				});
+				const sprite = new THREE.Sprite(mat);
+				sprite.scale.set(4.4 * size, 1.1 * size, 1);
+				return sprite;
+			}
+			function roundRect(ctx, x, y, w, h, r) {
+				ctx.beginPath();
+				ctx.moveTo(x + r, y);
+				ctx.arcTo(x + w, y, x + w, y + h, r);
+				ctx.arcTo(x + w, y + h, x, y + h, r);
+				ctx.arcTo(x, y + h, x, y, r);
+				ctx.arcTo(x, y, x + w, y, r);
+				ctx.closePath();
+			}
+			function makeRoom(q, r) {
+				currentRoom = { q, r };
+				clearRoom();
+				const s = -q - r;
+				roomAddress.textContent = `Q ${q} · R ${r} · S ${s}`;
+				roomHint.textContent = 'Address is deterministic: each book regenerates the same pages.';
+				saveLastRoom(currentRoom);
+
+				// Floor and ceiling as hexagonal cylinders.
+				const floor = new THREE.Mesh(
+					new THREE.CylinderGeometry(HEX_R, HEX_R, 0.16, 6, 1, false, Math.PI / 6),
+					matFloor
+				);
+				floor.position.y = -0.08;
+				floor.receiveShadow = true;
+				roomGroup.add(floor);
+				const ceil = new THREE.Mesh(
+					new THREE.CylinderGeometry(HEX_R, HEX_R, 0.12, 6, 1, false, Math.PI / 6),
+					matCeil
+				);
+				ceil.position.y = WALL_HEIGHT + 0.06;
+				roomGroup.add(ceil);
+
+				// Cozy round rug in the centre.
+				const rug = new THREE.Mesh(new THREE.CircleGeometry(3.6, 48), matRug);
+				rug.rotation.x = -Math.PI / 2;
+				rug.position.y = 0.012;
+				rug.receiveShadow = true;
+				roomGroup.add(rug);
+
+				// Reading table + two stools on the rug.
+				const table = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.12, 32), matShelf);
+				table.position.y = 0.92;
+				table.castShadow = true;
+				table.receiveShadow = true;
+				roomGroup.add(table);
+				const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 0.86, 16), matShelf);
+				tableLeg.position.y = 0.45;
+				roomGroup.add(tableLeg);
+				for (let st = 0; st < 2; st++) {
+					const a = st * Math.PI;
+					const seat = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.12, 20), matTrim);
+					seat.position.set(Math.cos(a) * 1.9, 0.54, Math.sin(a) * 1.9);
+					seat.castShadow = true;
+					roomGroup.add(seat);
+					const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.5, 12), matShelf);
+					leg.position.set(Math.cos(a) * 1.9, 0.25, Math.sin(a) * 1.9);
+					roomGroup.add(leg);
+				}
+
+				// Chandelier: a brass ring hung from the ceiling with glowing candles.
+				const chandelier = new THREE.Group();
+				chandelier.position.y = 4.55;
+				const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.4, 8), matTrim);
+				chain.position.y = 0.7;
+				chain.castShadow = true;
+				chandelier.add(chain);
+				const ring = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.07, 12, 40), matTrim);
+				ring.rotation.x = Math.PI / 2;
+				ring.castShadow = true;
+				chandelier.add(ring);
+				const innerRing = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.05, 10, 32), matTrim);
+				innerRing.rotation.x = Math.PI / 2;
+				innerRing.position.y = 0.18;
+				innerRing.castShadow = true;
+				chandelier.add(innerRing);
+				for (let cdl = 0; cdl < 8; cdl++) {
+					const a = (cdl * Math.PI * 2) / 8;
+					const candle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.3, 10), matCeil);
+					candle.position.set(Math.cos(a) * 0.95, 0.2, Math.sin(a) * 0.95);
+					candle.castShadow = true;
+					chandelier.add(candle);
+					const flame = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), matCandle);
+					flame.position.set(Math.cos(a) * 0.95, 0.4, Math.sin(a) * 0.95);
+					flame.scale.y = 1.7;
+					flame.castShadow = true;
+					candleFlames.push(flame);
+					chandelier.add(flame);
+				}
+				const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 14), matCandle);
+				lamp.position.y = 0.12;
+				lamp.castShadow = true;
+				candleFlames.push(lamp);
+				chandelier.add(lamp);
+				roomGroup.add(chandelier);
+
+				for (let i = 0; i < 6; i++) {
+					buildWall(i, q, r);
+				}
+			}
+			function buildWall(i, q, r) {
+				const info = sideInfo(i);
+				if (!isPassageSide(i)) {
+					buildBookWall(info, i, q, r);
+					return;
+				}
+
+				buildPassage(info, i);
+			}
+			function buildPassage(info, i) {
+				const halfRest = (info.len - DOOR_WIDTH) / 2;
+				const leftCenter = info.center
+					.clone()
+					.addScaledVector(info.dir, -(DOOR_WIDTH / 2 + halfRest / 2));
+				const rightCenter = info.center
+					.clone()
+					.addScaledVector(info.dir, DOOR_WIDTH / 2 + halfRest / 2);
+
+				for (const c of [leftCenter, rightCenter]) {
+					const panel = new THREE.Mesh(wallGeometry, matWall);
+					panel.scale.set(halfRest, 1, 1);
+					putBox(panel, c, info.dir, WALL_HEIGHT / 2, 0);
+					panel.castShadow = true;
+					panel.receiveShadow = true;
+					roomGroup.add(panel);
+				}
+				const lintel = new THREE.Mesh(wallGeometry, matWall);
+				lintel.scale.set(DOOR_WIDTH, 0.28, 1);
+				putBox(lintel, info.center.clone(), info.dir, WALL_HEIGHT - 0.85, 0);
+				lintel.castShadow = true;
+				roomGroup.add(lintel);
+
+				for (const side of [-1, 1]) {
+					const post = new THREE.Mesh(wallGeometry, matTrim);
+					post.scale.set(0.08, 0.9, 0.72);
+					const postCenter = info.center.clone().addScaledVector(info.dir, (side * DOOR_WIDTH) / 2);
+					putBox(post, postCenter, info.dir, WALL_HEIGHT / 2 - 0.18, 0.16);
+					post.castShadow = true;
+					roomGroup.add(post);
+				}
+
+				const topTrim = new THREE.Mesh(trimGeometry, matTrim);
+				topTrim.scale.set(info.len, 1, 1);
+				putBox(topTrim, info.center.clone(), info.dir, WALL_HEIGHT - 0.12, 0.2);
+				roomGroup.add(topTrim);
+
+				const portal = new THREE.Mesh(portalGeometry, matPortal);
+				portal.position.copy(info.center).addScaledVector(info.inward, 0.07);
+				portal.position.y = 1.72;
+				portal.rotation.y = -Math.atan2(info.normal.x, info.normal.z);
+				portal.userData = { type: 'portal', side: i, label: portalLabel(i) };
+				roomGroup.add(portal);
+				portals.push(portal);
+				hoverables.push(portal);
+
+				const label = createTextSprite(portalLabel(i), 0.62);
+				label.position.copy(info.center).addScaledVector(info.inward, 0.48);
+				label.position.y = 3.72;
+				label.userData = { noRay: true, disposeMaterial: true };
+				roomGroup.add(label);
+			}
+			function buildSconce(info, along, y) {
+				const sconce = new THREE.Group();
+				sconce.position
+					.copy(info.center)
+					.addScaledVector(info.dir, along)
+					.addScaledVector(info.inward, 0.04);
+				sconce.rotation.y = -Math.atan2(info.dir.z, info.dir.x);
+
+				const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.24), matTrim);
+				bracket.position.set(0, y, 0.08);
+				bracket.castShadow = true;
+				sconce.add(bracket);
+				const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.08, 0.08, 12), matTrim);
+				cup.position.set(0, y + 0.08, 0.26);
+				cup.castShadow = true;
+				sconce.add(cup);
+				const candle = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.24, 10), matCeil);
+				candle.position.set(0, y + 0.24, 0.26);
+				candle.castShadow = true;
+				sconce.add(candle);
+				const flame = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 8), matCandle);
+				flame.position.set(0, y + 0.43, 0.26);
+				flame.scale.y = 1.6;
+				flame.castShadow = true;
+				sconce.add(flame);
+				candleFlames.push(flame);
+				roomGroup.add(sconce);
+			}
+			function buildBookWall(info, i, q, r) {
+				const wallNumber = bookWallNumber(i);
+				const panel = new THREE.Mesh(wallGeometry, matWall);
+				panel.scale.set(info.len, 1, 1);
+				putBox(panel, info.center.clone(), info.dir, WALL_HEIGHT / 2, 0);
+				panel.castShadow = true;
+				panel.receiveShadow = true;
+				roomGroup.add(panel);
+
+				const topTrim = new THREE.Mesh(trimGeometry, matTrim);
+				topTrim.scale.set(info.len, 1, 1);
+				putBox(topTrim, info.center.clone(), info.dir, WALL_HEIGHT - 0.12, 0.2);
+				roomGroup.add(topTrim);
+
+				const bottomTrim = new THREE.Mesh(trimGeometry, matTrim);
+				bottomTrim.scale.set(info.len, 1, 1);
+				putBox(bottomTrim, info.center.clone(), info.dir, 0.18, 0.18);
+				roomGroup.add(bottomTrim);
+
+				buildSconce(info, -info.len * 0.28, 3.05);
+				buildSconce(info, info.len * 0.28, 3.05);
+
+				// Shelves and books on the interior face.
+				for (let shelf = 1; shelf <= SHELVES_PER_WALL; shelf++) {
+					const y = 0.95 + (shelf - 1) * 0.88;
+					const shelfMesh = new THREE.Mesh(shelfGeometry, matShelf);
+					shelfMesh.scale.set(info.len * 0.9, 1, 1);
+					putBox(shelfMesh, info.center.clone(), info.dir, y - 0.38, 0.52);
+					shelfMesh.castShadow = true;
+					shelfMesh.receiveShadow = true;
+					roomGroup.add(shelfMesh);
+
+					for (let volume = 1; volume <= VOLUMES_PER_SHELF; volume++) {
+						const u = THREE.MathUtils.lerp(
+							-info.len * 0.43,
+							info.len * 0.43,
+							(volume - 0.5) / VOLUMES_PER_SHELF
+						);
+						const seed = fnv1a(`${q},${r},${i},${shelf},${volume}`);
+						const width = 0.2 + ((seed >>> 3) % 8) * 0.01;
+						const height = 0.52 + ((seed >>> 9) % 12) * 0.014;
+						const depth = 0.24 + ((seed >>> 15) % 6) * 0.012;
+						const title = makeTitle(`${q},${r},${wallNumber},${shelf},${volume}`);
+						const spineHex = SPINE_COLORS[seed % SPINE_COLORS.length];
+						const spineMat = new THREE.MeshStandardMaterial({
+							map: spineTexture(title, spineHex),
+							roughness: 0.6,
+							metalness: 0.08
+						});
+						// [+x,-x,+y,-y,+z,-z]: gilt spine on the depth faces, paper on the rest.
+						const faces = [
+							matPaperEdge,
+							matPaperEdge,
+							matPaperEdge,
+							matPaperEdge,
+							spineMat,
+							spineMat
+						];
+						const book = new THREE.Mesh(bookGeometry, faces);
+						book.scale.set(width / 0.42, height / 0.68, depth / 0.3);
+						const bookCenter = info.center
+							.clone()
+							.addScaledVector(info.dir, u)
+							.addScaledVector(info.inward, 0.76);
+						book.position.copy(bookCenter);
+						book.position.y = y + height * 0.43;
+						orientAlong(book, info.dir);
+						book.castShadow = true;
+						book.receiveShadow = true;
+						book.userData = {
+							type: 'book',
+							q,
+							r,
+							wall: wallNumber,
+							shelf,
+							volume,
+							title,
+							baseMaterial: faces,
+							spineMat
+						};
+						books.push(book);
+						hoverables.push(book);
+						roomGroup.add(book);
+					}
+				}
+			}
+			function portalLabel(i) {
+				const d = axialDirections[i];
+				const passageNumber = PASSAGE_SIDES.indexOf(i) + 1;
+				return `Passage ${passageNumber}: ${currentRoom.q + d.q}, ${currentRoom.r + d.r}`;
+			}
+
+			// ----------------------------
+			// Navigation controls
+			// ----------------------------
+			const keys = new Set();
+			let yaw = Math.PI;
+			let pitch = 0;
+
+			function updateCameraRotation() {
+				pitch = clamp(pitch, -1.25, 1.18);
+				camera.rotation.y = yaw;
+				camera.rotation.x = pitch;
+			}
+			function sceneIsActive() {
+				return (
+					start.style.display === 'none' &&
+					!bookModal.classList.contains('open') &&
+					!jumpModal.classList.contains('open')
+				);
+			}
+			function requestLookLock() {
+				if (
+					!sceneIsActive() ||
+					document.pointerLockElement === renderer.domElement ||
+					!renderer.domElement.requestPointerLock
+				)
+					return;
+				const lock = renderer.domElement.requestPointerLock();
+				if (lock?.catch) lock.catch(() => {});
+			}
+			function releaseLookLock() {
+				if (document.pointerLockElement === renderer.domElement) document.exitPointerLock?.();
+			}
+			updateCameraRotation();
+
+			addEventListener('keydown', (e) => {
+				if (e.key === 'Escape') {
+					closeModals();
+					return;
+				}
+				if (!sceneIsActive() || isTypingTarget(e.target)) return;
+				keys.add(e.key.toLowerCase());
+			});
+			addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+
+			addEventListener('mousemove', (e) => {
+				if (!sceneIsActive()) return;
+				const locked = document.pointerLockElement === renderer.domElement;
+				if (!locked && e.target !== renderer.domElement) return;
+				const dx = e.movementX || 0;
+				const dy = e.movementY || 0;
+				if (Math.abs(dx) + Math.abs(dy) === 0) return;
+				yaw -= dx * 0.0028;
+				pitch -= dy * 0.0028;
+				updateCameraRotation();
+			});
+			renderer.domElement.addEventListener('click', () => {
+				if (!sceneIsActive()) return;
+				interact();
+				requestLookLock();
+			});
+
+			function movePlayer(dt) {
+				const speed = (keys.has('shift') ? 7.5 : 4.0) * dt;
+				const forward = new THREE.Vector3();
+				camera.getWorldDirection(forward);
+				forward.y = 0;
+				forward.normalize();
+				const right = new THREE.Vector3()
+					.crossVectors(forward, new THREE.Vector3(0, 1, 0))
+					.normalize();
+				const delta = new THREE.Vector3();
+				if (keys.has('w') || keys.has('arrowup')) delta.add(forward);
+				if (keys.has('s') || keys.has('arrowdown')) delta.sub(forward);
+				if (keys.has('d') || keys.has('arrowright')) delta.add(right);
+				if (keys.has('a') || keys.has('arrowleft')) delta.sub(right);
+				if (delta.lengthSq() > 0) {
+					delta.normalize().multiplyScalar(speed);
+					camera.position.add(delta);
+				}
+				camera.position.y = 1.65;
+				enforceHexBounds();
+			}
+			function enforceHexBounds() {
+				const pos2 = new THREE.Vector3(camera.position.x, 0, camera.position.z);
+				for (let i = 0; i < 6; i++) {
+					const info = sideInfo(i);
+					const dot = pos2.dot(info.normal);
+					const along = pos2.dot(info.dir);
+					const nearPassage = isPassageSide(i) && Math.abs(along) < DOOR_WIDTH * 0.62;
+					if (dot > APOTHEM + 0.18 && nearPassage) {
+						enterNeighbor(i);
+						return;
+					}
+					if (dot > APOTHEM - 0.32 && !nearPassage) {
+						const correction = dot - (APOTHEM - 0.32);
+						camera.position.addScaledVector(info.normal, -correction);
+					}
+				}
+			}
+			function enterNeighbor(side) {
+				if (!isPassageSide(side)) return;
+				const d = axialDirections[side];
+				const info = sideInfo(side);
+				const nextQ = currentRoom.q + d.q;
+				const nextR = currentRoom.r + d.r;
+				makeRoom(nextQ, nextR);
+				camera.position.copy(info.normal.clone().multiplyScalar(-(APOTHEM - 1.55)));
+				camera.position.y = 1.65;
+				const look = info.normal.clone().normalize();
+				yaw = Math.atan2(-look.x, -look.z);
+				pitch = 0;
+				updateCameraRotation();
+				showToast(`Entered hex room Q ${nextQ}, R ${nextR}, S ${-nextQ - nextR}`);
+			}
+			function jumpToRoom(q, r) {
+				makeRoom(q, r);
+				camera.position.set(0, 1.65, 3);
+				yaw = Math.PI;
+				pitch = 0;
+				updateCameraRotation();
+				showToast(`Entered hex room Q ${q}, R ${r}, S ${-q - r}`);
+			}
+
+			// ----------------------------
+			// Interaction and book modal
+			// ----------------------------
+			function updateHover() {
+				raycaster.setFromCamera(pointerCenter, camera);
+				const hits = raycaster
+					.intersectObjects(hoverables, false)
+					.filter((h) => !h.object.userData.noRay);
+				const hit = hits[0]?.object || null;
+				if (hovered && hovered !== hit) {
+					if (hovered.userData.type === 'book') {
+						hovered.userData.spineMat.emissive.setHex(0x000000);
+						hovered.userData.spineMat.emissiveIntensity = 0;
+						hovered.material = hovered.userData.baseMaterial;
+					}
+					if (hovered.userData.type === 'portal') hovered.material = matPortal;
+				}
+				hovered = hit;
+				if (hovered) {
+					if (hovered.userData.type === 'book') {
+						hovered.userData.spineMat.emissive.setHex(0x6a410f);
+						hovered.userData.spineMat.emissiveIntensity = 0.85;
+						hovered.material = hovered.userData.baseMaterial;
+						hoverLabel.textContent = `“${hovered.userData.title}” — Wall ${hovered.userData.wall}, Shelf ${hovered.userData.shelf}, Volume ${hovered.userData.volume}`;
+					} else if (hovered.userData.type === 'portal') {
+						hovered.material = matPortalHover;
+						hoverLabel.textContent = `Click or walk through passage: ${hovered.userData.label}`;
+					}
+					hoverLabel.classList.add('show');
+				} else {
+					hoverLabel.classList.remove('show');
+				}
+			}
+			function interact() {
+				if (!hovered) return;
+				if (hovered.userData.type === 'book') {
+					openBook(hovered.userData);
+				} else if (hovered.userData.type === 'portal') {
+					enterNeighbor(hovered.userData.side);
+				}
+			}
+			function openBook(data) {
+				releaseLookLock();
+				keys.clear();
+				currentBook = { ...data };
+				currentBookPage = 1;
+				pageInput.value = currentBookPage;
+				resetSearch(true);
+				bookTitle.textContent = `“${currentBook.title}”`;
+				bookWall.textContent = `Wall ${currentBook.wall}`;
+				bookShelf.textContent = `Shelf ${currentBook.shelf}`;
+				bookVolume.textContent = `Volume ${currentBook.volume}`;
+				renderPage();
+				bookModal.classList.add('open');
+			}
+			function renderPage() {
+				if (!currentBook) return;
+				currentBookPage = clamp(parseIntSafe(pageInput.value, 1), 1, PAGES_PER_VOLUME);
+				pageInput.value = currentBookPage;
+				bookAddress.textContent = bookAddressString(currentBook, currentBookPage);
+				currentPageText = generatePageText(currentBook, currentBookPage);
+				activeSearchMatch = -1;
+				const hasSearch = searchInput.value.length > 0;
+				renderSearchHighlights(hasSearch);
+				if (!hasSearch || searchMatches.length === 0)
+					requestAnimationFrame(() => {
+						bookModalMain.scrollTop = 0;
+					});
+			}
+			function findTextMatches(text, query) {
+				if (!query) return [];
+				const haystack = text.toLowerCase();
+				const needle = query.toLowerCase();
+				const matches = [];
+				let start = 0;
+				while (start < haystack.length) {
+					const index = haystack.indexOf(needle, start);
+					if (index === -1) break;
+					matches.push({ start: index, end: index + needle.length });
+					start = index + Math.max(needle.length, 1);
+				}
+				return matches;
+			}
+			function updateSearchStatus() {
+				prevMatch.disabled = searchMatches.length === 0;
+				nextMatch.disabled = searchMatches.length === 0;
+				clearSearch.disabled = searchInput.value.length === 0;
+				if (!searchInput.value) {
+					searchStatus.textContent = 'No search';
+				} else if (searchMatches.length === 0) {
+					searchStatus.textContent = '0 matches';
+				} else {
+					searchStatus.textContent = `${activeSearchMatch + 1} / ${searchMatches.length}`;
+				}
+			}
+			function resetSearch(clearInput = false) {
+				if (clearInput) searchInput.value = '';
+				searchMatches = [];
+				activeSearchMatch = -1;
+				updateSearchStatus();
+			}
+			function scrollActiveMatchIntoView() {
+				const active = pageText.querySelector('.search-hit.active');
+				active?.scrollIntoView({ block: 'center', inline: 'nearest' });
+			}
+			function renderSearchHighlights(scrollToMatch = false) {
+				searchMatches = findTextMatches(currentPageText, searchInput.value);
+				if (searchMatches.length === 0) activeSearchMatch = -1;
+				if (searchMatches.length > 0 && activeSearchMatch === -1) activeSearchMatch = 0;
+				if (activeSearchMatch >= searchMatches.length) activeSearchMatch = 0;
+
+				pageText.textContent = '';
+				const fragment = document.createDocumentFragment();
+				let cursor = 0;
+				searchMatches.forEach((match, index) => {
+					if (match.start > cursor) {
+						fragment.append(document.createTextNode(currentPageText.slice(cursor, match.start)));
+					}
+					const marker = document.createElement('mark');
+					marker.className = `search-hit${index === activeSearchMatch ? ' active' : ''}`;
+					marker.textContent = currentPageText.slice(match.start, match.end);
+					fragment.append(marker);
+					cursor = match.end;
+				});
+				fragment.append(document.createTextNode(currentPageText.slice(cursor)));
+				pageText.append(fragment);
+				updateSearchStatus();
+				if (scrollToMatch && activeSearchMatch !== -1)
+					requestAnimationFrame(scrollActiveMatchIntoView);
+			}
+			function moveSearchMatch(delta) {
+				if (searchMatches.length === 0) return;
+				activeSearchMatch =
+					(activeSearchMatch + delta + searchMatches.length) % searchMatches.length;
+				renderSearchHighlights(true);
+			}
+			function closeModals() {
+				bookModal.classList.remove('open');
+				jumpModal.classList.remove('open');
+				keys.clear();
+				if (
+					bookModal.contains(document.activeElement) ||
+					jumpModal.contains(document.activeElement)
+				) {
+					document.activeElement.blur();
+				}
+			}
+
+			closeBook.addEventListener('click', closeModals);
+			closeJump.addEventListener('click', closeModals);
+			bookModal.addEventListener('click', (e) => {
+				if (e.target === bookModal) closeModals();
+			});
+			jumpModal.addEventListener('click', (e) => {
+				if (e.target === jumpModal) closeModals();
+			});
+			pageInput.addEventListener('input', renderPage);
+			searchInput.addEventListener('input', () => {
+				activeSearchMatch = -1;
+				renderSearchHighlights(true);
+			});
+			searchInput.addEventListener('keydown', (e) => {
+				if (e.key !== 'Enter') return;
+				e.preventDefault();
+				moveSearchMatch(e.shiftKey ? -1 : 1);
+			});
+			prevMatch.addEventListener('click', () => moveSearchMatch(-1));
+			nextMatch.addEventListener('click', () => moveSearchMatch(1));
+			clearSearch.addEventListener('click', () => {
+				searchInput.value = '';
+				activeSearchMatch = -1;
+				renderSearchHighlights();
+				searchInput.focus();
+			});
+			prevPage.addEventListener('click', () => {
+				pageInput.value = clamp(currentBookPage - 1, 1, PAGES_PER_VOLUME);
+				renderPage();
+			});
+			nextPage.addEventListener('click', () => {
+				pageInput.value = clamp(currentBookPage + 1, 1, PAGES_PER_VOLUME);
+				renderPage();
+			});
+			copyAddress.addEventListener('click', async () => {
+				const text = `${bookAddressString(currentBook, currentBookPage)}\n${currentBook.title}`;
+				try {
+					await navigator.clipboard.writeText(text);
+					showToast('Book address copied.');
+				} catch {
+					showToast(text);
+				}
+			});
+
+			jumpBtn.addEventListener('click', () => {
+				releaseLookLock();
+				keys.clear();
+				jumpQ.value = currentRoom.q;
+				jumpR.value = currentRoom.r;
+				jumpModal.classList.add('open');
+			});
+			resetBtn.addEventListener('click', () => jumpToRoom(0, 0));
+			goJump.addEventListener('click', () => {
+				jumpToRoom(parseIntSafe(jumpQ.value), parseIntSafe(jumpR.value));
+				closeModals();
+			});
+
+			enterBtn.addEventListener('click', () => {
+				const q = parseIntSafe(startQ.value, 0);
+				const r = parseIntSafe(startR.value, 0);
+				keys.clear();
+				start.style.display = 'none';
+				jumpToRoom(q, r);
+				requestLookLock();
+			});
+			randomBtn.addEventListener('click', () => {
+				startQ.value = Math.floor(Math.random() * 20001) - 10000;
+				startR.value = Math.floor(Math.random() * 20001) - 10000;
+			});
+
+			addEventListener('resize', () => {
+				camera.aspect = innerWidth / innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize(innerWidth, innerHeight);
+			});
+
+			// Load last room if present.
+			const last = loadLastRoom();
+			if (last && Number.isFinite(last.q) && Number.isFinite(last.r)) {
+				startQ.value = last.q;
+				startR.value = last.r;
+			}
+			resetSearch(true);
+
+			// Initial room is prepared behind the start screen.
+			makeRoom(parseIntSafe(startQ.value), parseIntSafe(startR.value));
+
+			const clock = new THREE.Clock();
+			function animate() {
+				const dt = Math.min(clock.getDelta(), 0.05);
+				const now = performance.now();
+				flameLight.intensity = 4.1 + Math.sin(now * 0.004) * 0.22 + Math.sin(now * 0.011) * 0.08;
+				for (let i = 0; i < candleFlames.length; i++) {
+					const f = candleFlames[i];
+					const flicker =
+						1 + Math.sin(now * (0.006 + i * 0.0007)) * 0.08 + Math.sin(now * 0.021) * 0.035;
+					f.scale.y = 1.6 * flicker;
+					f.material.emissiveIntensity = 2.1 + flicker * 0.55;
+				}
+				if (
+					start.style.display === 'none' &&
+					!bookModal.classList.contains('open') &&
+					!jumpModal.classList.contains('open')
+				) {
+					movePlayer(dt);
+					updateHover();
+				}
+				renderer.render(scene, camera);
+				requestAnimationFrame(animate);
+			}
+			animate();
+		</script>
+	</body>
+</html>
