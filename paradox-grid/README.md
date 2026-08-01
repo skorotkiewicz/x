@@ -1,5 +1,7 @@
 # Paradox Grid
 
+http://sekor.eu.org/x/paradox-grid/
+
 Paradox Grid is a single-file arena game for the browser. It uses Canvas 2D and the Web Audio API.
 
 Cast bolts to build temporary walls across a collapsing grid. Clear each sector, use limited rewinds, and defeat the Warden Prime.
