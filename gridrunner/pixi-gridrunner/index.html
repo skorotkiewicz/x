@@ -1,17 +1,179 @@
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/style.css">
-    <title>PixiJS - Template</title>
-</head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#03060d" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>GRIDRUNNER: Pulse</title>
+  </head>
+  <body>
+    <div id="pixi-container" aria-label="GRIDRUNNER Pulse game field"></div>
+    <div class="scanlines" aria-hidden="true"></div>
 
-<body>
-    <div id="app">
-        <div id="pixi-container"></div>
+    <main id="menu" class="screen">
+      <section class="panel" aria-labelledby="title">
+        <p class="eyebrow">Signal acquired // one run, one life</p>
+        <h1 id="title">Gridrunner<span>:</span> Pulse</h1>
+        <p class="lede">
+          Ride a song-built neon track. Fire downbeat, turn on pulse, and make
+          enemy hunters collide with your solid light trail. Each checkpoint
+          mutates the run.
+        </p>
+
+        <div class="label-row">
+          <h2>Select signal</h2>
+          <div id="metaLine" class="meta"></div>
+        </div>
+        <div id="tracks" class="track-grid"></div>
+
+        <div class="drop-row">
+          <label id="dropZone" class="drop-zone" for="audioFile">
+            <span aria-hidden="true">＋</span>
+            <span
+              ><b>Load your own track</b
+              ><small id="dropCopy">Drop audio here or browse</small></span
+            >
+            <input id="audioFile" type="file" accept="audio/*" hidden />
+          </label>
+          <button id="clearCustom" class="secondary" type="button" hidden>
+            Remove
+          </button>
+        </div>
+        <div id="error" role="alert"></div>
+
+        <div class="label-row"><h2>Starting weapon</h2></div>
+        <div id="weapons" class="loadouts"></div>
+        <div class="label-row"><h2>Trail frequency</h2></div>
+        <div id="trails" class="loadouts"></div>
+
+        <div class="menu-footer">
+          <div class="controls-copy">
+            <kbd>A</kbd><kbd>D</kbd> steer &nbsp; <kbd>Space</kbd> fire &nbsp;
+            <kbd>Shift</kbd> phase dash<br />
+            Turn and kill near the beat to charge overdrive.
+            <kbd>P</kbd> pauses.
+          </div>
+          <button id="launch" class="primary" type="button">
+            Enter the grid
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <section id="hud" aria-label="Run status" hidden>
+      <div class="hud-top">
+        <div class="hud-block">
+          <div class="hud-label">Score</div>
+          <div id="score" class="hud-value">000000</div>
+          <div id="multiplier" class="meta">SYNC ×1</div>
+        </div>
+        <div class="hud-block right">
+          <div id="trackReadout" class="hud-label">TRACK // 120 BPM</div>
+          <div id="time" class="hud-value">00:00</div>
+          <div class="progress-shell"><div id="progressFill"></div></div>
+        </div>
+      </div>
+      <div class="hud-bottom">
+        <div class="hud-block">
+          <div class="hud-label">Integrity</div>
+          <div id="integrity" class="integrity"></div>
+        </div>
+        <div>
+          <div class="hud-label beat-label">Pulse window</div>
+          <div id="beatRail" class="beat-rail">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+        <div class="hud-block right">
+          <div class="hud-label">Sync meter</div>
+          <div id="syncText" class="meta">0%</div>
+          <div class="sync-shell"><div id="syncFill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="announcement" aria-live="polite">
+      <strong></strong><span></span>
     </div>
+
+    <section id="upgradeModal" class="modal" hidden>
+      <div class="panel">
+        <p class="eyebrow">Checkpoint synchronized</p>
+        <h2>Rewrite your machine</h2>
+        <p class="modal-copy">
+          Choose one mutation. The signal resumes immediately.
+        </p>
+        <div id="choices" class="choices"></div>
+      </div>
+    </section>
+
+    <section id="resultModal" class="modal" hidden>
+      <div class="panel">
+        <p id="resultEyebrow" class="eyebrow">Signal lost</p>
+        <h2 id="resultTitle">Derezzed</h2>
+        <p id="resultCopy" class="modal-copy"></p>
+        <div class="result-stats">
+          <div>
+            <span class="hud-label">Score</span><b id="resultScore">0</b>
+          </div>
+          <div>
+            <span class="hud-label">Kills</span><b id="resultKills">0</b>
+          </div>
+          <div>
+            <span class="hud-label">Perfects</span><b id="resultPerfects">0</b>
+          </div>
+          <div>
+            <span class="hud-label">Data banked</span><b id="resultCores">0</b>
+          </div>
+        </div>
+        <div class="result-actions">
+          <button id="retry" class="primary" type="button">Fresh seed</button>
+          <button id="returnMenu" class="secondary" type="button">
+            Signal select
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <button id="mute" type="button" aria-pressed="false">Audio // on</button>
+
+    <div id="touchControls" aria-label="Touch controls">
+      <div class="touch-group">
+        <button
+          class="touch-button"
+          data-key="ArrowLeft"
+          aria-label="Steer left"
+        >
+          ◀
+        </button>
+        <button
+          class="touch-button"
+          data-key="ArrowRight"
+          aria-label="Steer right"
+        >
+          ▶
+        </button>
+      </div>
+      <div class="touch-group">
+        <button
+          class="touch-button"
+          data-key="ShiftLeft"
+          aria-label="Phase dash"
+        >
+          Dash
+        </button>
+        <button class="touch-button" data-key="Space" aria-label="Fire">
+          Fire
+        </button>
+      </div>
+    </div>
+
+    <audio id="customAudio" preload="auto"></audio>
     <script type="module" src="/src/main.ts"></script>
-</body>
+  </body>
 </html>
