@@ -1,0 +1,1823 @@
+ <!doctype html>
+ <html lang="en">
+ <head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+   <meta name="theme-color" content="#03060d">
+   <title>GRIDRUNNER: Pulse</title>
+   <style>
+     :root {
+       color-scheme: dark;
+       --cyan: #3df5ff;
+       --pink: #ff3dbb;
+       --violet: #8f64ff;
+       --amber: #ffd166;
+       --ink: #03060d;
+       --panel: rgba(5, 10, 24, .86);
+       --line: rgba(61, 245, 255, .25);
+     }
+
+     * { box-sizing: border-box; }
+     [hidden] { display: none !important; }
+
+     html, body {
+       width: 100%;
+       height: 100%;
+       margin: 0;
+       overflow: hidden;
+       background: var(--ink);
+       color: #ecfeff;
+       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+     }
+
+     button, input { font: inherit; }
+     button { color: inherit; }
+
+     #game {
+       position: fixed;
+       inset: 0;
+       width: 100%;
+       height: 100%;
+       outline: none;
+       background: radial-gradient(circle at 50% 30%, #101a39 0, #03060d 65%);
+     }
+
+     .scanlines {
+       pointer-events: none;
+       position: fixed;
+       inset: 0;
+       z-index: 2;
+       opacity: .16;
+       background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,.45) 3px 4px);
+       mix-blend-mode: multiply;
+     }
+
+     .screen {
+       position: fixed;
+       inset: 0;
+       z-index: 4;
+       display: grid;
+       place-items: center;
+       padding: clamp(16px, 4vw, 48px);
+       overflow: auto;
+       background: radial-gradient(circle at 50% 45%, rgba(8, 18, 42, .2), rgba(1, 3, 9, .78));
+     }
+
+     .panel {
+       width: min(920px, 100%);
+       padding: clamp(20px, 4vw, 42px);
+       border: 1px solid var(--line);
+       border-radius: 4px;
+       background:
+         linear-gradient(135deg, rgba(61,245,255,.05), transparent 40%),
+         var(--panel);
+       box-shadow: 0 0 70px rgba(0,0,0,.6), inset 0 0 40px rgba(61,245,255,.025);
+       backdrop-filter: blur(12px);
+     }
+
+     .eyebrow {
+       margin: 0 0 8px;
+       color: var(--cyan);
+       font-size: 11px;
+       font-weight: 800;
+       letter-spacing: .32em;
+       text-transform: uppercase;
+     }
+
+     h1, h2, h3, p { margin-top: 0; }
+
+     h1 {
+       margin-bottom: 4px;
+       font-size: clamp(42px, 9vw, 92px);
+       font-weight: 950;
+       letter-spacing: -.07em;
+       line-height: .9;
+       text-transform: uppercase;
+       text-shadow: 0 0 28px rgba(61,245,255,.24);
+     }
+
+     h1 span { color: var(--pink); }
+
+     .lede {
+       max-width: 640px;
+       margin: 14px 0 26px;
+       color: #98abbf;
+       font-size: clamp(14px, 2vw, 17px);
+       line-height: 1.55;
+     }
+
+     .label-row {
+       display: flex;
+       align-items: end;
+       justify-content: space-between;
+       gap: 16px;
+       margin: 20px 0 9px;
+     }
+
+     .label-row h2 {
+       margin: 0;
+       font-size: 11px;
+       letter-spacing: .22em;
+       text-transform: uppercase;
+     }
+
+     .meta {
+       color: #7f94aa;
+       font: 700 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+       letter-spacing: .06em;
+     }
+
+     .track-grid {
+       display: grid;
+       grid-template-columns: repeat(3, 1fr);
+       gap: 9px;
+     }
+
+     .track-card, .choice-card, .loadout-button {
+       position: relative;
+       overflow: hidden;
+       border: 1px solid rgba(151, 176, 204, .18);
+       border-radius: 3px;
+       background: rgba(7, 14, 30, .76);
+       text-align: left;
+       cursor: pointer;
+       transition: border-color .15s, transform .15s, background .15s;
+     }
+
+     .track-card {
+       min-height: 105px;
+       padding: 14px;
+     }
+
+     .track-card::before {
+       content: "";
+       position: absolute;
+       inset: 0;
+       opacity: .12;
+       background: linear-gradient(130deg, var(--track-color), transparent 62%);
+     }
+
+     .track-card:hover:not(:disabled), .choice-card:hover, .loadout-button:hover:not(:disabled) {
+       z-index: 1;
+       transform: translateY(-2px);
+       border-color: var(--cyan);
+       background: rgba(12, 25, 48, .92);
+     }
+
+     .track-card.selected, .loadout-button.selected {
+       border-color: var(--track-color, var(--cyan));
+       box-shadow: inset 0 -2px var(--track-color, var(--cyan)), 0 0 24px rgba(61,245,255,.08);
+     }
+
+     .track-card:disabled, .loadout-button:disabled { cursor: not-allowed; opacity: .46; }
+
+     .track-name, .choice-card strong, .loadout-button strong {
+       position: relative;
+       display: block;
+       margin-bottom: 8px;
+       font-size: 14px;
+       font-weight: 900;
+       letter-spacing: .06em;
+       text-transform: uppercase;
+     }
+
+     .track-stats, .track-lock, .choice-card span, .loadout-button span {
+       position: relative;
+       color: #8196ab;
+       font: 700 10px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+       letter-spacing: .05em;
+       text-transform: uppercase;
+     }
+
+     .track-lock { display: block; margin-top: 4px; color: var(--pink); }
+
+     .drop-row {
+       display: grid;
+       grid-template-columns: 1fr auto;
+       gap: 9px;
+       margin-top: 9px;
+     }
+
+     .drop-zone {
+       min-height: 50px;
+       display: flex;
+       align-items: center;
+       gap: 12px;
+       padding: 11px 14px;
+       border: 1px dashed rgba(61,245,255,.34);
+       border-radius: 3px;
+       color: #8ca2b8;
+       background: rgba(5, 13, 27, .68);
+       cursor: pointer;
+     }
+
+     .drop-zone.dragging { border-color: var(--pink); background: rgba(255,61,187,.08); }
+     .drop-zone b { color: var(--cyan); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+     .drop-zone small { display: block; margin-top: 2px; }
+
+     .loadouts {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 8px;
+     }
+
+     .loadout-button { flex: 1 1 160px; padding: 10px 12px; }
+     .loadout-button strong { margin: 0; font-size: 11px; }
+     .loadout-button span { font-size: 9px; }
+
+     .menu-footer {
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       gap: 20px;
+       margin-top: 24px;
+     }
+
+     .controls-copy {
+       color: #72869c;
+       font: 700 10px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace;
+       text-transform: uppercase;
+     }
+
+     kbd {
+       padding: 2px 5px;
+       border: 1px solid #35465a;
+       border-bottom-width: 2px;
+       border-radius: 2px;
+       color: #c8faff;
+       background: #0a1220;
+       font: inherit;
+     }
+
+     .primary, .secondary {
+       min-height: 48px;
+       padding: 0 22px;
+       border: 1px solid var(--cyan);
+       border-radius: 2px;
+       background: var(--cyan);
+       color: #031015;
+       font-size: 12px;
+       font-weight: 950;
+       letter-spacing: .16em;
+       text-transform: uppercase;
+       cursor: pointer;
+       box-shadow: 0 0 26px rgba(61,245,255,.2);
+     }
+
+     .primary:hover { filter: brightness(1.12); }
+     .primary:disabled { opacity: .5; cursor: wait; }
+     .secondary { border-color: #4d6075; color: #c8d5e2; background: transparent; box-shadow: none; }
+
+     #hud {
+       pointer-events: none;
+       position: fixed;
+       inset: 0;
+       z-index: 3;
+       padding: max(18px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom))
+ max(20px, env(safe-area-inset-left));
+     }
+
+     .hud-top {
+       display: flex;
+       justify-content: space-between;
+       align-items: start;
+       gap: 18px;
+     }
+
+     .hud-block { min-width: 135px; }
+     .hud-block.right { text-align: right; }
+     .hud-label { color: #6f859c; font: 800 9px/1 ui-monospace, monospace; letter-spacing: .2em; text-transform: uppercase; }
+     .hud-value { margin-top: 5px; font: 900 clamp(20px, 4vw, 32px)/1 ui-monospace, monospace; letter-spacing: -.06em; }
+     #multiplier { color: var(--pink); }
+
+     .progress-shell, .sync-shell {
+       overflow: hidden;
+       height: 4px;
+       margin-top: 9px;
+       background: rgba(255,255,255,.1);
+     }
+
+     #progressFill, #syncFill { width: 0; height: 100%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+     #syncFill { background: var(--pink); box-shadow: 0 0 12px var(--pink); }
+
+     .hud-bottom {
+       position: absolute;
+       left: max(20px, env(safe-area-inset-left));
+       right: max(20px, env(safe-area-inset-right));
+       bottom: max(18px, env(safe-area-inset-bottom));
+       display: flex;
+       align-items: end;
+       justify-content: space-between;
+       gap: 20px;
+     }
+
+     .integrity { display: flex; gap: 6px; margin-top: 8px; }
+     .integrity i { width: 22px; height: 5px; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+     .integrity i.off { background: #273444; box-shadow: none; }
+
+     .beat-rail { display: flex; align-items: end; gap: 5px; height: 26px; }
+     .beat-rail i { width: 4px; height: 9px; background: #33465a; transition: height .06s, background .06s; }
+     .beat-rail i.on { height: 25px; background: var(--pink); box-shadow: 0 0 12px var(--pink); }
+
+     #announcement {
+       pointer-events: none;
+       position: fixed;
+       left: 50%;
+       top: 21%;
+       z-index: 5;
+       width: min(620px, 88vw);
+       transform: translate(-50%, -8px);
+       text-align: center;
+       opacity: 0;
+       transition: opacity .16s, transform .16s;
+     }
+
+     #announcement.show { opacity: 1; transform: translate(-50%, 0); }
+     #announcement strong { display: block; color: var(--cyan); font-size: clamp(24px, 5vw, 48px); font-weight: 950; letter-spacing:
+ -.04em; text-transform: uppercase; text-shadow: 0 0 28px currentColor; }
+     #announcement span { color: #c4d5e6; font: 800 10px/1.6 ui-monospace, monospace; letter-spacing: .22em; text-transform:
+ uppercase; }
+
+     .modal {
+       position: fixed;
+       inset: 0;
+       z-index: 6;
+       display: grid;
+       place-items: center;
+       padding: 20px;
+       overflow: auto;
+       background: rgba(1, 3, 9, .72);
+       backdrop-filter: blur(8px);
+     }
+
+     .modal .panel { width: min(850px, 100%); }
+     .modal h2 { margin-bottom: 8px; font-size: clamp(30px, 7vw, 58px); line-height: .95; letter-spacing: -.055em; text-transform:
+ uppercase; }
+     .modal-copy { color: #8398ad; }
+
+     .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 24px; }
+     .choice-card { min-height: 185px; padding: 20px; }
+     .choice-card em { display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 28px; border: 1px solid #42566d;
+ color: var(--cyan); font: 900 11px ui-monospace, monospace; font-style: normal; }
+     .choice-card strong { color: #f4ffff; font-size: 16px; }
+     .choice-card span { display: block; margin-top: 10px; font-size: 10px; text-transform: none; }
+     .choice-card .type { margin-top: 14px; color: var(--pink); letter-spacing: .16em; text-transform: uppercase; }
+
+     .result-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 26px 0; }
+     .result-stats div { padding: 14px; border: 1px solid rgba(151,176,204,.14); background: rgba(5,12,25,.55); }
+     .result-stats b { display: block; margin-top: 5px; font: 900 21px ui-monospace, monospace; }
+     .result-actions { display: flex; gap: 10px; }
+
+     #mute {
+       position: fixed;
+       z-index: 8;
+       top: max(12px, env(safe-area-inset-top));
+       left: 50%;
+       transform: translateX(-50%);
+       padding: 7px 10px;
+       border: 1px solid rgba(151,176,204,.2);
+       border-radius: 2px;
+       color: #8fa4b8;
+       background: rgba(4,9,18,.7);
+       font: 800 9px ui-monospace, monospace;
+       letter-spacing: .13em;
+       cursor: pointer;
+     }
+
+     #touchControls {
+       position: fixed;
+       z-index: 5;
+       inset: auto 16px max(16px, env(safe-area-inset-bottom));
+       display: none;
+       justify-content: space-between;
+       pointer-events: none;
+     }
+
+     .touch-group { display: flex; gap: 8px; }
+     .touch-button {
+       pointer-events: auto;
+       width: 58px;
+       height: 58px;
+       border: 1px solid rgba(61,245,255,.4);
+       border-radius: 50%;
+       color: var(--cyan);
+       background: rgba(3,10,20,.62);
+       font-weight: 900;
+       touch-action: none;
+     }
+
+     #error { min-height: 18px; margin-top: 8px; color: #ff6f91; font: 700 10px ui-monospace, monospace; }
+
+     @media (max-width: 680px) {
+       .screen { display: block; padding: 10px; }
+       .panel { padding: 20px 16px; }
+       .track-grid, .choices { grid-template-columns: 1fr; }
+       .track-card { min-height: 76px; }
+       .drop-row { grid-template-columns: 1fr; }
+       .menu-footer { align-items: stretch; flex-direction: column; }
+       .primary, .secondary { width: 100%; }
+       .choices { max-height: 62vh; overflow: auto; }
+       .choice-card { min-height: 130px; }
+       .choice-card em { float: left; margin: 0 14px 60px 0; }
+       .result-stats { grid-template-columns: repeat(2, 1fr); }
+       .hud-block { min-width: 105px; }
+       #touchControls.active { display: flex; }
+       #mute { left: auto; right: 12px; transform: none; }
+     }
+
+     @media (prefers-reduced-motion: reduce) {
+       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+       .scanlines { display: none; }
+     }
+   </style>
+ </head>
+ <body>
+   <canvas id="game" tabindex="0" aria-label="GRIDRUNNER Pulse game field"></canvas>
+   <div class="scanlines" aria-hidden="true"></div>
+
+   <main id="menu" class="screen">
+     <section class="panel" aria-labelledby="title">
+       <p class="eyebrow">Signal acquired // one run, one life</p>
+       <h1 id="title">Gridrunner<span>:</span> Pulse</h1>
+       <p class="lede">Ride a song-built neon track. Fire downbeat, turn on pulse, and make enemy hunters collide with your solid
+ light trail. Each checkpoint mutates the run.</p>
+
+       <div class="label-row">
+         <h2>Select signal</h2>
+         <div id="metaLine" class="meta"></div>
+       </div>
+       <div id="tracks" class="track-grid"></div>
+
+       <div class="drop-row">
+         <label id="dropZone" class="drop-zone" for="audioFile">
+           <span aria-hidden="true">＋</span>
+           <span><b>Load your own track</b><small id="dropCopy">Drop audio here or browse</small></span>
+           <input id="audioFile" type="file" accept="audio/*" hidden>
+         </label>
+         <button id="clearCustom" class="secondary" type="button" hidden>Remove</button>
+       </div>
+       <div id="error" role="alert"></div>
+
+       <div class="label-row"><h2>Starting weapon</h2></div>
+       <div id="weapons" class="loadouts"></div>
+       <div class="label-row"><h2>Trail frequency</h2></div>
+       <div id="trails" class="loadouts"></div>
+
+       <div class="menu-footer">
+         <div class="controls-copy">
+           <kbd>A</kbd><kbd>D</kbd> steer &nbsp; <kbd>Space</kbd> fire &nbsp; <kbd>Shift</kbd> phase dash<br>
+           Turn and kill near the beat to charge overdrive. <kbd>P</kbd> pauses.
+         </div>
+         <button id="launch" class="primary" type="button">Enter the grid</button>
+       </div>
+     </section>
+   </main>
+
+   <section id="hud" aria-label="Run status" hidden>
+     <div class="hud-top">
+       <div class="hud-block">
+         <div class="hud-label">Score</div>
+         <div id="score" class="hud-value">000000</div>
+         <div id="multiplier" class="meta">SYNC ×1</div>
+       </div>
+       <div class="hud-block right">
+         <div id="trackReadout" class="hud-label">TRACK // 120 BPM</div>
+         <div id="time" class="hud-value">00:00</div>
+         <div class="progress-shell"><div id="progressFill"></div></div>
+       </div>
+     </div>
+     <div class="hud-bottom">
+       <div class="hud-block">
+         <div class="hud-label">Integrity</div>
+         <div id="integrity" class="integrity"></div>
+       </div>
+       <div>
+         <div class="hud-label" style="text-align:center">Pulse window</div>
+         <div id="beatRail" class="beat-rail"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+       </div>
+       <div class="hud-block right">
+         <div class="hud-label">Sync meter</div>
+         <div id="syncText" class="meta">0%</div>
+         <div class="sync-shell"><div id="syncFill"></div></div>
+       </div>
+     </div>
+   </section>
+
+   <div id="announcement" aria-live="polite"><strong></strong><span></span></div>
+
+   <section id="upgradeModal" class="modal" hidden>
+     <div class="panel">
+       <p class="eyebrow">Checkpoint synchronized</p>
+       <h2>Rewrite your machine</h2>
+       <p class="modal-copy">Choose one mutation. The signal resumes immediately.</p>
+       <div id="choices" class="choices"></div>
+     </div>
+   </section>
+
+   <section id="resultModal" class="modal" hidden>
+     <div class="panel">
+       <p id="resultEyebrow" class="eyebrow">Signal lost</p>
+       <h2 id="resultTitle">Derezzed</h2>
+       <p id="resultCopy" class="modal-copy"></p>
+       <div class="result-stats">
+         <div><span class="hud-label">Score</span><b id="resultScore">0</b></div>
+         <div><span class="hud-label">Kills</span><b id="resultKills">0</b></div>
+         <div><span class="hud-label">Perfects</span><b id="resultPerfects">0</b></div>
+         <div><span class="hud-label">Data banked</span><b id="resultCores">0</b></div>
+       </div>
+       <div class="result-actions">
+         <button id="retry" class="primary" type="button">Fresh seed</button>
+         <button id="returnMenu" class="secondary" type="button">Signal select</button>
+       </div>
+     </div>
+   </section>
+
+   <button id="mute" type="button" aria-pressed="false">AUDIO // ON</button>
+
+   <div id="touchControls" aria-label="Touch controls">
+     <div class="touch-group">
+       <button class="touch-button" data-key="ArrowLeft" aria-label="Steer left">◀</button>
+       <button class="touch-button" data-key="ArrowRight" aria-label="Steer right">▶</button>
+     </div>
+     <div class="touch-group">
+       <button class="touch-button" data-key="ShiftLeft" aria-label="Phase dash">DASH</button>
+       <button class="touch-button" data-key="Space" aria-label="Fire">FIRE</button>
+     </div>
+   </div>
+
+   <audio id="customAudio" preload="auto"></audio>
+
+   <script>
+   (() => {
+     'use strict';
+
+     const $ = id => document.getElementById(id);
+     const canvas = $('game');
+     const ctx = canvas.getContext('2d');
+     const TAU = Math.PI * 2;
+     const VIEW = 12;
+     const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+     const lerp = (a, b, t) => a + (b - a) * t;
+     const fmt = n => Math.floor(n).toString().padStart(6, '0');
+     const timeFmt = seconds => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(Math.floor(seconds % 60)).padStart(2,
+ '0')}`;
+
+     function mulberry32(seed) {
+       return function () {
+         let t = seed += 0x6D2B79F5;
+         t = Math.imul(t ^ t >>> 15, t | 1);
+         t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+         return ((t ^ t >>> 14) >>> 0) / 4294967296;
+       };
+     }
+
+     function hash(n, seed) {
+       let x = Math.imul((n | 0) ^ seed, 0x45d9f3b);
+       x = Math.imul(x ^ x >>> 16, 0x45d9f3b);
+       return ((x ^ x >>> 16) >>> 0) / 4294967295;
+     }
+
+     function noise(x, seed) {
+       const i = Math.floor(x);
+       const f = x - i;
+       const s = f * f * (3 - 2 * f);
+       return lerp(hash(i, seed), hash(i + 1, seed), s) * 2 - 1;
+     }
+
+     function makeCurve(seed, intensity) {
+       return Array.from({ length: 256 }, (_, i) => {
+         const p = i / 255;
+         const section = p > .72 ? .88 : p > .48 ? .68 : p > .22 ? .48 : .3;
+         const pulse = Math.pow(Math.max(0, Math.sin(p * Math.PI * (8 + intensity))), 3) * .2;
+         return clamp(section + pulse + noise(p * 22, seed) * .1, .08, 1);
+       });
+     }
+
+     const TRACKS = [
+       { id: 'vector', name: 'Vector Dawn', bpm: 108, duration: 62, difficulty: 'FLOW', color: '#3df5ff', accent: '#8f64ff', seed:
+ 1031, curve: makeCurve(1031, 1) },
+       { id: 'afterglow', name: 'Afterglow Riot', bpm: 136, duration: 68, difficulty: 'SURGE', color: '#ff3dbb', accent: '#ffd166',
+ seed: 8177, curve: makeCurve(8177, 3) },
+       { id: 'redline', name: 'Redline // Remix', bpm: 172, duration: 72, difficulty: 'OVERDRIVE', color: '#ff5b55', accent:
+ '#ff3dbb', seed: 4409, curve: makeCurve(4409, 6), locked: true }
+     ];
+
+     const WEAPONS = [
+       { id: 'pulse', name: 'Pulse Cannon', note: 'Reliable single beam', unlock: () => true },
+       { id: 'twin', name: 'Twin Array', note: 'Two angled bolts // 30 data', unlock: meta => meta.cores >= 30 },
+       { id: 'lance', name: 'Phase Lance', note: 'Piercing heavy shot // 1 clear', unlock: meta => meta.wins >= 1 }
+     ];
+
+     const TRAILS = [
+       { id: 'cyan', name: 'Ion Blue', note: 'Base frequency', color: '#3df5ff', unlock: () => true },
+       { id: 'pink', name: 'Hot Magenta', note: '20 data', color: '#ff3dbb', unlock: meta => meta.cores >= 20 },
+       { id: 'gold', name: 'Solar Gold', note: '2 clears', color: '#ffd166', unlock: meta => meta.wins >= 2 }
+     ];
+
+     const UPGRADES = [
+       { id: 'spread', name: 'Prism Array', type: 'Weapon', text: 'Add two angled projectiles.', apply: m => m.spread++ },
+       { id: 'rapid', name: 'Clock Splitter', type: 'Weapon', text: 'Fire 22% faster.', apply: m => m.fireRate *= .78 },
+       { id: 'power', name: 'Hard Light', type: 'Weapon', text: 'Projectiles deal +1 damage.', apply: m => m.damage++ },
+       { id: 'pierce', name: 'Ghost Rounds', type: 'Weapon', text: 'Shots pierce one more target.', apply: m => m.pierce++ },
+       { id: 'homing', name: 'Signal Seeker', type: 'Weapon', text: 'Bolts bend toward hostile ships.', apply: m => m.homing += .9 },
+       { id: 'dash', name: 'Phase Capacitor', type: 'Ship', text: 'Dash recharges 35% faster.', apply: m => m.dashRate *= .65 },
+       { id: 'hull', name: 'Backup Chassis', type: 'Ship', text: 'Restore and add one integrity.', apply: (m, r) => { m.maxHull++;
+ r.player.hull = m.maxHull; } },
+       { id: 'wall', name: 'Edge Protocol', type: 'Ship', text: 'Survive one track-edge impact per section.', apply: m => {
+ m.wallRun++; m.wallCharge++; } },
+       { id: 'trail', name: 'Nova Trail', type: 'Trail', text: 'Trail kills detonate into nearby enemies.', apply: m => m.trailBlast
+ += .22 },
+       { id: 'sync', name: 'Beat Engine', type: 'Sync', text: 'Perfect actions charge 45% more sync.', apply: m => m.syncGain *= 1.45
+ }
+     ];
+
+     function loadMeta() {
+       const clean = { best: 0, cores: 0, wins: 0, kills: 0 };
+       try {
+         const saved = JSON.parse(localStorage.getItem('gridrunner-pulse-meta'));
+         if (saved && typeof saved === 'object') {
+           for (const key of Object.keys(clean)) if (Number.isFinite(saved[key]) && saved[key] >= 0) clean[key] =
+ Math.floor(saved[key]);
+         }
+       } catch (_) {}
+       return clean;
+     }
+
+     function saveMeta() {
+       try { localStorage.setItem('gridrunner-pulse-meta', JSON.stringify(meta)); } catch (_) {}
+     }
+
+     let meta = loadMeta();
+     let selectedTrack = TRACKS[0];
+     let selectedWeapon = 'pulse';
+     let selectedTrail = 'cyan';
+     let customTrack = null;
+     let customUrl = null;
+     let state = 'menu';
+     let run = null;
+     let upgradeChoices = [];
+     let lastFrame = performance.now();
+     let announceTimer = 0;
+     let dpr = 1;
+     let W = innerWidth;
+     let H = innerHeight;
+     const keys = Object.create(null);
+
+     const stars = Array.from({ length: 110 }, (_, i) => ({
+       x: hash(i, 91), y: hash(i, 117), s: .4 + hash(i, 301) * 1.5, p: hash(i, 711) * TAU
+     }));
+
+     const audio = {
+       ctx: null,
+       master: null,
+       noiseBuffer: null,
+       muted: false,
+       ensure() {
+         if (!this.ctx) {
+           const AudioCtx = window.AudioContext || window.webkitAudioContext;
+           if (!AudioCtx) return null;
+           this.ctx = new AudioCtx();
+           this.master = this.ctx.createGain();
+           this.master.gain.value = this.muted ? 0 : .18;
+           this.master.connect(this.ctx.destination);
+         }
+         if (this.ctx.state === 'suspended') this.ctx.resume();
+         return this.ctx;
+       },
+       tone(freq, duration, volume, type = 'sine', slide = null) {
+         const ac = this.ensure();
+         if (!ac || this.muted) return;
+         const now = ac.currentTime;
+         const osc = ac.createOscillator();
+         const gain = ac.createGain();
+         osc.type = type;
+         osc.frequency.setValueAtTime(freq, now);
+         if (slide) osc.frequency.exponentialRampToValueAtTime(Math.max(20, slide), now + duration);
+         gain.gain.setValueAtTime(volume, now);
+         gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+         osc.connect(gain).connect(this.master);
+         osc.start(now);
+         osc.stop(now + duration + .02);
+       },
+       noise(duration = .04, volume = .08) {
+         const ac = this.ensure();
+         if (!ac || this.muted) return;
+         if (!this.noiseBuffer) {
+           this.noiseBuffer = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+           const data = this.noiseBuffer.getChannelData(0);
+           for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+         }
+         const now = ac.currentTime;
+         const source = ac.createBufferSource();
+         const gain = ac.createGain();
+         const filter = ac.createBiquadFilter();
+         source.buffer = this.noiseBuffer;
+         filter.type = 'highpass';
+         filter.frequency.value = 4800;
+         gain.gain.setValueAtTime(volume, now);
+         gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+         source.connect(filter).connect(gain).connect(this.master);
+         source.start(now);
+         source.stop(now + duration);
+       },
+       beat(index, energy) {
+         if (selectedTrack.custom) return;
+         this.tone(130, .14, .8, 'sine', 42);
+         if (index % 2) this.noise(.035, .08 + energy * .06);
+         if (index % 4 === 0) {
+           const notes = [55, 65.41, 73.42, 49];
+           this.tone(notes[Math.floor(index / 4) % notes.length], .3, .32, 'sawtooth', notes[Math.floor(index / 4) % notes.length] *
+ .72);
+         }
+       },
+       shot() { this.tone(470, .06, .12, 'square', 180); },
+       hit() { this.tone(90, .11, .24, 'sawtooth', 38); },
+       perfect() { this.tone(720, .08, .12, 'sine', 1100); },
+       toggle() {
+         this.muted = !this.muted;
+         if (this.master) this.master.gain.value = this.muted ? 0 : .18;
+         $('customAudio').muted = this.muted;
+         $('mute').textContent = `AUDIO // ${this.muted ? 'OFF' : 'ON'}`;
+         $('mute').setAttribute('aria-pressed', String(this.muted));
+       }
+     };
+
+     function sampleEnergy(track, progress) {
+       const curve = track.curve;
+       const at = clamp(progress, 0, 1) * (curve.length - 1);
+       const i = Math.floor(at);
+       return lerp(curve[i], curve[Math.min(curve.length - 1, i + 1)], at - i);
+     }
+
+     function trackShape(context, z) {
+       const total = context.speed * context.duration;
+       const p = clamp(z / total, 0, 1);
+       const energy = sampleEnergy(context.track, p);
+       const bend = Math.sin(p * TAU * 1.35 + context.seed * .001) * .12;
+       const detail = noise(p * 13, context.seed) * .16 + noise(p * 31, context.seed + 7) * .045;
+       const center = clamp(bend + detail, -.31, .31);
+       const difficulty = context.track.difficulty === 'OVERDRIVE' ? .035 : 0;
+       return { center, width: clamp(.31 + energy * .17 - difficulty, .3, .5), energy };
+     }
+
+     function makeRun() {
+       const seed = (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
+       const speed = .62 + selectedTrack.bpm / 260;
+       const baseMods = {
+         spread: 0, fireRate: .23, damage: 1, pierce: 0, homing: 0,
+         dashRate: 1.7, maxHull: 3, wallRun: 0, wallCharge: 0,
+         trailBlast: 0, syncGain: 1
+       };
+       if (selectedWeapon === 'twin') baseMods.spread = 1;
+       if (selectedWeapon === 'lance') { baseMods.damage = 2; baseMods.pierce = 1; baseMods.fireRate = .34; }
+
+       const r = {
+         track: selectedTrack,
+         seed,
+         rng: mulberry32(seed),
+         speed,
+         duration: selectedTrack.duration,
+         time: 0,
+         distance: 0,
+         lastBeat: -1,
+         section: 0,
+         sections: [.23, .46, .69],
+         bossAt: .78,
+         bossSpawned: false,
+         boss: null,
+         score: 0,
+         kills: 0,
+         perfects: 0,
+         combo: 0,
+         sync: 0,
+         overdrive: 0,
+         shake: 0,
+         flash: 0,
+         mods: baseMods,
+         player: { x: 0, vx: 0, hull: baseMods.maxHull, cooldown: 0, dash: 0, invincible: 0, airborne: 0, lastTrailZ: -1 },
+         bullets: [],
+         enemyBullets: [],
+         enemies: [],
+         trails: [],
+         playerTrail: { color: TRAILS.find(t => t.id === selectedTrail).color, points: [] },
+         hazards: [],
+         particles: []
+       };
+       r.player.x = trackShape(r, 0).center;
+       buildHazards(r);
+       return r;
+     }
+
+     function buildHazards(r) {
+       const period = 60 / r.track.bpm;
+       for (let beat = 7; beat * period < r.duration * .77; beat++) {
+         const t = beat * period;
+         const z = t * r.speed;
+         const shape = trackShape(r, z);
+         const previousEnergy = sampleEnergy(r.track, Math.max(0, t / r.duration - .018));
+         const rise = shape.energy - previousEnergy;
+         if (rise > .08 || (beat % 12 === 0 && r.rng() < .72)) {
+           r.hazards.push({ kind: 'ramp', z, x: shape.center + (r.rng() * 2 - 1) * shape.width * .55, radius: .085, used: false });
+         } else if (beat % 4 === 0 && r.rng() < .24 + shape.energy * .28) {
+           r.hazards.push({ kind: 'block', z, x: shape.center + (r.rng() * 2 - 1) * shape.width * .66, radius: .075, used: false });
+         }
+       }
+     }
+
+     function renderMenu() {
+       $('metaLine').textContent = `BEST ${fmt(meta.best)} // ${meta.cores} DATA // ${meta.wins} CLEARS`;
+       $('tracks').innerHTML = '';
+       for (const track of [...TRACKS, ...(customTrack ? [customTrack] : [])]) {
+         const locked = track.locked && meta.wins < 1;
+         const button = document.createElement('button');
+         button.type = 'button';
+         button.className = `track-card${selectedTrack.id === track.id ? ' selected' : ''}`;
+         button.style.setProperty('--track-color', track.color);
+         button.disabled = locked;
+         button.innerHTML = `<span class="track-name">${escapeHtml(track.name)}</span><span class="track-stats">${track.bpm} BPM //
+ ${timeFmt(track.duration)} // ${track.difficulty}</span>${locked ? '<span class="track-lock">Clear a signal to unlock</span>' : ''}`;
+         button.addEventListener('click', () => { selectedTrack = track; renderMenu(); });
+         $('tracks').append(button);
+       }
+
+       $('weapons').innerHTML = '';
+       for (const weapon of WEAPONS) {
+         const unlocked = weapon.unlock(meta);
+         if (!unlocked && selectedWeapon === weapon.id) selectedWeapon = 'pulse';
+         const button = document.createElement('button');
+         button.type = 'button';
+         button.className = `loadout-button${selectedWeapon === weapon.id ? ' selected' : ''}`;
+         button.disabled = !unlocked;
+         button.innerHTML = `<strong>${weapon.name}</strong><span>${weapon.note}</span>`;
+         button.addEventListener('click', () => { selectedWeapon = weapon.id; renderMenu(); });
+         $('weapons').append(button);
+       }
+
+       $('trails').innerHTML = '';
+       for (const trail of TRAILS) {
+         const unlocked = trail.unlock(meta);
+         if (!unlocked && selectedTrail === trail.id) selectedTrail = 'cyan';
+         const button = document.createElement('button');
+         button.type = 'button';
+         button.className = `loadout-button${selectedTrail === trail.id ? ' selected' : ''}`;
+         button.style.setProperty('--track-color', trail.color);
+         button.disabled = !unlocked;
+         button.innerHTML = `<strong style="color:${trail.color}">${trail.name}</strong><span>${trail.note}</span>`;
+         button.addEventListener('click', () => { selectedTrail = trail.id; renderMenu(); });
+         $('trails').append(button);
+       }
+     }
+
+     function escapeHtml(value) {
+       const div = document.createElement('div');
+       div.textContent = value;
+       return div.innerHTML;
+     }
+
+     async function loadAudioFile(file) {
+       $('error').textContent = '';
+       if (!file || (!file.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name))) {
+         $('error').textContent = 'Choose a supported audio file.';
+         return;
+       }
+       if (file.size > 60 * 1024 * 1024) {
+         $('error').textContent = 'That file is over the 60 MB browser limit.';
+         return;
+       }
+       $('launch').disabled = true;
+       $('launch').textContent = 'Analyzing signal…';
+       try {
+         const ac = audio.ensure();
+         if (!ac) throw new Error('Web Audio is unavailable in this browser.');
+         const bytes = await file.arrayBuffer();
+         const decoded = await ac.decodeAudioData(bytes.slice(0));
+         const curve = energyCurve(decoded);
+         const bpm = estimateBpm(decoded);
+         if (customUrl) URL.revokeObjectURL(customUrl);
+         customUrl = URL.createObjectURL(file);
+         $('customAudio').src = customUrl;
+         customTrack = {
+           id: 'custom',
+           name: file.name.replace(/\.[^.]+$/, '').slice(0, 42) || 'Local signal',
+           bpm,
+           duration: Math.max(8, decoded.duration),
+           difficulty: 'LOCAL',
+           color: '#70ff9d',
+           accent: '#3df5ff',
+           seed: (file.size ^ Math.floor(decoded.duration * 1000)) >>> 0,
+           curve,
+           custom: true
+         };
+         selectedTrack = customTrack;
+         $('dropCopy').textContent = `${bpm} BPM detected // ${timeFmt(decoded.duration)}`;
+         $('clearCustom').hidden = false;
+         renderMenu();
+       } catch (error) {
+         $('error').textContent = error && error.message ? error.message : 'The audio signal could not be decoded.';
+       } finally {
+         $('launch').disabled = false;
+         $('launch').textContent = 'Enter the grid';
+       }
+     }
+
+     function energyCurve(buffer) {
+       const data = buffer.getChannelData(0);
+       const bins = 256;
+       const curve = new Array(bins);
+       let peak = 0;
+       for (let bin = 0; bin < bins; bin++) {
+         const start = Math.floor(bin * data.length / bins);
+         const end = Math.floor((bin + 1) * data.length / bins);
+         const stride = Math.max(1, Math.floor((end - start) / 160));
+         let sum = 0;
+         let count = 0;
+         for (let i = start; i < end; i += stride) { sum += data[i] * data[i]; count++; }
+         curve[bin] = Math.sqrt(sum / Math.max(1, count));
+         peak = Math.max(peak, curve[bin]);
+       }
+       for (let i = 0; i < bins; i++) {
+         const normalized = peak ? Math.sqrt(curve[i] / peak) : .35;
+         curve[i] = clamp(normalized, .06, 1);
+       }
+       return curve;
+     }
+
+     function estimateBpm(buffer) {
+       const data = buffer.getChannelData(0);
+       const envelopeRate = 100;
+       const hop = Math.max(1, Math.floor(buffer.sampleRate / envelopeRate));
+       const frames = Math.min(Math.floor(data.length / hop), envelopeRate * 180);
+       const envelope = new Float32Array(frames);
+       for (let frame = 0; frame < frames; frame++) {
+         let sum = 0;
+         let count = 0;
+         const start = frame * hop;
+         const stride = Math.max(1, Math.floor(hop / 24));
+         for (let i = start; i < Math.min(data.length, start + hop); i += stride) { sum += Math.abs(data[i]); count++; }
+         envelope[frame] = sum / Math.max(1, count);
+       }
+       const onset = new Float32Array(frames);
+       for (let i = 4; i < frames; i++) {
+         const baseline = (envelope[i - 1] + envelope[i - 2] + envelope[i - 3] + envelope[i - 4]) / 4;
+         onset[i] = Math.max(0, envelope[i] - baseline);
+       }
+       let bestBpm = 120;
+       let bestScore = -1;
+       for (let bpm = 80; bpm <= 180; bpm++) {
+         const lag = Math.round(envelopeRate * 60 / bpm);
+         let score = 0;
+         for (let i = lag; i < frames; i++) score += onset[i] * onset[i - lag];
+         if (score > bestScore) { bestScore = score; bestBpm = bpm; }
+       }
+       return bestScore > 0 ? bestBpm : 120;
+     }
+
+     function startRun() {
+       audio.ensure();
+       run = makeRun();
+       state = 'running';
+       $('menu').hidden = true;
+       $('resultModal').hidden = true;
+       $('upgradeModal').hidden = true;
+       $('hud').hidden = false;
+       $('touchControls').classList.add('active');
+       $('trackReadout').textContent = `${selectedTrack.name.toUpperCase()} // ${selectedTrack.bpm} BPM`;
+       if (selectedTrack.custom) {
+         const player = $('customAudio');
+         player.currentTime = 0;
+         player.muted = audio.muted;
+         player.play().catch(() => announce('CLICK TO ARM AUDIO', 'The run continues silently', 1700));
+       }
+       announce('SIGNAL LOCKED', `${selectedTrack.bpm} BPM // SEED ${run.seed.toString(16).toUpperCase()}`, 1700);
+       canvas.focus();
+     }
+
+     function finishRun(victory, cause) {
+       if (!run || state === 'result') return;
+       state = 'result';
+       $('customAudio').pause();
+       const banked = Math.max(1, Math.floor(run.score / 1000));
+       meta.best = Math.max(meta.best, Math.floor(run.score));
+       meta.cores += banked;
+       meta.kills += run.kills;
+       if (victory) meta.wins++;
+       saveMeta();
+       $('hud').hidden = true;
+       $('touchControls').classList.remove('active');
+       $('resultEyebrow').textContent = victory ? 'Signal complete' : 'Signal lost';
+       $('resultTitle').textContent = victory ? 'Track conquered' : 'Derezzed';
+       $('resultCopy').textContent = victory ? 'The chorus broke before you did. A harder remix is now in the archive.' : cause;
+       $('resultScore').textContent = fmt(run.score);
+       $('resultKills').textContent = run.kills;
+       $('resultPerfects').textContent = run.perfects;
+       $('resultCores').textContent = `+${banked}`;
+       $('resultModal').hidden = false;
+     }
+
+     function returnToMenu() {
+       state = 'menu';
+       $('customAudio').pause();
+       $('resultModal').hidden = true;
+       $('upgradeModal').hidden = true;
+       $('hud').hidden = true;
+       $('touchControls').classList.remove('active');
+       renderMenu();
+       $('menu').hidden = false;
+     }
+
+     function announce(title, subtitle = '', duration = 1100) {
+       const box = $('announcement');
+       box.querySelector('strong').textContent = title;
+       box.querySelector('span').textContent = subtitle;
+       box.classList.add('show');
+       announceTimer = duration / 1000;
+     }
+
+     function beatDistance() {
+       if (!run) return Infinity;
+       const period = 60 / run.track.bpm;
+       const phase = run.time % period;
+       return Math.min(phase, period - phase);
+     }
+
+     function perfectAction(label, amount = 13) {
+       if (!run || beatDistance() > .105) return false;
+       run.perfects++;
+       run.combo = Math.min(24, run.combo + 1);
+       addSync(amount * run.mods.syncGain);
+       run.score += 80 * (1 + Math.floor(run.combo / 4));
+       audio.perfect();
+       announce('PERFECT', label, 430);
+       return true;
+     }
+
+     function addSync(amount) {
+       run.sync += amount;
+       if (run.sync >= 100) {
+         run.sync -= 100;
+         run.overdrive = Math.max(run.overdrive, 6);
+         run.score += 500;
+         announce('PULSE OVERDRIVE', 'Fire rate doubled // score amplified', 1200);
+       }
+     }
+
+     function onBeat(index) {
+       const progress = run.time / run.duration;
+       const energy = sampleEnergy(run.track, progress);
+       audio.beat(index, energy);
+       run.flash = .08 + energy * .08;
+       addSync(1.15);
+       if (!run.bossSpawned && index > 4 && index % 2 === 0 && run.rng() < .12 + energy * .22) spawnEnemy(false);
+       if (!run.bossSpawned && index > 10 && index % 12 === 6 && run.rng() < .72) spawnEnemy(true);
+       if (run.boss && index % (run.boss.hp < run.boss.maxHp * .45 ? 1 : 2) === 0) bossVolley(index);
+       for (const enemy of run.enemies) {
+         if (!enemy.dead && enemy.type !== 'hunter' && run.rng() < .12 + energy * .12) enemyShoot(enemy);
+       }
+     }
+
+     function spawnEnemy(hunter) {
+       const id = `${run.lastBeat}-${Math.floor(run.rng() * 1e6)}`;
+       const z = run.distance + (hunter ? -1.8 : VIEW * (.72 + run.rng() * .2));
+       const shape = trackShape(run, Math.max(0, z));
+       const trail = { id, color: hunter ? '#ffd166' : '#ff3dbb', points: [] };
+       const enemy = {
+         id,
+         type: hunter ? 'hunter' : (run.rng() < .28 ? 'weaver' : 'drone'),
+         x: shape.center + (run.rng() * 2 - 1) * shape.width * .68,
+         z,
+         vx: 0,
+         hp: hunter ? 2 : 2 + (run.track.difficulty === 'OVERDRIVE' ? 1 : 0),
+         trail,
+         trailGap: 0,
+         phase: run.rng() * TAU,
+         dead: false
+       };
+       run.trails.push(trail);
+       run.enemies.push(enemy);
+     }
+
+     function spawnBoss() {
+       const z = run.distance + 7;
+       const maxHp = 52 + Math.round(run.track.bpm * .16);
+       run.bossSpawned = true;
+       run.boss = { x: trackShape(run, z).center, z, hp: maxHp, maxHp, phase: 0 };
+       run.enemies.length = 0;
+       announce('CHORUS GUARDIAN', 'Break the carrier before the signal ends', 2100);
+     }
+
+     function bossVolley(index) {
+       const boss = run.boss;
+       if (!boss) return;
+       const count = boss.hp < boss.maxHp * .45 ? 5 : 3;
+       for (let i = 0; i < count; i++) {
+         const spread = (i - (count - 1) / 2) * .19;
+         run.enemyBullets.push({ x: boss.x, z: boss.z - .25, vx: spread, vz: -2.4 - (index % 4) * .14, radius: .026 });
+       }
+       run.shake = Math.max(run.shake, .08);
+     }
+
+     function enemyShoot(enemy) {
+       const dz = Math.max(.5, enemy.z - run.distance);
+       const travel = dz / 2.25;
+       const vx = clamp((run.player.x - enemy.x) / travel, -.42, .42);
+       run.enemyBullets.push({ x: enemy.x, z: enemy.z, vx, vz: -2.25, radius: .022 });
+     }
+
+     function fire() {
+       const p = run.player;
+       const rate = run.mods.fireRate * (run.overdrive > 0 ? .5 : 1);
+       if (p.cooldown > 0) return;
+       p.cooldown = rate;
+       const spreadCount = run.mods.spread;
+       const shots = spreadCount ? [-1, 0, 1] : [0];
+       for (const direction of shots) {
+         run.bullets.push({
+           x: p.x + direction * .022,
+           z: run.distance + .14,
+           vx: direction * (.22 + spreadCount * .035),
+           vz: 7.6,
+           damage: run.mods.damage,
+           pierce: run.mods.pierce,
+           life: 1.8
+         });
+       }
+       audio.shot();
+     }
+
+     function phaseDash() {
+       if (!run || state !== 'running' || run.player.dash > 0) return;
+       const left = keys.ArrowLeft || keys.KeyA;
+       const right = keys.ArrowRight || keys.KeyD;
+       const direction = right ? 1 : left ? -1 : (run.player.vx >= 0 ? 1 : -1);
+       run.player.x += direction * .2;
+       run.player.vx = direction * .42;
+       run.player.dash = run.mods.dashRate;
+       run.player.invincible = .3;
+       burst(run.player.x, run.distance, TRAILS.find(t => t.id === selectedTrail).color, 12);
+       perfectAction('PHASE DASH', 16);
+     }
+
+     function openUpgrade() {
+       state = 'upgrade';
+       $('customAudio').pause();
+       run.mods.wallCharge = run.mods.wallRun;
+       upgradeChoices = pickUpgrades(run.rng);
+       $('choices').innerHTML = '';
+       upgradeChoices.forEach((upgrade, index) => {
+         const button = document.createElement('button');
+         button.type = 'button';
+         button.className = 'choice-card';
+         button.innerHTML = `<em>${index + 1}</em><strong>${upgrade.name}</strong><span>${upgrade.text}</span><span
+ class="type">${upgrade.type} protocol</span>`;
+         button.addEventListener('click', () => chooseUpgrade(index));
+         $('choices').append(button);
+       });
+       $('upgradeModal').hidden = false;
+     }
+
+     function pickUpgrades(rng) {
+       const pool = [...UPGRADES];
+       for (let i = pool.length - 1; i > 0; i--) {
+         const j = Math.floor(rng() * (i + 1));
+         [pool[i], pool[j]] = [pool[j], pool[i]];
+       }
+       return pool.slice(0, 3);
+     }
+
+     function chooseUpgrade(index) {
+       if (state !== 'upgrade' || !upgradeChoices[index]) return;
+       const upgrade = upgradeChoices[index];
+       upgrade.apply(run.mods, run);
+       run.score += 300;
+       $('upgradeModal').hidden = true;
+       state = 'running';
+       if (selectedTrack.custom) $('customAudio').play().catch(() => {});
+       announce(upgrade.name, `${upgrade.type.toUpperCase()} INSTALLED`, 1000);
+       canvas.focus();
+     }
+
+     function update(dt) {
+       if (!run || state !== 'running') return;
+       const player = run.player;
+       if (run.track.custom && !$('customAudio').ended && !$('customAudio').paused) run.time = $('customAudio').currentTime;
+       else run.time += dt;
+       run.distance = run.speed * run.time;
+       const progress = run.time / run.duration;
+       const beat = Math.floor(run.time / (60 / run.track.bpm));
+       while (run.lastBeat < beat) onBeat(++run.lastBeat);
+
+       if (!run.bossSpawned && progress >= run.bossAt) spawnBoss();
+       if (run.section < run.sections.length && progress >= run.sections[run.section]) {
+         run.section++;
+         openUpgrade();
+         return;
+       }
+
+       const axis = (keys.ArrowRight || keys.KeyD ? 1 : 0) - (keys.ArrowLeft || keys.KeyA ? 1 : 0);
+       if (axis && axis !== player.lastAxis) perfectAction('PULSE TURN', 5);
+       player.lastAxis = axis;
+       player.vx += axis * 2.35 * dt;
+       player.vx *= Math.exp(-5.2 * dt);
+       player.x += player.vx * dt;
+       player.cooldown = Math.max(0, player.cooldown - dt);
+       player.dash = Math.max(0, player.dash - dt);
+       player.invincible = Math.max(0, player.invincible - dt);
+       player.airborne = Math.max(0, player.airborne - dt);
+       run.overdrive = Math.max(0, run.overdrive - dt);
+       run.shake = Math.max(0, run.shake - dt * 2.5);
+       run.flash = Math.max(0, run.flash - dt);
+       if (keys.Space) fire();
+
+       const shape = trackShape(run, run.distance);
+       if (Math.abs(player.x - shape.center) > shape.width) {
+         if (player.invincible > 0 || player.airborne > 0) {
+           player.x = shape.center + Math.sign(player.x - shape.center) * shape.width * .95;
+         } else if (run.mods.wallCharge > 0) {
+           run.mods.wallCharge--;
+           player.x = shape.center + Math.sign(player.x - shape.center) * shape.width * .88;
+           player.vx *= -.4;
+           player.invincible = .7;
+           announce('EDGE PROTOCOL', `${run.mods.wallCharge} CHARGES REMAIN`, 800);
+         } else {
+           finishRun(false, 'You left the generated track and dissolved into the grid.');
+           return;
+         }
+       }
+
+       if (player.lastTrailZ < run.distance - .075) {
+         run.playerTrail.points.push({ x: player.x, z: run.distance });
+         player.lastTrailZ = run.distance;
+       }
+       run.playerTrail.points = run.playerTrail.points.filter(point => point.z > run.distance - 4.2);
+
+       updateHazards();
+       updateBullets(dt);
+       updateEnemies(dt);
+       updateEnemyBullets(dt);
+       updateParticles(dt);
+       checkHostileTrails();
+       if (state !== 'running') return;
+
+       if (run.boss) {
+         const targetZ = run.distance + 5.8;
+         run.boss.z = lerp(run.boss.z, targetZ, 2.2 * dt);
+         const bossShape = trackShape(run, run.boss.z);
+         run.boss.phase += dt;
+         run.boss.x = bossShape.center + Math.sin(run.boss.phase * 1.8) * bossShape.width * .63;
+       }
+       if (run.time >= run.duration) {
+         finishRun(false, 'The signal ended before the Chorus Guardian was destroyed.');
+         return;
+       }
+
+       run.trails = run.trails.filter(trail => trail.points.length && trail.points.some(point => point.z > run.distance - 2.6));
+       run.score += dt * (22 + run.track.bpm * .18) * (run.overdrive > 0 ? 2 : 1);
+       run.combo = Math.max(0, run.combo - dt * .36);
+       updateHud();
+     }
+
+     function updateHazards() {
+       const player = run.player;
+       for (const hazard of run.hazards) {
+         if (hazard.used || Math.abs(hazard.z - run.distance) > .14 || Math.abs(hazard.x - player.x) > hazard.radius) continue;
+         hazard.used = true;
+         if (hazard.kind === 'ramp') {
+           player.airborne = 1.05;
+           player.invincible = 1.05;
+           run.score += 240;
+           addSync(18 * run.mods.syncGain);
+           burst(hazard.x, hazard.z, '#70ff9d', 18);
+           perfectAction('BASS RAMP', 8);
+         } else if (player.invincible <= 0) {
+           damagePlayer('A waveform hazard shattered your last integrity cell.');
+         }
+       }
+     }
+
+     function updateBullets(dt) {
+       for (const bullet of run.bullets) {
+         bullet.life -= dt;
+         if (run.mods.homing > 0) {
+           let target = run.boss;
+           let nearest = target ? Math.abs(target.z - bullet.z) : Infinity;
+           for (const enemy of run.enemies) {
+             if (enemy.dead || enemy.z < bullet.z - .1) continue;
+             const distance = Math.abs(enemy.z - bullet.z);
+             if (distance < nearest) { target = enemy; nearest = distance; }
+           }
+           if (target) {
+             const desired = clamp((target.x - bullet.x) * 1.8, -.75, .75);
+             bullet.vx = lerp(bullet.vx, desired, clamp(run.mods.homing * dt, 0, 1));
+           }
+         }
+         bullet.x += bullet.vx * dt;
+         bullet.z += bullet.vz * dt;
+         if (bullet.life <= 0) continue;
+
+         if (run.boss && Math.abs(bullet.z - run.boss.z) < .3 && Math.abs(bullet.x - run.boss.x) < .14) {
+           run.boss.hp -= bullet.damage;
+           run.score += 35 * bullet.damage;
+           burst(bullet.x, bullet.z, run.track.accent, 5);
+           audio.hit();
+           if (bullet.pierce > 0) bullet.pierce--;
+           else bullet.life = 0;
+           if (run.boss.hp <= 0) {
+             const { x, z } = run.boss;
+             run.boss = null;
+             run.score += 4000 + Math.max(0, Math.floor((run.duration - run.time) * 100));
+             burst(x, z, '#ffffff', 42);
+             finishRun(true, '');
+             continue;
+           }
+         }
+
+         if (bullet.life <= 0) continue;
+         for (const enemy of run.enemies) {
+           if (enemy.dead || Math.abs(bullet.z - enemy.z) >= .16 || Math.abs(bullet.x - enemy.x) >= .07) continue;
+           enemy.hp -= bullet.damage;
+           burst(bullet.x, bullet.z, enemy.trail.color, 4);
+           if (bullet.pierce > 0) bullet.pierce--;
+           else bullet.life = 0;
+           if (enemy.hp <= 0) destroyEnemy(enemy, 'BEAT KILL');
+           break;
+         }
+       }
+       run.bullets = run.bullets.filter(bullet => bullet.life > 0 && bullet.z < run.distance + VIEW + 2);
+     }
+
+     function destroyEnemy(enemy, label, canBlast = true) {
+       if (enemy.dead) return;
+       enemy.dead = true;
+       run.kills++;
+       run.score += (enemy.type === 'hunter' ? 340 : 220) * (1 + Math.floor(run.combo / 4));
+       perfectAction(label, 11);
+       burst(enemy.x, enemy.z, enemy.trail.color, 15);
+       audio.hit();
+       if (!canBlast || run.mods.trailBlast <= 0) return;
+       for (const other of run.enemies) {
+         if (other.dead || Math.hypot(other.x - enemy.x, other.z - enemy.z) > run.mods.trailBlast) continue;
+         destroyEnemy(other, 'NOVA CHAIN', false);
+       }
+     }
+
+     function updateEnemies(dt) {
+       const player = run.player;
+       for (const enemy of run.enemies) {
+         if (enemy.dead) continue;
+         const hunter = enemy.type === 'hunter';
+         enemy.z += run.speed * (hunter ? 1.58 : enemy.type === 'weaver' ? .28 : .18) * dt;
+         const shape = trackShape(run, Math.max(0, enemy.z));
+         const weave = Math.sin(run.time * (hunter ? 2.8 : 1.7) + enemy.phase) * shape.width * (hunter ? .24 : .66);
+         const target = hunter ? lerp(shape.center, player.x, .72) : shape.center + weave;
+         enemy.vx += clamp(target - enemy.x, -.4, .4) * (hunter ? 4.2 : 2.4) * dt;
+         enemy.vx *= Math.exp(-(hunter ? 3.4 : 4.6) * dt);
+         enemy.x = clamp(enemy.x + enemy.vx * dt, shape.center - shape.width * .9, shape.center + shape.width * .9);
+         enemy.trailGap -= dt;
+         if (enemy.trailGap <= 0) {
+           enemy.trail.points.push({ x: enemy.x, z: enemy.z });
+           enemy.trailGap = .065;
+         }
+         enemy.trail.points = enemy.trail.points.filter(point => point.z > run.distance - 3);
+
+         if (Math.abs(enemy.z - run.distance) < .13 && Math.abs(enemy.x - player.x) < .065) {
+           damagePlayer('An enemy ship rammed through your light cycle.');
+           enemy.dead = true;
+           burst(enemy.x, enemy.z, enemy.trail.color, 12);
+         } else if (enemy.z < run.distance - 1.4 || enemy.z > run.speed * run.duration + 2) {
+           enemy.dead = true;
+         }
+       }
+       run.enemies = run.enemies.filter(enemy => !enemy.dead);
+     }
+
+     function updateEnemyBullets(dt) {
+       const player = run.player;
+       for (const bullet of run.enemyBullets) {
+         bullet.x += bullet.vx * dt;
+         bullet.z += bullet.vz * dt;
+         if (Math.abs(bullet.z - run.distance) < .1 && Math.abs(bullet.x - player.x) < .045) {
+           bullet.dead = true;
+           damagePlayer('A beat-synced hostile round shattered your last integrity cell.');
+         }
+       }
+       run.enemyBullets = run.enemyBullets.filter(bullet => !bullet.dead && bullet.z > run.distance - .8 && bullet.z < run.distance + VIEW + 1);
+     }
+
+     function checkHostileTrails() {
+       const player = run.player;
+       // ponytail: linear scans fit the small on-screen cap; use spatial bins only if entity counts grow.
+       for (const trail of run.trails) {
+         const hit = trail.points.some(point => Math.abs(point.z - run.distance) < .06 && Math.abs(point.x - player.x) < .034);
+         if (hit) {
+           damagePlayer('You crossed a hostile solid-light trail.');
+           break;
+         }
+       }
+
+       const trails = [run.playerTrail, ...run.trails];
+       for (const enemy of run.enemies) {
+         if (enemy.dead) continue;
+         const hit = trails.some(trail => trail !== enemy.trail && trail.points.some(point =>
+           Math.abs(point.z - enemy.z) < .055 && Math.abs(point.x - enemy.x) < .032));
+         if (hit) destroyEnemy(enemy, 'TRAIL CUT');
+       }
+       run.enemies = run.enemies.filter(enemy => !enemy.dead);
+     }
+
+     function damagePlayer(cause) {
+       if (!run || state !== 'running' || run.player.invincible > 0) return;
+       run.player.hull--;
+       run.player.invincible = .9;
+       run.combo = 0;
+       run.sync = Math.max(0, run.sync - 18);
+       run.shake = .3;
+       burst(run.player.x, run.distance, '#ff5b75', 24);
+       audio.hit();
+       if (run.player.hull <= 0) finishRun(false, cause);
+       else announce('INTEGRITY LOST', `${run.player.hull} CELLS REMAIN`, 850);
+     }
+
+     function burst(x, z, color, count) {
+       for (let i = 0; i < count; i++) {
+         const life = .25 + run.rng() * .5;
+         run.particles.push({
+           x, z,
+           vx: (run.rng() * 2 - 1) * .42,
+           vz: (run.rng() * 2 - 1) * 1.8,
+           life,
+           maxLife: life,
+           color,
+           size: 1.2 + run.rng() * 2.8
+         });
+       }
+     }
+
+     function updateParticles(dt) {
+       for (const particle of run.particles) {
+         particle.life -= dt;
+         particle.x += particle.vx * dt;
+         particle.z += particle.vz * dt;
+       }
+       run.particles = run.particles.filter(particle => particle.life > 0);
+     }
+
+     function updateHud() {
+       const progress = clamp(run.time / run.duration, 0, 1);
+       $('score').textContent = fmt(run.score);
+       $('multiplier').textContent = `SYNC ×${1 + Math.floor(run.combo / 4)}${run.overdrive > 0 ? ' // OVERDRIVE' : ''}`;
+       $('time').textContent = timeFmt(Math.max(0, run.duration - run.time));
+       $('progressFill').style.width = `${progress * 100}%`;
+       $('syncFill').style.width = `${run.sync}%`;
+       $('syncText').textContent = `${Math.floor(run.sync)}%`;
+       $('trackReadout').textContent = run.boss ? `CHORUS GUARDIAN // ${Math.max(0, run.boss.hp)} HP` : `${run.track.name.toUpperCase()} // ${run.track.bpm} BPM`;
+       $('integrity').innerHTML = Array.from({ length: run.mods.maxHull }, (_, i) => `<i class="${i >= run.player.hull ? 'off' : ''}"></i>`).join('');
+       const period = 60 / run.track.bpm;
+       const active = Math.floor(((run.time % period) / period) * 8);
+       [...$('beatRail').children].forEach((bar, i) => bar.classList.toggle('on', i === active));
+     }
+
+     function project(x, z, lift = 0) {
+       const dz = z - run.distance;
+       const t = clamp(dz / VIEW, 0, 1);
+       const depth = Math.pow(t, .68);
+       const scale = lerp(1.04, .13, depth);
+       return {
+         x: W * .5 + x * W * .82 * scale,
+         y: dz < 0 ? H * .86 - dz * H * .52 : lerp(H * .86, H * .22, depth) - lift * H * .22 * scale,
+         scale,
+         visible: dz > -1.3 && dz < VIEW * 1.08
+       };
+     }
+
+     function drawBackdrop(now) {
+       ctx.clearRect(0, 0, W, H);
+       const glow = ctx.createRadialGradient(W * .5, H * .3, 0, W * .5, H * .3, Math.max(W, H) * .7);
+       glow.addColorStop(0, 'rgba(25, 45, 91, .62)');
+       glow.addColorStop(.5, 'rgba(7, 14, 35, .72)');
+       glow.addColorStop(1, '#02050c');
+       ctx.fillStyle = glow;
+       ctx.fillRect(0, 0, W, H);
+       const drift = (state !== 'menu' && run ? run.time * .035 : now * .000006);
+       for (const star of stars) {
+         const y = ((star.y + drift * star.s) % 1) * H;
+         ctx.globalAlpha = .2 + .5 * Math.sin(now * .0018 + star.p) ** 2;
+         ctx.fillStyle = '#b9faff';
+         ctx.fillRect(star.x * W, y, star.s, star.s);
+       }
+       ctx.globalAlpha = 1;
+     }
+
+     function drawMenuGrid(now) {
+       const horizon = H * .62;
+       ctx.save();
+       ctx.strokeStyle = 'rgba(61,245,255,.13)';
+       ctx.lineWidth = 1;
+       for (let i = -10; i <= 10; i++) {
+         ctx.beginPath();
+         ctx.moveTo(W * .5, horizon);
+         ctx.lineTo(W * .5 + i * W * .13, H);
+         ctx.stroke();
+       }
+       const phase = (now * .00008) % 1;
+       for (let i = 0; i < 16; i++) {
+         const t = (i + phase) / 16;
+         const y = lerp(horizon, H, t * t);
+         ctx.globalAlpha = t * .45;
+         ctx.beginPath();
+         ctx.moveTo(0, y);
+         ctx.lineTo(W, y);
+         ctx.stroke();
+       }
+       ctx.restore();
+     }
+
+     function drawTrack() {
+       const segments = 58;
+       ctx.save();
+       for (let i = segments - 1; i >= 0; i--) {
+         const nearZ = run.distance + i * VIEW / segments;
+         const farZ = run.distance + (i + 1) * VIEW / segments;
+         const a = trackShape(run, nearZ);
+         const b = trackShape(run, farZ);
+         const al = project(a.center - a.width, nearZ);
+         const ar = project(a.center + a.width, nearZ);
+         const bl = project(b.center - b.width, farZ);
+         const br = project(b.center + b.width, farZ);
+         ctx.beginPath();
+         ctx.moveTo(al.x, al.y); ctx.lineTo(ar.x, ar.y); ctx.lineTo(br.x, br.y); ctx.lineTo(bl.x, bl.y); ctx.closePath();
+         ctx.fillStyle = i % 2 ? 'rgba(8,20,38,.78)' : 'rgba(12,27,48,.84)';
+         ctx.fill();
+       }
+
+       const gridStep = .65;
+       for (let z = Math.ceil(run.distance / gridStep) * gridStep; z < run.distance + VIEW; z += gridStep) {
+         const shape = trackShape(run, z);
+         const left = project(shape.center - shape.width, z);
+         const right = project(shape.center + shape.width, z);
+         ctx.globalAlpha = .1 + left.scale * .28;
+         ctx.strokeStyle = run.track.color;
+         ctx.beginPath(); ctx.moveTo(left.x, left.y); ctx.lineTo(right.x, right.y); ctx.stroke();
+       }
+
+       for (const side of [-1, 1]) {
+         ctx.globalAlpha = .8;
+         ctx.strokeStyle = run.track.color;
+         ctx.lineWidth = 2;
+         ctx.shadowBlur = 12;
+         ctx.shadowColor = run.track.color;
+         ctx.beginPath();
+         for (let i = 0; i <= segments; i++) {
+           const z = run.distance + i * VIEW / segments;
+           const shape = trackShape(run, z);
+           const point = project(shape.center + side * shape.width, z);
+           if (i) ctx.lineTo(point.x, point.y); else ctx.moveTo(point.x, point.y);
+         }
+         ctx.stroke();
+       }
+       ctx.restore();
+     }
+
+     function drawTrail(trail) {
+       const points = trail.points.filter(point => project(point.x, point.z).visible);
+       if (points.length < 2) return;
+       ctx.save();
+       ctx.strokeStyle = trail.color;
+       ctx.lineWidth = 2.2;
+       ctx.shadowBlur = 13;
+       ctx.shadowColor = trail.color;
+       ctx.beginPath();
+       points.forEach((point, i) => {
+         const p = project(point.x, point.z);
+         if (i) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
+       });
+       ctx.stroke();
+       ctx.restore();
+     }
+
+     function drawShip(x, z, color, size = .03, reversed = false) {
+       const p = project(x, z);
+       if (!p.visible) return;
+       const radius = Math.max(3, W * size * p.scale);
+       ctx.save();
+       ctx.translate(p.x, p.y);
+       if (reversed) ctx.rotate(Math.PI);
+       ctx.fillStyle = color;
+       ctx.shadowBlur = 18;
+       ctx.shadowColor = color;
+       ctx.beginPath();
+       ctx.moveTo(0, -radius * 1.35);
+       ctx.lineTo(radius, radius);
+       ctx.lineTo(0, radius * .48);
+       ctx.lineTo(-radius, radius);
+       ctx.closePath();
+       ctx.fill();
+       ctx.fillStyle = '#eaffff';
+       ctx.fillRect(-radius * .18, -radius * .36, radius * .36, radius * .7);
+       ctx.restore();
+     }
+
+     function drawWorld() {
+       drawTrack();
+       drawTrail(run.playerTrail);
+       for (const trail of run.trails) drawTrail(trail);
+
+       for (let i = run.hazards.length - 1; i >= 0; i--) {
+         const hazard = run.hazards[i];
+         if (hazard.used || hazard.z < run.distance - .2 || hazard.z > run.distance + VIEW) continue;
+         const p = project(hazard.x, hazard.z);
+         const size = Math.max(3, hazard.radius * W * p.scale);
+         ctx.save();
+         ctx.translate(p.x, p.y);
+         ctx.fillStyle = hazard.kind === 'ramp' ? '#70ff9d' : '#ff5b75';
+         ctx.shadowBlur = 14;
+         ctx.shadowColor = ctx.fillStyle;
+         ctx.beginPath();
+         if (hazard.kind === 'ramp') {
+           ctx.moveTo(-size, 0); ctx.lineTo(0, -size * .8); ctx.lineTo(size, 0);
+         } else {
+           ctx.rect(-size * .7, -size * .7, size * 1.4, size * 1.4);
+         }
+         ctx.fill();
+         ctx.restore();
+       }
+
+       for (const enemy of run.enemies) drawShip(enemy.x, enemy.z, enemy.trail.color, enemy.type === 'hunter' ? .034 : .028, true);
+       if (run.boss) {
+         drawShip(run.boss.x, run.boss.z, run.track.accent, .075, true);
+         const p = project(run.boss.x, run.boss.z);
+         const width = Math.max(45, W * .13 * p.scale);
+         ctx.fillStyle = 'rgba(255,255,255,.16)';
+         ctx.fillRect(p.x - width / 2, p.y - 45 * p.scale, width, 3);
+         ctx.fillStyle = run.track.accent;
+         ctx.fillRect(p.x - width / 2, p.y - 45 * p.scale, width * clamp(run.boss.hp / run.boss.maxHp, 0, 1), 3);
+       }
+
+       ctx.save();
+       ctx.lineCap = 'round';
+       for (const bullet of run.bullets) {
+         const p = project(bullet.x, bullet.z);
+         ctx.strokeStyle = '#d8ffff';
+         ctx.lineWidth = Math.max(1, 3 * p.scale);
+         ctx.shadowBlur = 9;
+         ctx.shadowColor = run.track.color;
+         ctx.beginPath(); ctx.moveTo(p.x, p.y + 8 * p.scale); ctx.lineTo(p.x, p.y - 8 * p.scale); ctx.stroke();
+       }
+       for (const bullet of run.enemyBullets) {
+         const p = project(bullet.x, bullet.z);
+         ctx.fillStyle = '#ff5b75';
+         ctx.shadowBlur = 10;
+         ctx.shadowColor = '#ff3dbb';
+         ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(2, 5 * p.scale), 0, TAU); ctx.fill();
+       }
+       ctx.restore();
+
+       for (const particle of run.particles) {
+         const p = project(particle.x, particle.z);
+         ctx.globalAlpha = particle.life / particle.maxLife;
+         ctx.fillStyle = particle.color;
+         ctx.fillRect(p.x, p.y, particle.size, particle.size);
+       }
+       ctx.globalAlpha = 1;
+
+       if (run.player.invincible <= 0 || Math.floor(run.time * 18) % 2 === 0) {
+         const lift = run.player.airborne > 0 ? Math.sin(clamp(run.player.airborne, 0, 1) * Math.PI) * .28 : 0;
+         drawShip(run.player.x, run.distance + .02, run.playerTrail.color, .031);
+         if (lift > 0) {
+           const p = project(run.player.x, run.distance, lift);
+           ctx.fillStyle = 'rgba(112,255,157,.35)';
+           ctx.beginPath(); ctx.ellipse(p.x, H * .87, 24, 6, 0, 0, TAU); ctx.fill();
+         }
+       }
+
+       if (run.flash > 0) {
+         ctx.globalAlpha = run.flash * 1.8;
+         ctx.fillStyle = run.track.color;
+         ctx.fillRect(0, 0, W, H);
+         ctx.globalAlpha = 1;
+       }
+     }
+
+     function draw(now) {
+       ctx.save();
+       if (run && state !== 'menu' && run.shake > 0) {
+         ctx.translate((Math.random() * 2 - 1) * run.shake * 18, (Math.random() * 2 - 1) * run.shake * 12);
+       }
+       drawBackdrop(now);
+       if (run && state !== 'menu') drawWorld();
+       else drawMenuGrid(now);
+       ctx.restore();
+     }
+
+     function togglePause() {
+       if (state === 'running') {
+         state = 'paused';
+         $('customAudio').pause();
+         announce('SIGNAL PAUSED', 'PRESS P TO RESUME', Infinity);
+       } else if (state === 'paused') {
+         state = 'running';
+         if (selectedTrack.custom) $('customAudio').play().catch(() => {});
+         announce('SIGNAL RESUMED', '', 650);
+       }
+     }
+
+     function resize() {
+       dpr = Math.min(devicePixelRatio || 1, 2);
+       W = innerWidth;
+       H = innerHeight;
+       canvas.width = Math.round(W * dpr);
+       canvas.height = Math.round(H * dpr);
+       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+     }
+
+     function frame(now) {
+       const dt = Math.min(.05, Math.max(0, (now - lastFrame) / 1000));
+       lastFrame = now;
+       if (state === 'running') update(dt);
+       if (Number.isFinite(announceTimer) && announceTimer > 0) {
+         announceTimer -= dt;
+         if (announceTimer <= 0) $('announcement').classList.remove('show');
+       }
+       draw(now);
+       requestAnimationFrame(frame);
+     }
+
+     function clearCustomTrack() {
+       $('customAudio').pause();
+       $('customAudio').removeAttribute('src');
+       $('customAudio').load();
+       if (customUrl) URL.revokeObjectURL(customUrl);
+       customUrl = null;
+       if (selectedTrack === customTrack) selectedTrack = TRACKS[0];
+       customTrack = null;
+       $('audioFile').value = '';
+       $('dropCopy').textContent = 'Drop audio here or browse';
+       $('clearCustom').hidden = true;
+       renderMenu();
+     }
+
+     $('launch').addEventListener('click', startRun);
+     $('retry').addEventListener('click', startRun);
+     $('returnMenu').addEventListener('click', returnToMenu);
+     $('mute').addEventListener('click', () => audio.toggle());
+     $('clearCustom').addEventListener('click', clearCustomTrack);
+     $('audioFile').addEventListener('change', event => loadAudioFile(event.target.files[0]));
+
+     for (const type of ['dragenter', 'dragover']) {
+       $('dropZone').addEventListener(type, event => {
+         event.preventDefault();
+         $('dropZone').classList.add('dragging');
+       });
+     }
+     for (const type of ['dragleave', 'drop']) {
+       $('dropZone').addEventListener(type, event => {
+         event.preventDefault();
+         $('dropZone').classList.remove('dragging');
+         if (type === 'drop') loadAudioFile(event.dataTransfer.files[0]);
+       });
+     }
+
+     addEventListener('keydown', event => {
+       keys[event.code] = true;
+       if (['ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight'].includes(event.code) && state !== 'menu') event.preventDefault();
+       if (event.code === 'KeyP' && !event.repeat) togglePause();
+       if ((event.code === 'ShiftLeft' || event.code === 'ShiftRight') && !event.repeat) phaseDash();
+       if (state === 'upgrade' && /^Digit[1-3]$/.test(event.code)) chooseUpgrade(Number(event.code.at(-1)) - 1);
+     });
+     addEventListener('keyup', event => { keys[event.code] = false; });
+     addEventListener('blur', () => {
+       for (const key of Object.keys(keys)) keys[key] = false;
+       if (state === 'running') togglePause();
+     });
+     addEventListener('resize', resize);
+     document.addEventListener('visibilitychange', () => {
+       if (document.hidden && state === 'running') togglePause();
+     });
+
+     for (const button of document.querySelectorAll('.touch-button')) {
+       const code = button.dataset.key;
+       const release = event => { event.preventDefault(); keys[code] = false; };
+       button.addEventListener('pointerdown', event => {
+         event.preventDefault();
+         keys[code] = true;
+         button.setPointerCapture(event.pointerId);
+         if (code === 'ShiftLeft') phaseDash();
+       });
+       button.addEventListener('pointerup', release);
+       button.addEventListener('pointercancel', release);
+     }
+
+     function selfCheck() {
+       console.assert(TRACKS.every(track => track.curve.length === 256), 'Every generated track needs a complete energy curve.');
+       const picks = pickUpgrades(mulberry32(1));
+       console.assert(picks.length === 3 && new Set(picks).size === 3, 'Upgrade choices must be three unique mutations.');
+     }
+
+     resize();
+     renderMenu();
+     selfCheck();
+     requestAnimationFrame(frame);
+   })();
+   </script>
+ </body>
+ </html>
+
