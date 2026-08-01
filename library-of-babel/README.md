@@ -43,78 +43,58 @@ Each room contains the following items:
 - 32 volumes on each shelf
 - 410 pages in each volume
 
-Each page contains 40 lines of 80 symbols. The browser alphabet contains letters `a` through `v`, a comma, a period, and a space.
+Each page contains 40 lines of 80 symbols. The browser alphabet contains letters `a` through `z`, a comma, a period, and a space.
 
 A page address contains the room, wall, shelf, volume, and page numbers. The same address always generates the same title and text.
 
-## Search an open page
+## Search in the browser
 
 Open a book and use the **Find** field to search its current page. The search is not case-sensitive.
 
 Use **Previous match** and **Next match** to move between results. You can also press `Enter` or `Shift+Enter` in the search field.
 
+Use **Search all** on the start screen or room panel to find text in the full library. The explorer calculates one matching address directly.
+
+A full-library search jumps to the room and opens the matching page. Queries of 80 symbols or fewer also appear highlighted.
+
 ## Search from the command line
 
-The project provides two Node.js search tools. Select the tool that matches your use case.
+The command-line tools require a Node.js version that supports `BigInt`.
 
-### Search browser pages
+### Direct search
 
-`search-web.js` uses the same alphabet, address seed, title generator, and page generator as the browser explorer. Every result identifies the same text in the browser.
-
-Show all options:
-
-```sh
-node search-web.js --help
-```
-
-Check generator parity:
-
-```sh
-node search-web.js --self-test
-```
-
-Search selected browser pages:
-
-```sh
-node search-web.js "wizard" --q 0 --r 0
-node search-web.js "abc" --radius 1 --max-results 10
-node search-web.js "abc" --rooms 20 --page 1
-node search-web.js "abc" --wall 1 --shelf 3 --volume 8 --page 20
-```
-
-The search is not case-sensitive. Use address filters to keep scans small.
-
-`search-web.js` cannot calculate a guaranteed result directly. The browser generator has only a 32-bit seed and is not invertible.
-
-### Search the separate direct model
-
-`search.js` uses a separate invertible page model. It requires a Node.js version that supports `BigInt`.
-
-Direct search calculates one page that contains the search text:
+`search.js` uses the same alphabet and page generator as the browser explorer. Direct search calculates one matching address without scanning rooms.
 
 ```sh
 node search.js "wizard"
 node search.js "wxyz, zzz." --direct
 ```
 
-The separate model also supports finite scans:
+### Scan search
+
+Use `--scan` when you want to check a finite set of addresses.
 
 ```sh
 node search.js "abc" --scan --radius 1 --max-results 10
+node search.js "abc" --scan --rooms 20 --page 1
 ```
 
-Run `node search.js --help` to see all options.
+`search-web.js` is a scan-only wrapper around `search.js`.
 
-> [!IMPORTANT]
-> `search.js` does not use the browser page generator. Use `search-web.js` when you need an address that matches the browser explorer.
+```sh
+node search-web.js "abc" --wall 1 --shelf 3 --volume 8 --page 20
+node search-web.js --self-test
+```
+
+Run `node search.js --help` to see all direct and scan options.
 
 ## Files
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | Contains the interface, Three.js scene, controls, and browser page generator |
-| `search-web.js` | Scans pages that match the browser generator |
-| `search.js` | Provides direct and scan searches for a separate page model |
+| `index.html` | Contains the interface, Three.js scene, controls, search, and page generator |
+| `search.js` | Provides direct and scan searches for the shared page model |
+| `search-web.js` | Provides a scan-only wrapper around `search.js` |
 | `README.md` | Describes setup and use |
 
 ## Current limits
