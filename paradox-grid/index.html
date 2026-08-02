@@ -1300,7 +1300,7 @@ function drawEnemies(){
         ctx.rotate(Math.PI/4);ctx.globalAlpha=.15;ctx.fillRect(-11,-11,22,22);ctx.globalAlpha=1;
         ctx.strokeRect(-11,-11,22,22);
         ctx.save();ctx.rotate(-e.t*2);ctx.strokeRect(-6,-6,12,12);ctx.restore();
-        if(e.fireT<.4){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,0,3+e.fireT*8,0,TAU);ctx.fill();}
+        if(e.fireT>0&&e.fireT<.4){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,0,3+e.fireT*8,0,TAU);ctx.fill();}
         break;}
       case'node':{
         ctx.beginPath();for(let k=0;k<6;k++){const a=k*TAU/6+e.t*.5;
