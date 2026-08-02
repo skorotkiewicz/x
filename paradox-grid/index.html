@@ -812,7 +812,7 @@ function die(cause){
 /* ================= rewind ================= */
 function snapshot(){
   snapBuffer.push({
-    terrain:terrain.slice(),wallHp:wallHp.slice(),wallLife:wallLife.slice(),
+    terrain:terrain.slice(),warnT:warnT.slice(),wallHp:wallHp.slice(),wallLife:wallLife.slice(),
     wallType:wallType.slice(),wallMax:wallMax.slice(),wallCol:wallCol.slice(),
     erosion:erosionThr,
     enemies:enemies.filter(e=>!e.dead).map(e=>({type:e.type,x:e.x,y:e.y,hp:e.hp})),
@@ -828,10 +828,11 @@ function doRewind(){
   const idx=Math.max(0,snapBuffer.length-1-Math.round(player.rwDepth/0.25));
   const s=snapBuffer[idx];
   const oldFoes=enemies.filter(e=>!e.dead).map(e=>({x:e.x,y:e.y}));
-  terrain.set(s.terrain);wallHp.set(s.wallHp);wallLife.set(s.wallLife);
+  terrain.set(s.terrain);warnT.set(s.warnT);wallHp.set(s.wallHp);wallLife.set(s.wallLife);
   wallType.set(s.wallType);wallMax.set(s.wallMax);wallCol.set(s.wallCol);
   erosionThr=s.erosion;
   enemies=s.enemies.map(d=>{const e=spawnEnemy(d.type,d.x,d.y,d.hp);e.spawnT=.15;return e;});
+  gate.open=enemies.length===0;
   pickups=s.pickups.map(p=>({...p}));
   pbullets=[];ebullets=[];lasers=[];
   rwCharges--;snapBuffer.length=0;
@@ -932,7 +933,7 @@ function updateEnemies(dt){
       chk:for(let yy=gy-1;yy<=gy+1;yy++)for(let xx=gx-1;xx<=gx+1;xx++){
         if(xx<0||yy<0||xx>=COLS||yy>=ROWS)continue;
         const i=ti(xx,yy);
-        if(wallType[i]===1&&wallLife[i]>wallMax[i]-1.2&&
+        if(wallType[i]===1&&wallLife[i]>6*player.wallLifeM+player.wallLifeB-1.2&&
            dist2(e.x,e.y,xx*TILE+17,yy*TILE+17)<(e.r+20)*(e.r+20)){
           e.burnCd=.5;damageEnemy(e,10,e.x,e.y);spark(e.x,e.y,'#ff7a3d',5,140);break chk;
         }
@@ -1089,7 +1090,7 @@ function sectorClear(){
   if(depth>=8){
     state='win';stopMusic();document.body.classList.remove('playing');
     const bonus=250;
-    meta.shards+=runShards+bonus;meta.wins++;meta.best=8;saveMeta();
+    meta.shards+=runShards+bonus;meta.runs++;meta.wins++;meta.best=8;saveMeta();
     $('#w-kills').textContent=kills;$('#w-shards').textContent='+'+(runShards+bonus);
     $('#w-time').textContent=fmtT(runTime);
     $('#w-boons').textContent=boonsTaken.length?('WEAVES: '+boonsTaken.join('  ·  ')):'';
@@ -1433,6 +1434,8 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
   if(id)$('#'+id).classList.remove('hidden');
   $('#hud').classList.toggle('hidden',!(id===null));
+  if(id){$('#bossbar').classList.add('hidden');$('#fx-low').classList.remove('on');}
+  if(id==='screen-title')refreshRecords();
 }
 function banner(h,p){
   $('#ban-h').textContent=h;$('#ban-p').textContent=p||'';
@@ -1510,7 +1513,7 @@ $('#btn-wipe').addEventListener('click',()=>{
     meta={shards:0,runs:0,best:0,wins:0,unlocks:{},mute:meta.mute};saveMeta();openVault(vaultFrom);refreshRecords();sfx('deny');}});
 
 let vaultFrom='screen-title',selIdx=0;
-function openVault(from){vaultFrom=from;renderVault();showScreen('screen-vault');}
+function openVault(from){vaultFrom=from;state='vault';renderVault();showScreen('screen-vault');}
 function renderVault(){
   $('#vault-shards').textContent='◆ '+meta.shards;
   $('#vault-grid').innerHTML=UNLOCKS.map(u=>{
@@ -1609,6 +1612,7 @@ addEventListener('keydown',e=>{
   initAudio();if(AC&&AC.state==='suspended')AC.resume();
   keys[e.code]=true;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+  if(e.repeat&&['Enter','Escape','KeyM','KeyP','KeyR'].includes(e.code))return;
   if(e.code==='KeyM'){setMute(!muted);return;}
   if(state==='title'&&e.code==='Enter'){showScreen('screen-select');state='select';sfx('ui');return;}
   if(state==='select'){
@@ -1637,6 +1641,7 @@ function tryDash(){
   let dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
   if(dx===0&&dy===0){dx=Math.cos(P.aim);dy=Math.sin(P.aim);}
   const l=Math.hypot(dx,dy);P.dashDx=dx/l;P.dashDy=dy/l;
+  if(P.dashCh===P.dashMax)P.dashCd=2.2;
   P.dashCh--;P.dashT=.16;P.inv=Math.max(P.inv,.3);
   sfx('dash');spark(P.x,P.y,school.color,6,160);
 }
@@ -1651,7 +1656,10 @@ cv.addEventListener('mousedown',e=>{
 });
 addEventListener('mouseup',e=>{if(e.button===0)mouse.down=false;});
 addEventListener('contextmenu',e=>e.preventDefault());
-addEventListener('blur',()=>{if(state==='playing'){state='paused';showScreen('screen-pause');}});
+addEventListener('blur',()=>{
+  mouse.down=false;for(const code in keys)keys[code]=false;
+  if(state==='playing'){state='paused';showScreen('screen-pause');}
+});
 
 /* ================= main loop ================= */
 let last=performance.now();
