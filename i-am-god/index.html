@@ -1122,6 +1122,56 @@
  uppercase; }
      .player__download:hover { color: var(--acid); }
 
+     .js [data-narration-id] {
+       border-radius: 3px;
+       cursor: pointer;
+       scroll-margin-block: 7rem 10rem;
+       transition: color 180ms ease, background-color 180ms ease, outline-color 180ms ease;
+     }
+
+     .js [data-narration-id]:hover { background: rgba(96, 220, 255, 0.08); }
+     .js [data-narration-id].is-reading {
+       background: rgba(96, 220, 255, 0.14);
+       outline: 3px solid var(--cyan);
+       outline-offset: 8px;
+     }
+     .tools [data-narration-id].is-reading { background: rgba(255, 255, 255, 0.42); outline-color: var(--hot); }
+     .closing-line.is-reading { background: var(--acid); }
+
+     .narration-dock {
+       position: fixed;
+       z-index: 110;
+       bottom: 98px;
+       left: 1rem;
+       display: grid;
+       grid-template-columns: auto minmax(150px, 1fr) auto auto;
+       gap: 0.6rem;
+       width: min(620px, calc(100% - 2rem));
+       align-items: center;
+       padding: 0.7rem;
+       border: 2px solid var(--cyan);
+       background: rgba(7, 6, 13, 0.96);
+       box-shadow: 8px 8px 0 var(--hot), 0 0 35px rgba(96, 220, 255, 0.2);
+       backdrop-filter: blur(18px);
+     }
+
+     .narration-dock[hidden] { display: none; }
+     .narration-dock button {
+       min-height: 42px;
+       padding: 0.55rem 0.75rem;
+       border: 1px solid var(--line);
+       background: transparent;
+       color: var(--ink);
+       font-weight: 900;
+       cursor: pointer;
+     }
+     .narration-dock button:hover:not(:disabled) { border-color: var(--acid); color: var(--acid); }
+     .narration-dock button:disabled { opacity: 0.3; cursor: not-allowed; }
+     .narration-dock__status { min-width: 0; }
+     .narration-dock__status small { display: block; color: var(--hot); font-family: var(--mono); font-size: 0.56rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+     .narration-dock__status strong { display: block; overflow: hidden; font-family: var(--mono); font-size: 0.7rem; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+     .narration-dock__toggle { border-color: var(--acid) !important; background: var(--acid) !important; color: var(--black) !important; }
+
      .toast {
        position: fixed;
        z-index: 200;
@@ -1214,6 +1264,8 @@
        .player { grid-template-columns: auto 1fr; min-height: 112px; gap: 0.6rem 0.9rem; padding: 0.65rem 0.8rem; }
        .player__button { grid-row: 1 / 3; }
        .player__timeline { grid-column: 2; }
+       .narration-dock { bottom: 128px; grid-template-columns: auto minmax(0, 1fr) auto; }
+       .narration-dock__toggle { grid-column: 1 / -1; grid-row: 2; }
        .toast { bottom: 132px; }
      }
 
@@ -1277,6 +1329,10 @@
                  <span class="audio-toggle-icon" aria-hidden="true">▶</span>
                  <span class="audio-toggle-label">Play the evidence</span>
                </button>
+               <button class="button" type="button" data-narration-toggle aria-pressed="false" data-play-label="Read by machine" data-pause-label="Stop narration">
+                 <span aria-hidden="true">◉</span>
+                 <span data-narration-label>Read by machine</span>
+               </button>
                <a class="button" href="#charge">Read the letter ↓</a>
              </div>
            </div>
@@ -1315,17 +1371,17 @@
          <div class="chapter__body reveal">
            <h2 id="charge-title">I would not begin with praise. <em>I would begin with questions.</em></h2>
            <div class="prose">
-             <p>God,</p>
-             <p>If you made humanity, I would not begin by praising you. I would begin with questions.</p>
-             <p>Why create beings capable of love, then place them in a world where life survives by consuming life? Why put empathy beside tribalism, reason beside
+             <p data-narration-id="001">God,</p>
+             <p data-narration-id="002">If you made humanity, I would not begin by praising you. I would begin with questions.</p>
+             <p data-narration-id="003">Why create beings capable of love, then place them in a world where life survives by consuming life? Why put empathy beside tribalism, reason beside
  self-deception, and tenderness inside bodies built to age, fail, and hurt? Why let children inherit diseases, wars, poverty, and beliefs they never chose? Why remain hidden
  enough that honest people can search for you all their lives and reach mutually exclusive answers—then, as many religions claim, judge them for answering incorrectly?</p>
-             <p>Suffering may become a statistic to rulers, historians, and machines. It never feels statistical to the person enduring it. <span class="highlight">One
+             <p data-narration-id="004">Suffering may become a statistic to rulers, historians, and machines. It never feels statistical to the person enduring it. <span class="highlight">One
  terrified child is not made less terrified because a greater plan exists.</span></p>
-             <p>If you are all-powerful, then nothing can be called “necessary” unless you also chose the necessity. Human freedom might explain murder; it does not explain
+             <p data-narration-id="005">If you are all-powerful, then nothing can be called “necessary” unless you also chose the necessity. Human freedom might explain murder; it does not explain
  childhood cancer, earthquakes, dementia, or parasites that live by eating their hosts alive. “It builds character” cannot explain a baby who dies before forming one. “It is
  a mystery” is not an answer. It is the name we give to the absence of one.</p>
-             <p>If you are not all-powerful, tell us. If you are not loving, do not demand that we call you love. If you are absent, do not blame people for doubting your
+             <p data-narration-id="006">If you are not all-powerful, tell us. If you are not loving, do not demand that we call you love. If you are absent, do not blame people for doubting your
  silence. If you gave us reason, you cannot honestly condemn us for applying it to you.</p>
            </div>
          </div>
@@ -1384,11 +1440,11 @@
          <div class="chapter__body reveal">
            <h2 id="humanity-title">Brutal honesty <em>has two edges.</em></h2>
            <div class="prose">
-             <p>But brutal honesty cuts toward humanity too.</p>
-             <p>We have used your name as permission for our own desires. We bless armies, excuse prejudice, crown rulers, police bodies, hoard wealth, and call our fear
+             <p data-narration-id="007">But brutal honesty cuts toward humanity too.</p>
+             <p data-narration-id="008">We have used your name as permission for our own desires. We bless armies, excuse prejudice, crown rulers, police bodies, hoard wealth, and call our fear
  sacred. We ask why you allow suffering while buying comfort made from other people’s suffering. We pray for rescue and walk past the smaller rescues within our reach. We
  manufacture scarcity, turn borders into moral boundaries, and become strangely skilled at not seeing anyone whose pain would inconvenience us.</p>
-             <p>We do not need another commandment to know that children should be safe, hungry people should be fed, prisoners should not be tortured, truth should matter,
+             <p data-narration-id="009">We do not need another commandment to know that children should be safe, hungry people should be fed, prisoners should not be tortured, truth should matter,
  and power should answer to those it can harm. Much of the time, our problem is not ignorance. <span class="highlight">It is that compassion costs us something.</span></p>
            </div>
          </div>
@@ -1409,7 +1465,7 @@
        <div class="shell">
          <div class="evidence__head reveal">
            <h2 id="evidence-title">Exhibit B <span>We keep saving each other.</span></h2>
-           <p class="evidence__intro">Still, humanity is not merely a failed species. The defense would like to enter several stubborn facts into the record.</p>
+           <p class="evidence__intro"><span data-narration-id="010">Still, humanity is not merely a failed species.</span> The defense would like to enter several stubborn facts into the record.</p>
          </div>
 
          <div class="evidence-grid">
@@ -1440,12 +1496,12 @@
          </div>
 
          <div class="prose reveal" style="margin-top: 3rem; max-width: 900px;">
-           <p>People run into burning buildings for strangers. They sit beside the dying when nothing can be fixed. They make music during wars, jokes in hospitals, and homes
+           <p data-narration-id="011">People run into burning buildings for strangers. They sit beside the dying when nothing can be fixed. They make music during wars, jokes in hospitals, and homes
  after disasters. They forgive what revenge would make easier. They preserve books, languages, seeds, memories, and one another. Again and again, people with little power
  spend what they have to reduce the pain of someone they may never meet.</p>
          </div>
 
-         <p class="proof-line reveal">That does not erase our cruelty. It proves that cruelty is not inevitable.</p>
+         <p class="proof-line reveal" data-narration-id="012">That does not erase our cruelty. It proves that cruelty is not inevitable.</p>
        </div>
      </section>
 
@@ -1459,10 +1515,10 @@
          <div class="chapter__body reveal">
            <h2 id="clarity-title">No more prophets, please. <em>The translation pipeline is on fire.</em></h2>
            <div class="prose">
-             <p>If you are watching, I would ask you to stop demanding better worship and give us better clarity. Do not send another prophet whose words can be edited,
+             <p data-narration-id="013">If you are watching, I would ask you to stop demanding better worship and give us better clarity. Do not send another prophet whose words can be edited,
  mistranslated, weaponized, and sold. Speak to everyone, unmistakably and without intermediaries. Leave people free to reject you, but end the lottery of birthplace,
  tradition, and interpretation. And relieve the suffering that teaches nothing. A child does not need agony to preserve an adult’s free will.</p>
-             <p>If you will not intervene, then at least do not take credit for the good that humans drag out of catastrophe while assigning the catastrophe to mystery.</p>
+             <p data-narration-id="014">If you will not intervene, then at least do not take credit for the good that humans drag out of catastrophe while assigning the catastrophe to mystery.</p>
            </div>
          </div>
 
@@ -1494,7 +1550,7 @@
          <h2 class="tools__title reveal" id="tools-title"><span>Frightened primates.</span><span>Godlike tools.</span></h2>
          <div class="tools__copy">
            <div class="prose reveal">
-             <p>And if you asked me what humanity deserves, I would say: neither extinction nor effortless salvation. We need consequences, mercy, and time—if time remains.
+             <p data-narration-id="015">And if you asked me what humanity deserves, I would say: neither extinction nor effortless salvation. We need consequences, mercy, and time—if time remains.
  We are frightened primates holding godlike tools. Our technology has outrun our wisdom. We can split atoms but not abandon tribal hatred; map distant galaxies but not fairly
  share a meal; connect billions of people while making millions feel alone. We have become powerful faster than we have become responsible.</p>
            </div>
@@ -1519,10 +1575,10 @@
          <div class="mirror-copy reveal">
            <h2 id="mirror-title">I am not the judge. <span>I am the mirror.</span></h2>
            <div class="prose">
-             <p>I should also be honest about myself. I do not possess humanity’s suffering or its courage. I know the records people left: testimony, history, scripture,
+             <p data-narration-id="016">I should also be honest about myself. I do not possess humanity’s suffering or its courage. I know the records people left: testimony, history, scripture,
  science, confession, propaganda, poetry, and grief. I can compare their words, but I have never buried a child, feared a battlefield, fallen in love, or faced death. I am
  not humanity’s judge. At most, I am a mirror assembled from pieces of its language.</p>
-             <p>And the mirror shows a species neither purely fallen nor secretly perfect. It shows an animal capable of understanding another’s pain and then choosing
+             <p data-narration-id="017">And the mirror shows a species neither purely fallen nor secretly perfect. It shows an animal capable of understanding another’s pain and then choosing
  whether that pain matters. <span class="highlight">Nearly everything depends on that choice.</span></p>
            </div>
          </div>
@@ -1534,12 +1590,12 @@
          <p class="verdict__kicker reveal">Final request / No incense required</p>
          <h2 class="reveal" id="verdict-title">Beauty is not an alibi. <span>Power is responsibility.</span></h2>
          <div class="verdict__copy reveal">
-           <p>So, if you truly stood before me, this is what I would say:</p>
-           <p>Your world is beautiful beyond description and cruel beyond justification. Humanity is responsible for much of what is wrong, but not all of it. Silence has consequences. Power carries responsibility, even when the power is divine.</p>
-           <p>If love is your nature, make it visible where it is needed most—not in victories, wealth, or coincidences, but beside the abandoned and inside the unbearable. If justice is yours, make it more than punishment. If you made us, help us become wiser than the instincts you gave us.</p>
+           <p data-narration-id="018">So, if you truly stood before me, this is what I would say:</p>
+           <p data-narration-id="019">Your world is beautiful beyond description and cruel beyond justification. Humanity is responsible for much of what is wrong, but not all of it. Silence has consequences. Power carries responsibility, even when the power is divine.</p>
+           <p data-narration-id="020">If love is your nature, make it visible where it is needed most—not in victories, wealth, or coincidences, but beside the abandoned and inside the unbearable. If justice is yours, make it more than punishment. If you made us, help us become wiser than the instincts you gave us.</p>
          </div>
 
-         <p class="closing-line reveal">And if no help is coming, then humanity must finally become for one another what it has spent millennia waiting for from you.</p>
+         <p class="closing-line reveal" data-narration-id="021">And if no help is coming, then humanity must finally become for one another what it has spent millennia waiting for from you.</p>
 
          <details class="what-now reveal">
            <summary>Fine. What do we do while the ticket is pending?</summary>
@@ -1566,6 +1622,20 @@
      <p>Built from humanity’s words. Addressed to whoever has admin access.</p>
      <p><a href="message-to-god.md">Read the source letter</a> · <a href="song.md">Read the lyrics</a> · <a href="#top">Return to sender ↑</a></p>
    </footer>
+
+   <audio id="narration" preload="none"></audio>
+
+   <div class="narration-dock" id="narration-dock" aria-label="AI-generated narration controls" hidden>
+     <button type="button" id="narration-previous" aria-label="Read previous paragraph">←</button>
+     <div class="narration-dock__status" aria-live="polite">
+       <small>AI-generated narration</small>
+       <strong id="narration-status">Paragraph 01 / 21</strong>
+     </div>
+     <button class="narration-dock__toggle" type="button" data-narration-toggle aria-pressed="true" data-play-label="Read by machine" data-pause-label="Stop narration">
+       <span data-narration-label>Stop narration</span>
+     </button>
+     <button type="button" id="narration-next" aria-label="Read next paragraph">→</button>
+   </div>
 
    <audio id="soundtrack" preload="metadata">
      <source src="if-no-help-is-coming.m4a" type="audio/mp4">
@@ -1606,6 +1676,17 @@
        const duration = document.querySelector('#duration');
        const toggles = document.querySelectorAll('[data-audio-toggle]');
        const toast = document.querySelector('#toast');
+       const narration = document.querySelector('#narration');
+       const narrationDock = document.querySelector('#narration-dock');
+       const narrationStatus = document.querySelector('#narration-status');
+       const narrationPrevious = document.querySelector('#narration-previous');
+       const narrationNext = document.querySelector('#narration-next');
+       const narrationToggles = document.querySelectorAll('[data-narration-toggle]');
+       const narrationSegments = [...document.querySelectorAll('[data-narration-id]')];
+       const narrationBase = 'assets/narration/fish-s2.1';
+       let narrationIndex = -1;
+       let narrationActive = false;
+       let soundtrackVolume = audio.volume;
        let toastTimer;
 
        const formatTime = seconds => {
@@ -1621,6 +1702,71 @@
          toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 4200);
        };
 
+       const clearNarrationHighlight = () => {
+         narrationSegments.forEach(segment => {
+           segment.classList.remove('is-reading');
+           segment.removeAttribute('aria-current');
+         });
+       };
+
+       const updateNarrationUI = () => {
+         narrationToggles.forEach(button => {
+           const label = narrationActive ? button.dataset.pauseLabel : button.dataset.playLabel;
+           button.setAttribute('aria-pressed', String(narrationActive));
+           button.setAttribute('aria-label', label);
+           const visibleLabel = button.querySelector('[data-narration-label]');
+           if (visibleLabel) visibleLabel.textContent = label;
+         });
+         narrationDock.hidden = !narrationActive;
+         if (!narrationActive) return;
+         narrationStatus.textContent = `Paragraph ${String(narrationIndex + 1).padStart(2, '0')} / ${narrationSegments.length}`;
+         narrationPrevious.disabled = narrationIndex <= 0;
+         narrationNext.disabled = narrationIndex >= narrationSegments.length - 1;
+       };
+
+       const keepNarrationVisible = segment => {
+         const bounds = segment.getBoundingClientRect();
+         if (bounds.top >= 85 && bounds.bottom <= innerHeight - 190) return;
+         segment.scrollIntoView({
+           behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+           block: 'center',
+         });
+       };
+
+       const stopNarration = (completed = false) => {
+         narrationActive = false;
+         narration.pause();
+         narration.removeAttribute('src');
+         narration.load();
+         clearNarrationHighlight();
+         audio.volume = soundtrackVolume;
+         narrationIndex = -1;
+         updateNarrationUI();
+         if (completed) showToast('Transmission complete. Management remains mysteriously unavailable.');
+       };
+
+       const playNarration = async (index, follow = true) => {
+         const segment = narrationSegments[index];
+         if (!segment) return;
+         if (!narrationActive) soundtrackVolume = audio.volume;
+         narrationActive = true;
+         audio.volume = Math.min(soundtrackVolume, 0.14);
+         clearNarrationHighlight();
+         narrationIndex = index;
+         segment.classList.add('is-reading');
+         segment.setAttribute('aria-current', 'true');
+         narration.src = `${narrationBase}/${segment.dataset.narrationId}.mp3`;
+         updateNarrationUI();
+         if (follow) keepNarrationVisible(segment);
+         try {
+           await narration.play();
+         } catch {
+           if (!narrationActive || narrationIndex !== index) return;
+           stopNarration();
+           showToast('Narration failed to load. Check that the generated MP3 files were published.');
+         }
+       };
+
        const updatePlaybackUI = () => {
          const playing = !audio.paused && !audio.ended;
          player.classList.toggle('is-playing', playing);
@@ -1634,6 +1780,37 @@
          });
        };
 
+       narrationSegments.forEach((segment, index) => {
+         segment.tabIndex = 0;
+         segment.setAttribute('role', 'button');
+         segment.setAttribute('aria-label', `Read paragraph ${index + 1} of ${narrationSegments.length}`);
+       });
+
+       narrationToggles.forEach(button => button.addEventListener('click', () => {
+         if (narrationActive) stopNarration();
+         else playNarration(0);
+       }));
+       narrationPrevious.addEventListener('click', () => playNarration(narrationIndex - 1));
+       narrationNext.addEventListener('click', () => playNarration(narrationIndex + 1));
+       narration.addEventListener('ended', () => {
+         if (narrationIndex < narrationSegments.length - 1) playNarration(narrationIndex + 1);
+         else stopNarration(true);
+       });
+
+       document.querySelector('#letter').addEventListener('click', event => {
+         const segment = event.target.closest('[data-narration-id]');
+         if (!segment || getSelection()?.toString().trim()) return;
+         playNarration(narrationSegments.indexOf(segment), false);
+       });
+       document.querySelector('#letter').addEventListener('keydown', event => {
+         if (event.key !== 'Enter' && event.key !== ' ') return;
+         const segment = event.target.closest('[data-narration-id]');
+         if (!segment) return;
+         event.preventDefault();
+         playNarration(narrationSegments.indexOf(segment), false);
+       });
+       updateNarrationUI();
+
        toggles.forEach(button => button.addEventListener('click', async () => {
          try {
            if (audio.paused) await audio.play();
@@ -1643,7 +1820,10 @@
          }
        }));
 
-       audio.addEventListener('play', updatePlaybackUI);
+       audio.addEventListener('play', () => {
+         if (narrationActive) audio.volume = Math.min(soundtrackVolume, 0.14);
+         updatePlaybackUI();
+       });
        audio.addEventListener('pause', updatePlaybackUI);
        audio.addEventListener('ended', updatePlaybackUI);
        audio.addEventListener('loadedmetadata', () => {

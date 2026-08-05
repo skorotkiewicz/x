@@ -6,9 +6,7 @@ SOURCE=${SOURCE:-"$ROOT/message-to-god.md"}
 OUT_DIR=${OUT_DIR:-"$ROOT/assets/narration"}
 API_URL=${OPENROUTER_TTS_URL:-"https://openrouter.ai/api/v1/audio/speech"}
 MODEL=${OPENROUTER_TTS_MODEL:-"fish-audio/s2.1-pro-free:free"}
-SPEED=${TTS_SPEED:-0.96}
-
-BASE_DIRECTION="Speak as a calm, intelligent witness addressing someone immensely powerful. Be intimate, measured, and brutally sincere. Use natural human pacing and clear diction. Never sound preachy, theatrical, sarcastic, robotic, or like a movie trailer. Treat suffering with restraint, not melodrama. Preserve the wording exactly and leave a natural pause at the end."
+PROFILE=fish-s2.1
 
 usage() {
   cat <<'EOF'
@@ -16,20 +14,19 @@ Generate AI narration for “Dear God, We Need to Talk” through OpenRouter.
 
 Usage:
   ./generate-narration.sh audition
-  ./generate-narration.sh generate [voice]
+  ./generate-narration.sh generate
 
 Commands:
-  audition          Generate the same short sample with cedar and marin.
-  generate [voice]  Generate one MP3 per letter paragraph (default: cedar)
-                    and assets/narration/manifest-VOICE.json.
+  audition  Generate the same short sample in two Fish S2.1 delivery styles.
+  generate  Generate one MP3 per letter paragraph and
+            assets/narration/manifest-fish-s2.1.json.
 
 Required:
   OPENROUTER_API_KEY  OpenRouter API key. Keep it in your environment.
 
 Optional environment variables:
-  YES=1                       Skip the paid-call confirmation.
+  YES=1                       Skip the API-call confirmation.
   FORCE=1                     Replace existing clips.
-  TTS_SPEED=0.96              Speech speed (0.25–4.0).
   OUT_DIR=/path               Output directory.
   OPENROUTER_TTS_MODEL=...    Override the model ID.
   OPENROUTER_HTTP_REFERER=... Optional OpenRouter attribution URL.
@@ -38,10 +35,12 @@ Optional environment variables:
 Examples:
   export OPENROUTER_API_KEY='...'
   ./generate-narration.sh audition
-  ./generate-narration.sh generate cedar
-  YES=1 ./generate-narration.sh generate marin
+  ./generate-narration.sh generate
+  YES=1 ./generate-narration.sh generate
 
-OpenRouter usage costs credits. Existing files are skipped unless FORCE=1.
+The default Fish Audio model is currently free on OpenRouter. Existing files
+are skipped unless FORCE=1. OpenRouter exposes its provider-default voice;
+delivery style is controlled with Fish S2.1 inline cues.
 EOF
 }
 
@@ -54,11 +53,11 @@ require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "Required command not found: $1"
 }
 
-confirm_paid_calls() {
+confirm_api_calls() {
   local description=$1
   [[ ${YES:-0} == 1 ]] && return
-  [[ -t 0 ]] || fail "Confirmation required for paid API calls. Review the command, then rerun with YES=1."
-  printf '%s This spends OpenRouter credits. Continue? [y/N] ' "$description"
+  [[ -t 0 ]] || fail "Confirmation required for external API calls. Review the command, then rerun with YES=1."
+  printf '%s Continue? [y/N] ' "$description"
   read -r answer
   [[ $answer == y || $answer == Y ]] || { printf 'Cancelled.\n'; exit 0; }
 }
@@ -75,10 +74,9 @@ PY
 }
 
 generate_clip() {
-  local voice=$1
-  local text=$2
-  local direction=$3
-  local output=$4
+  local text=$1
+  local cue=$2
+  local output=$3
 
   if [[ -s $output && ${FORCE:-0} != 1 ]]; then
     printf 'skip  %s\n' "${output#"$ROOT/"}"
@@ -89,20 +87,18 @@ generate_clip() {
   local audio_file="${output}.audio.part"
   local request_json
 
-  request_json=$(python3 - "$MODEL" "$voice" "$text" "$BASE_DIRECTION $direction" "$SPEED" <<'PY'
+  request_json=$(python3 - "$MODEL" "$cue" "$text" <<'PY'
 import json
 import sys
 
-model, voice, text, instructions, speed = sys.argv[1:]
-if not text or len(text) > 4096:
-    raise SystemExit(f"TTS input must contain 1–4096 characters; received {len(text)}")
+model, cue, text = sys.argv[1:]
+styled_input = f"{cue} {text}"
+if not text or len(styled_input) > 4096:
+    raise SystemExit(f"TTS input must contain 1–4096 characters; received {len(styled_input)}")
 print(json.dumps({
     "model": model,
-    "voice": voice,
-    "input": text,
-    "instructions": instructions,
+    "input": styled_input,
     "response_format": "mp3",
-    "speed": float(speed),
 }, ensure_ascii=False))
 PY
 )
@@ -159,73 +155,76 @@ if not paragraphs:
 for number, text in enumerate(paragraphs, 1):
     if number <= 6:
         section = "the-charge"
-        direction = "Sound questioning and controlled; let moral seriousness grow without anger."
+        cue = "[calm, intimate, measured, quietly questioning, restrained]"
     elif number <= 9:
         section = "our-part"
-        direction = "Turn the criticism inward. Be candid, firm, and free of self-righteousness."
+        cue = "[candid, firm, self-reflective, restrained, without self-righteousness]"
     elif number <= 12:
         section = "the-evidence"
-        direction = "Warm slightly. Let human tenderness register without becoming sentimental."
+        cue = "[warm, compassionate, quietly hopeful, unsentimental]"
     elif number <= 14:
         section = "the-request"
-        direction = "Be direct and fearless, with only the faintest dry wit."
+        cue = "[direct, fearless, controlled, with very subtle dry wit]"
     elif number == 15:
         section = "godlike-tools"
-        direction = "Carry grave urgency. Emphasize the contrast between technical power and moral immaturity."
+        cue = "[grave, urgent, deliberate, emphasizing moral contrast]"
     elif number <= 17:
         section = "the-mirror"
-        direction = "Become quieter and self-aware. State the machine's limits plainly and humbly."
+        cue = "[quiet, humble, self-aware, intimate, unhurried]"
     else:
         section = "the-verdict"
-        direction = "Slow down. Speak with steady resolve, ending intimately rather than triumphantly."
+        cue = "[slow, steady, intimate, compassionate, quietly resolved, not triumphant]"
 
     if "\t" in text:
         raise SystemExit(f"Unexpected tab in paragraph {number}")
-    print(f"{number:03d}\t{section}\t{direction}\t{text}")
+    print(f"{number:03d}\t{section}\t{cue}\t{text}")
 PY
 }
 
 write_manifest() {
   local segments_file=$1
-  local voice=$2
-  local clips_dir=$3
-  local manifest="$OUT_DIR/manifest-${voice}.json"
+  local clips_dir=$2
+  local manifest="$OUT_DIR/manifest-${PROFILE}.json"
 
-  python3 - "$segments_file" "$clips_dir" "$manifest" "$MODEL" "$voice" "$ROOT" <<'PY'
+  python3 - "$segments_file" "$clips_dir" "$manifest" "$MODEL" "$ROOT" <<'PY'
 from pathlib import Path
 import json
 import sys
 
-segments_file, clips_dir_arg, manifest_arg, model, voice, root_arg = sys.argv[1:]
+segments_file, clips_dir_arg, manifest_arg, model, root_arg = sys.argv[1:]
 clips_dir = Path(clips_dir_arg)
 manifest = Path(manifest_arg)
 root = Path(root_arg)
 segments = []
 
 for row in Path(segments_file).read_text(encoding="utf-8").splitlines():
-    number, section, _direction, text = row.split("\t", 3)
+    number, section, _cue, text = row.split("\t", 3)
     clip = clips_dir / f"{number}.mp3"
     if not clip.is_file() or clip.stat().st_size <= 1024:
         raise SystemExit(f"Missing narration clip: {clip}")
-    segments.append({
-        "id": number,
-        "section": section,
-        "text": text,
-        "src": clip.relative_to(root).as_posix(),
-    })
+    try:
+        src = clip.relative_to(root).as_posix()
+    except ValueError:
+        src = clip.relative_to(manifest.parent).as_posix()
+    segments.append({"id": number, "section": section, "text": text, "src": src})
 
 payload = {
     "version": 1,
     "title": "If You Were Standing Before Me",
     "disclosure": "AI-generated narration",
     "model": model,
-    "voice": voice,
+    "voice": "provider-default",
+    "style_control": "Fish Audio S2.1 inline cues",
     "segments": segments,
 }
 part = manifest.with_suffix(manifest.suffix + ".part")
 part.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 part.replace(manifest)
-print(f"wrote {manifest.relative_to(root)} ({len(segments)} segments)")
+try:
+    shown = manifest.relative_to(root)
+except ValueError:
+    shown = manifest
+print(f"wrote {shown} ({len(segments)} segments)")
 PY
 }
 
@@ -239,43 +238,41 @@ case ${1:-help} in
 
   audition)
     [[ -n ${OPENROUTER_API_KEY:-} ]] || fail "Set OPENROUTER_API_KEY before generating audio."
-    confirm_paid_calls "Generate two audition clips (cedar and marin)."
+    confirm_api_calls "Generate two free-model audition clips with different delivery cues."
     sample="Your world is beautiful beyond description and cruel beyond justification. Silence has consequences. Power carries responsibility, even when the power is divine."
-    direction="Deliver this as a restrained final verdict: intimate, fearless, compassionate, and quietly resolved."
-    generate_clip cedar "$sample" "$direction" "$OUT_DIR/auditions/cedar.mp3"
-    generate_clip marin "$sample" "$direction" "$OUT_DIR/auditions/marin.mp3"
+    generate_clip "$sample" "[calm, intimate, measured, compassionate, quietly resolved]" "$OUT_DIR/auditions/restrained.mp3"
+    generate_clip "$sample" "[grave, fearless, deliberate, emotionally restrained, ending softly]" "$OUT_DIR/auditions/grave.mp3"
     printf '\nAuditions ready in %s\n' "$OUT_DIR/auditions"
     ;;
 
   generate)
+    [[ -z ${2:-} ]] || fail "Fish Audio uses its provider-default voice; run 'generate' without a voice argument."
     [[ -f $SOURCE ]] || fail "Source file not found: $SOURCE"
     [[ -n ${OPENROUTER_API_KEY:-} ]] || fail "Set OPENROUTER_API_KEY before generating audio."
-    voice=${2:-cedar}
-    [[ $voice =~ ^[a-zA-Z0-9_-]+$ ]] || fail "Invalid voice name: $voice"
 
     mkdir -p "$OUT_DIR"
-    segments_file="$OUT_DIR/.segments-${voice}.tsv"
+    segments_file="$OUT_DIR/.segments-${PROFILE}.tsv"
     build_segments "$segments_file"
-    clips_dir="$OUT_DIR/$voice"
+    clips_dir="$OUT_DIR/$PROFILE"
 
     total=$(wc -l <"$segments_file")
     missing=0
-    while IFS=$'\t' read -r number _section _direction _text; do
+    while IFS=$'\t' read -r number _section _cue _text; do
       [[ -s "$clips_dir/$number.mp3" && ${FORCE:-0} != 1 ]] || ((missing += 1))
     done <"$segments_file"
 
     if (( missing == 0 )); then
-      printf 'All %s %s clips already exist; rebuilding the manifest only.\n' "$total" "$voice"
+      printf 'All %s Fish S2.1 clips already exist; rebuilding the manifest only.\n' "$total"
     else
-      confirm_paid_calls "Generate $missing of $total paragraph clips with voice '$voice'."
+      confirm_api_calls "Generate $missing of $total paragraph clips with the free Fish S2.1 model."
     fi
 
-    while IFS=$'\t' read -r number _section direction text; do
-      generate_clip "$voice" "$text" "$direction" "$clips_dir/$number.mp3"
+    while IFS=$'\t' read -r number _section cue text; do
+      generate_clip "$text" "$cue" "$clips_dir/$number.mp3"
     done <"$segments_file"
 
-    write_manifest "$segments_file" "$voice" "$clips_dir"
-    printf '\nNarration ready. Later use manifest-%s.json for paragraph playback and highlighting.\n' "$voice"
+    write_manifest "$segments_file" "$clips_dir"
+    printf '\nNarration ready. Later use manifest-%s.json for paragraph playback and highlighting.\n' "$PROFILE"
     ;;
 
   *)

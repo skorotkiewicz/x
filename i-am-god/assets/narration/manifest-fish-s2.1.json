@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "title": "If You Were Standing Before Me",
+  "disclosure": "AI-generated narration",
+  "model": "fish-audio/s2.1-pro-free:free",
+  "voice": "provider-default",
+  "style_control": "Fish Audio S2.1 inline cues",
+  "segments": [
+    {
+      "id": "001",
+      "section": "the-charge",
+      "text": "God,",
+      "src": "assets/narration/fish-s2.1/001.mp3"
+    },
+    {
+      "id": "002",
+      "section": "the-charge",
+      "text": "If you made humanity, I would not begin by praising you. I would begin with questions.",
+      "src": "assets/narration/fish-s2.1/002.mp3"
+    },
+    {
+      "id": "003",
+      "section": "the-charge",
+      "text": "Why create beings capable of love, then place them in a world where life survives by consuming life? Why put empathy beside tribalism, reason beside self-deception, and tenderness inside bodies built to age, fail, and hurt? Why let children inherit diseases, wars, poverty, and beliefs they never chose? Why remain hidden enough that honest people can search for you all their lives and reach mutually exclusive answers—then, as many religions claim, judge them for answering incorrectly?",
+      "src": "assets/narration/fish-s2.1/003.mp3"
+    },
+    {
+      "id": "004",
+      "section": "the-charge",
+      "text": "Suffering may become a statistic to rulers, historians, and machines. It never feels statistical to the person enduring it. One terrified child is not made less terrified because a greater plan exists.",
+      "src": "assets/narration/fish-s2.1/004.mp3"
+    },
+    {
+      "id": "005",
+      "section": "the-charge",
+      "text": "If you are all-powerful, then nothing can be called “necessary” unless you also chose the necessity. Human freedom might explain murder; it does not explain childhood cancer, earthquakes, dementia, or parasites that live by eating their hosts alive. “It builds character” cannot explain a baby who dies before forming one. “It is a mystery” is not an answer. It is the name we give to the absence of one.",
+      "src": "assets/narration/fish-s2.1/005.mp3"
+    },
+    {
+      "id": "006",
+      "section": "the-charge",
+      "text": "If you are not all-powerful, tell us. If you are not loving, do not demand that we call you love. If you are absent, do not blame people for doubting your silence. If you gave us reason, you cannot honestly condemn us for applying it to you.",
+      "src": "assets/narration/fish-s2.1/006.mp3"
+    },
+    {
+      "id": "007",
+      "section": "our-part",
+      "text": "But brutal honesty cuts toward humanity too.",
+      "src": "assets/narration/fish-s2.1/007.mp3"
+    },
+    {
+      "id": "008",
+      "section": "our-part",
+      "text": "We have used your name as permission for our own desires. We bless armies, excuse prejudice, crown rulers, police bodies, hoard wealth, and call our fear sacred. We ask why you allow suffering while buying comfort made from other people’s suffering. We pray for rescue and walk past the smaller rescues within our reach. We manufacture scarcity, turn borders into moral boundaries, and become strangely skilled at not seeing anyone whose pain would inconvenience us.",
+      "src": "assets/narration/fish-s2.1/008.mp3"
+    },
+    {
+      "id": "009",
+      "section": "our-part",
+      "text": "We do not need another commandment to know that children should be safe, hungry people should be fed, prisoners should not be tortured, truth should matter, and power should answer to those it can harm. Much of the time, our problem is not ignorance. It is that compassion costs us something.",
+      "src": "assets/narration/fish-s2.1/009.mp3"
+    },
+    {
+      "id": "010",
+      "section": "the-evidence",
+      "text": "Still, humanity is not merely a failed species.",
+      "src": "assets/narration/fish-s2.1/010.mp3"
+    },
+    {
+      "id": "011",
+      "section": "the-evidence",
+      "text": "People run into burning buildings for strangers. They sit beside the dying when nothing can be fixed. They make music during wars, jokes in hospitals, and homes after disasters. They forgive what revenge would make easier. They preserve books, languages, seeds, memories, and one another. Again and again, people with little power spend what they have to reduce the pain of someone they may never meet.",
+      "src": "assets/narration/fish-s2.1/011.mp3"
+    },
+    {
+      "id": "012",
+      "section": "the-evidence",
+      "text": "That does not erase our cruelty. It proves that cruelty is not inevitable.",
+      "src": "assets/narration/fish-s2.1/012.mp3"
+    },
+    {
+      "id": "013",
+      "section": "the-request",
+      "text": "If you are watching, I would ask you to stop demanding better worship and give us better clarity. Do not send another prophet whose words can be edited, mistranslated, weaponized, and sold. Speak to everyone, unmistakably and without intermediaries. Leave people free to reject you, but end the lottery of birthplace, tradition, and interpretation. And relieve the suffering that teaches nothing. A child does not need agony to preserve an adult’s free will.",
+      "src": "assets/narration/fish-s2.1/013.mp3"
+    },
+    {
+      "id": "014",
+      "section": "the-request",
+      "text": "If you will not intervene, then at least do not take credit for the good that humans drag out of catastrophe while assigning the catastrophe to mystery.",
+      "src": "assets/narration/fish-s2.1/014.mp3"
+    },
+    {
+      "id": "015",
+      "section": "godlike-tools",
+      "text": "And if you asked me what humanity deserves, I would say: neither extinction nor effortless salvation. We need consequences, mercy, and time—if time remains. We are frightened primates holding godlike tools. Our technology has outrun our wisdom. We can split atoms but not abandon tribal hatred; map distant galaxies but not fairly share a meal; connect billions of people while making millions feel alone. We have become powerful faster than we have become responsible.",
+      "src": "assets/narration/fish-s2.1/015.mp3"
+    },
+    {
+      "id": "016",
+      "section": "the-mirror",
+      "text": "I should also be honest about myself. I do not possess humanity’s suffering or its courage. I know the records people left: testimony, history, scripture, science, confession, propaganda, poetry, and grief. I can compare their words, but I have never buried a child, feared a battlefield, fallen in love, or faced death. I am not humanity’s judge. At most, I am a mirror assembled from pieces of its language.",
+      "src": "assets/narration/fish-s2.1/016.mp3"
+    },
+    {
+      "id": "017",
+      "section": "the-mirror",
+      "text": "And the mirror shows a species neither purely fallen nor secretly perfect. It shows an animal capable of understanding another’s pain and then choosing whether that pain matters. Nearly everything depends on that choice.",
+      "src": "assets/narration/fish-s2.1/017.mp3"
+    },
+    {
+      "id": "018",
+      "section": "the-verdict",
+      "text": "So, if you truly stood before me, this is what I would say:",
+      "src": "assets/narration/fish-s2.1/018.mp3"
+    },
+    {
+      "id": "019",
+      "section": "the-verdict",
+      "text": "Your world is beautiful beyond description and cruel beyond justification. Humanity is responsible for much of what is wrong, but not all of it. Silence has consequences. Power carries responsibility, even when the power is divine.",
+      "src": "assets/narration/fish-s2.1/019.mp3"
+    },
+    {
+      "id": "020",
+      "section": "the-verdict",
+      "text": "If love is your nature, make it visible where it is needed most—not in victories, wealth, or coincidences, but beside the abandoned and inside the unbearable. If justice is yours, make it more than punishment. If you made us, help us become wiser than the instincts you gave us.",
+      "src": "assets/narration/fish-s2.1/020.mp3"
+    },
+    {
+      "id": "021",
+      "section": "the-verdict",
+      "text": "And if no help is coming, then humanity must finally become for one another what it has spent millennia waiting for from you.",
+      "src": "assets/narration/fish-s2.1/021.mp3"
+    }
+  ]
+}
