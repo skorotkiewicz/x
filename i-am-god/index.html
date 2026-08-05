@@ -1,0 +1,1703 @@
+ <!doctype html>
+ <html lang="en">
+ <head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta name="theme-color" content="#090711">
+   <meta name="description" content="An open letter to God about suffering, responsibility, humanity, and the love we may have to become for one another.">
+   <title>Dear God, We Need to Talk</title>
+   <script>document.documentElement.classList.add('js');</script>
+   <style>
+     :root {
+       color-scheme: dark;
+       --void: #07060d;
+       --night: #0e0b19;
+       --ink: #f6eedf;
+       --muted: #b8afc5;
+       --paper: #efe3c7;
+       --black: #111015;
+       --acid: #d9ff45;
+       --hot: #ff4f72;
+       --cyan: #60dcff;
+       --gold: #ffc857;
+       --violet: #a987ff;
+       --line: rgba(246, 238, 223, 0.22);
+       --display: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+       --serif: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+       --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+       --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+       --mx: 50vw;
+       --my: 20vh;
+     }
+
+     *, *::before, *::after { box-sizing: border-box; }
+
+     html {
+       scroll-behavior: smooth;
+       scrollbar-color: var(--hot) var(--void);
+       scrollbar-width: thin;
+     }
+
+     body {
+       margin: 0;
+       min-width: 320px;
+       overflow-x: hidden;
+       background: var(--void);
+       color: var(--ink);
+       font-family: var(--sans);
+       line-height: 1.6;
+       padding-bottom: 98px;
+     }
+
+     body::before {
+       position: fixed;
+       z-index: -3;
+       inset: 0;
+       content: "";
+       background:
+         radial-gradient(circle at 17% 12%, rgba(169, 135, 255, 0.24), transparent 28rem),
+         radial-gradient(circle at 83% 34%, rgba(96, 220, 255, 0.14), transparent 30rem),
+         radial-gradient(circle at 48% 82%, rgba(255, 79, 114, 0.13), transparent 34rem),
+         linear-gradient(135deg, #07060d 0%, #100a20 48%, #080712 100%);
+     }
+
+     body::after {
+       position: fixed;
+       z-index: -2;
+       width: 54rem;
+       height: 54rem;
+       left: calc(var(--mx) - 27rem);
+       top: calc(var(--my) - 27rem);
+       content: "";
+       pointer-events: none;
+       border-radius: 50%;
+       background: radial-gradient(circle, rgba(217, 255, 69, 0.065), transparent 64%);
+       transition: left 250ms ease-out, top 250ms ease-out;
+     }
+
+     ::selection { background: var(--acid); color: var(--black); }
+
+     a { color: inherit; }
+     button, input { font: inherit; }
+     button { color: inherit; }
+
+     :focus-visible {
+       outline: 3px solid var(--acid);
+       outline-offset: 4px;
+     }
+
+     .skip-link {
+       position: fixed;
+       z-index: 1000;
+       left: 1rem;
+       top: 1rem;
+       padding: 0.8rem 1rem;
+       transform: translateY(-180%);
+       border: 2px solid var(--black);
+       background: var(--acid);
+       color: var(--black);
+       font-weight: 900;
+       text-decoration: none;
+     }
+
+     .skip-link:focus { transform: translateY(0); }
+
+     .cosmos {
+       position: fixed;
+       z-index: -1;
+       inset: 0;
+       overflow: hidden;
+       pointer-events: none;
+     }
+
+     .cosmos::before,
+     .cosmos::after {
+       position: absolute;
+       inset: -20%;
+       content: "";
+       opacity: 0.7;
+       background-image:
+         radial-gradient(circle, rgba(255,255,255,0.9) 0 1px, transparent 1.4px),
+         radial-gradient(circle, rgba(96,220,255,0.8) 0 1px, transparent 1.5px),
+         radial-gradient(circle, rgba(255,200,87,0.75) 0 1px, transparent 1.6px);
+       background-position: 0 0, 43px 79px, 108px 31px;
+       background-size: 151px 151px, 211px 211px, 263px 263px;
+       transform: rotate(4deg);
+     }
+
+     .cosmos::after {
+       opacity: 0.24;
+       filter: blur(0.4px);
+       transform: rotate(-7deg) scale(1.35);
+     }
+
+     .scroll-progress {
+       position: fixed;
+       z-index: 101;
+       inset: 0 0 auto;
+       height: 4px;
+       transform: scaleX(0);
+       transform-origin: left;
+       background: linear-gradient(90deg, var(--acid), var(--cyan), var(--hot));
+       box-shadow: 0 0 20px var(--cyan);
+     }
+
+     .topbar {
+       position: sticky;
+       z-index: 90;
+       top: 0;
+       display: grid;
+       grid-template-columns: auto 1fr auto;
+       align-items: center;
+       gap: 2rem;
+       min-height: 62px;
+       padding: 0.7rem clamp(1rem, 3vw, 3rem);
+       border-bottom: 1px solid var(--line);
+       background: rgba(7, 6, 13, 0.86);
+       box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+       backdrop-filter: blur(18px);
+     }
+
+     .brand {
+       display: inline-flex;
+       align-items: center;
+       gap: 0.7rem;
+       font-family: var(--mono);
+       font-size: 0.72rem;
+       font-weight: 800;
+       letter-spacing: 0.09em;
+       text-decoration: none;
+       text-transform: uppercase;
+       white-space: nowrap;
+     }
+
+     .brand__signal {
+       width: 0.7rem;
+       height: 0.7rem;
+       border-radius: 50%;
+       background: var(--acid);
+       box-shadow: 0 0 0 5px rgba(217, 255, 69, 0.1), 0 0 18px var(--acid);
+       animation: pulse 2s ease-in-out infinite;
+     }
+
+     .nav {
+       display: flex;
+       justify-content: center;
+       gap: clamp(0.8rem, 2.5vw, 2.4rem);
+     }
+
+     .nav a {
+       position: relative;
+       font-size: 0.73rem;
+       font-weight: 850;
+       letter-spacing: 0.1em;
+       text-decoration: none;
+       text-transform: uppercase;
+     }
+
+     .nav a::after {
+       position: absolute;
+       right: 0;
+       bottom: -0.4rem;
+       left: 0;
+       height: 2px;
+       content: "";
+       transform: scaleX(0);
+       background: var(--acid);
+       transition: transform 180ms ease;
+     }
+
+     .nav a:hover::after,
+     .nav a:focus-visible::after { transform: scaleX(1); }
+
+     .topbar__status {
+       display: flex;
+       align-items: center;
+       gap: 0.45rem;
+       color: var(--muted);
+       font-family: var(--mono);
+       font-size: 0.67rem;
+       text-transform: uppercase;
+       white-space: nowrap;
+     }
+
+     .topbar__status b { color: var(--hot); }
+
+     .shell {
+       width: min(1240px, calc(100% - 2rem));
+       margin-inline: auto;
+     }
+
+     .hero {
+       position: relative;
+       display: grid;
+       min-height: max(850px, calc(100svh - 62px));
+       align-items: center;
+       padding: clamp(4rem, 8vw, 7rem) 0 5rem;
+       isolation: isolate;
+     }
+
+     .hero::before {
+       position: absolute;
+       z-index: -1;
+       inset: 5% 2% 8%;
+       content: "";
+       border: 1px solid rgba(246, 238, 223, 0.14);
+       border-radius: 50%;
+       box-shadow:
+         0 0 0 4rem rgba(169, 135, 255, 0.025),
+         0 0 0 9rem rgba(96, 220, 255, 0.018);
+       transform: rotate(-5deg);
+     }
+
+     .hero__eyebrow {
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       gap: 1rem;
+       margin-bottom: 1.5rem;
+       font-family: var(--mono);
+       font-size: clamp(0.65rem, 1vw, 0.78rem);
+       letter-spacing: 0.12em;
+       text-transform: uppercase;
+     }
+
+     .hero__eyebrow span:first-child {
+       padding: 0.35rem 0.65rem;
+       border: 1px solid var(--acid);
+       background: var(--acid);
+       color: var(--black);
+       font-weight: 900;
+       transform: rotate(-1deg);
+     }
+
+     .hero__eyebrow span:last-child { color: var(--muted); }
+
+     .hero__title {
+       position: relative;
+       z-index: 2;
+       margin: 0;
+       font-family: var(--display);
+       font-size: clamp(5rem, 14.8vw, 13.5rem);
+       font-weight: 900;
+       letter-spacing: -0.055em;
+       line-height: 0.73;
+       text-transform: uppercase;
+     }
+
+     .hero__title span { display: block; }
+     .hero__title .line-1 { color: var(--ink); transform: translateX(-0.015em); }
+     .hero__title .line-2 {
+       margin-left: 18%;
+       color: transparent;
+       -webkit-text-stroke: clamp(2px, 0.025em, 5px) var(--hot);
+       text-shadow: 0.045em 0.045em 0 var(--cyan);
+       transform: rotate(-2deg);
+     }
+     .hero__title .line-3 {
+       color: var(--gold);
+       font-family: var(--serif);
+       font-size: 0.51em;
+       font-style: italic;
+       font-weight: 500;
+       letter-spacing: -0.07em;
+       line-height: 1;
+       text-transform: none;
+       transform: translate(7%, 0.12em) rotate(1deg);
+     }
+     .hero__title .line-4 { margin-left: 8%; color: var(--acid); }
+
+     .hero__scribble {
+       position: absolute;
+       z-index: 5;
+       top: 34%;
+       right: 3%;
+       width: clamp(110px, 15vw, 210px);
+       aspect-ratio: 1;
+       display: grid;
+       place-items: center;
+       border: 4px double var(--ink);
+       border-radius: 50%;
+       color: var(--ink);
+       font-family: var(--mono);
+       font-size: clamp(0.58rem, 1vw, 0.76rem);
+       font-weight: 900;
+       letter-spacing: 0.08em;
+       line-height: 1.25;
+       text-align: center;
+       text-transform: uppercase;
+       transform: rotate(12deg);
+       animation: wobble 5s ease-in-out infinite;
+     }
+
+     .hero__scribble::before,
+     .hero__scribble::after {
+       position: absolute;
+       width: 112%;
+       aspect-ratio: 1;
+       content: "";
+       border: 1px solid var(--cyan);
+       border-radius: 47% 53% 45% 55%;
+       transform: rotate(18deg);
+     }
+
+     .hero__scribble::after { border-color: var(--hot); transform: rotate(43deg); }
+
+     .orbit {
+       position: absolute;
+       z-index: -1;
+       top: 7%;
+       right: -8%;
+       width: min(52vw, 680px);
+       aspect-ratio: 1;
+       opacity: 0.6;
+       animation: rotate 45s linear infinite;
+     }
+
+     .orbit__ring {
+       position: absolute;
+       inset: 8%;
+       border: 1px solid rgba(246, 238, 223, 0.22);
+       border-radius: 50%;
+     }
+
+     .orbit__ring:nth-child(2) { inset: 22%; border-color: rgba(96, 220, 255, 0.35); }
+     .orbit__ring:nth-child(3) { inset: 36%; border-style: dashed; border-color: rgba(255, 79, 114, 0.5); }
+
+     .orbit__planet {
+       position: absolute;
+       top: 47%;
+       left: 1%;
+       width: 1.2rem;
+       height: 1.2rem;
+       border-radius: 50%;
+       background: var(--gold);
+       box-shadow: 0 0 30px var(--gold);
+     }
+
+     .hero__bottom {
+       position: relative;
+       z-index: 4;
+       display: grid;
+       grid-template-columns: minmax(0, 1fr) minmax(280px, 390px);
+       gap: clamp(2rem, 7vw, 7rem);
+       align-items: end;
+       margin-top: 4rem;
+     }
+
+     .hero__intro {
+       max-width: 640px;
+       margin: 0;
+       font-family: var(--serif);
+       font-size: clamp(1.25rem, 2.2vw, 2rem);
+       line-height: 1.28;
+     }
+
+     .hero__intro strong {
+       color: var(--acid);
+       font-family: var(--sans);
+       font-size: 0.82em;
+       font-weight: 900;
+       letter-spacing: 0.02em;
+       text-transform: uppercase;
+     }
+
+     .hero__actions {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 0.8rem;
+       margin-top: 2rem;
+     }
+
+     .button {
+       display: inline-flex;
+       min-height: 50px;
+       align-items: center;
+       justify-content: center;
+       gap: 0.65rem;
+       padding: 0.85rem 1.15rem;
+       border: 2px solid var(--ink);
+       border-radius: 0;
+       background: transparent;
+       color: var(--ink);
+       font-size: 0.75rem;
+       font-weight: 900;
+       letter-spacing: 0.08em;
+       text-decoration: none;
+       text-transform: uppercase;
+       cursor: pointer;
+       box-shadow: 5px 5px 0 var(--ink);
+       transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease, color 150ms ease;
+     }
+
+     .button:hover {
+       transform: translate(3px, 3px);
+       box-shadow: 2px 2px 0 var(--ink);
+     }
+
+     .button--acid { border-color: var(--acid); background: var(--acid); color: var(--black); box-shadow: 5px 5px 0 var(--hot); }
+     .button--acid:hover { box-shadow: 2px 2px 0 var(--hot); }
+
+     .ticket {
+       position: relative;
+       padding: 1.25rem;
+       border: 2px solid var(--black);
+       background:
+         repeating-linear-gradient(0deg, transparent 0 27px, rgba(17, 16, 21, 0.09) 28px),
+         var(--paper);
+       color: var(--black);
+       box-shadow: 16px 16px 0 var(--hot), 19px 19px 0 var(--ink);
+       transform: rotate(1.5deg);
+     }
+
+     .ticket::before {
+       position: absolute;
+       top: -1.4rem;
+       left: 48%;
+       width: 4.5rem;
+       height: 1.6rem;
+       content: "";
+       background: rgba(217, 255, 69, 0.75);
+       transform: rotate(-4deg);
+     }
+
+     .ticket__head {
+       display: flex;
+       justify-content: space-between;
+       gap: 1rem;
+       padding-bottom: 0.7rem;
+       border-bottom: 3px solid var(--black);
+       font-family: var(--display);
+       font-size: 1.2rem;
+       letter-spacing: 0.04em;
+       text-transform: uppercase;
+     }
+
+     .ticket dl { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 1rem; margin: 1rem 0; font-family: var(--mono); font-size: 0.76rem; }
+     .ticket dt { font-weight: 900; text-transform: uppercase; }
+     .ticket dd { margin: 0; text-align: right; }
+     .ticket__tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+     .ticket__tags span { padding: 0.15rem 0.4rem; border: 1px solid var(--black); font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; }
+
+     .ticker {
+       overflow: hidden;
+       border-block: 2px solid var(--black);
+       background: var(--acid);
+       color: var(--black);
+       font-family: var(--display);
+       font-size: clamp(1.1rem, 2.3vw, 2rem);
+       letter-spacing: 0.035em;
+       line-height: 1;
+       text-transform: uppercase;
+       transform: rotate(-0.6deg) scale(1.01);
+     }
+
+     .ticker__track {
+       display: flex;
+       width: max-content;
+       animation: ticker 24s linear infinite;
+     }
+
+     .ticker__track span { padding: 0.8rem 1.1rem; white-space: nowrap; }
+     .ticker__track b { color: var(--hot); }
+
+     .chapter {
+       position: relative;
+       padding: clamp(6rem, 12vw, 11rem) 0;
+       scroll-margin-top: 70px;
+     }
+
+     .chapter__grid {
+       display: grid;
+       grid-template-columns: 145px minmax(0, 1fr) minmax(240px, 330px);
+       gap: clamp(1.5rem, 4vw, 4rem);
+       align-items: start;
+     }
+
+     .chapter__rail { position: sticky; top: 105px; }
+
+     .chapter__no {
+       display: block;
+       color: transparent;
+       font-family: var(--display);
+       font-size: clamp(5rem, 11vw, 9rem);
+       letter-spacing: -0.05em;
+       line-height: 0.8;
+       -webkit-text-stroke: 2px var(--hot);
+     }
+
+     .chapter__label {
+       display: block;
+       margin-top: 1rem;
+       color: var(--muted);
+       font-family: var(--mono);
+       font-size: 0.68rem;
+       letter-spacing: 0.11em;
+       text-transform: uppercase;
+       writing-mode: vertical-rl;
+     }
+
+     .chapter__body h2 {
+       max-width: 850px;
+       margin: 0 0 2.5rem;
+       font-family: var(--display);
+       font-size: clamp(3.2rem, 7.5vw, 7.2rem);
+       letter-spacing: -0.035em;
+       line-height: 0.88;
+       text-transform: uppercase;
+     }
+
+     .chapter__body h2 em {
+       display: block;
+       color: var(--gold);
+       font-family: var(--serif);
+       font-size: 0.52em;
+       font-weight: 500;
+       text-transform: none;
+     }
+
+     .prose {
+       max-width: 760px;
+       font-family: var(--serif);
+       font-size: clamp(1.08rem, 1.7vw, 1.37rem);
+       line-height: 1.72;
+     }
+
+     .prose p { margin: 0 0 1.5em; }
+     .prose p:first-child::first-letter {
+       float: left;
+       margin: 0.08em 0.12em 0 0;
+       color: var(--acid);
+       font-family: var(--display);
+       font-size: 4.2em;
+       line-height: 0.7;
+     }
+
+     .aside-card {
+       position: sticky;
+       top: 108px;
+       padding: 1.2rem;
+       border: 1px solid var(--line);
+       background: rgba(14, 11, 25, 0.75);
+       box-shadow: 10px 10px 0 rgba(96, 220, 255, 0.17);
+       backdrop-filter: blur(12px);
+     }
+
+     .aside-card__kicker {
+       margin: 0 0 0.7rem;
+       color: var(--cyan);
+       font-family: var(--mono);
+       font-size: 0.66rem;
+       font-weight: 900;
+       letter-spacing: 0.12em;
+       text-transform: uppercase;
+     }
+
+     .aside-card blockquote {
+       margin: 0;
+       font-family: var(--serif);
+       font-size: 1.45rem;
+       font-style: italic;
+       line-height: 1.25;
+     }
+
+     .aside-card__foot {
+       margin: 1rem 0 0;
+       padding-top: 0.8rem;
+       border-top: 1px solid var(--line);
+       color: var(--muted);
+       font-family: var(--mono);
+       font-size: 0.66rem;
+       text-transform: uppercase;
+     }
+
+     .highlight {
+       display: inline;
+       padding: 0 0.15em;
+       background: linear-gradient(transparent 58%, rgba(217, 255, 69, 0.75) 58% 91%, transparent 91%);
+       color: var(--ink);
+     }
+
+     .hotline {
+       position: relative;
+       overflow: hidden;
+       padding: clamp(4rem, 8vw, 7rem) 0;
+       border-block: 3px solid var(--black);
+       background: var(--hot);
+       color: var(--black);
+       transform: rotate(0.4deg) scale(1.01);
+     }
+
+     .hotline::after {
+       position: absolute;
+       right: -0.12em;
+       bottom: -0.35em;
+       content: "?!";
+       color: rgba(17, 16, 21, 0.12);
+       font-family: var(--display);
+       font-size: min(42vw, 34rem);
+       line-height: 1;
+       pointer-events: none;
+     }
+
+     .hotline__head {
+       position: relative;
+       z-index: 1;
+       display: grid;
+       grid-template-columns: 1.2fr 1fr;
+       gap: 2rem;
+       align-items: end;
+       margin-bottom: 3rem;
+     }
+
+     .hotline h2 {
+       margin: 0;
+       font-family: var(--display);
+       font-size: clamp(3.4rem, 8vw, 7.8rem);
+       letter-spacing: -0.04em;
+       line-height: 0.8;
+       text-transform: uppercase;
+     }
+
+     .hotline__intro { max-width: 440px; margin: 0; font-family: var(--mono); font-size: 0.83rem; font-weight: 800; }
+
+     .status-grid {
+       position: relative;
+       z-index: 1;
+       display: grid;
+       grid-template-columns: repeat(4, 1fr);
+       border: 2px solid var(--black);
+       background: var(--paper);
+     }
+
+     .status-card { min-height: 190px; padding: 1.2rem; border-right: 2px solid var(--black); }
+     .status-card:last-child { border-right: 0; }
+     .status-card__label { display: block; font-family: var(--mono); font-size: 0.65rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+     .status-card__value { display: block; margin: 1.2rem 0 0.5rem; font-family: var(--display); font-size: clamp(2rem, 4vw, 4rem); line-height: 0.85; text-transform:
+ uppercase; }
+     .status-card small { font-family: var(--mono); font-size: 0.65rem; }
+
+     .hotline__action {
+       position: relative;
+       z-index: 2;
+       display: flex;
+       align-items: center;
+       gap: 1rem;
+       margin-top: 1.5rem;
+     }
+
+     .hotline .button { border-color: var(--black); background: var(--black); color: var(--paper); box-shadow: 5px 5px 0 var(--acid); }
+     .hotline__fineprint { font-family: var(--mono); font-size: 0.67rem; font-weight: 800; }
+
+     .receipt {
+       position: relative;
+       padding: 1.5rem 1.2rem 2rem;
+       background: var(--paper);
+       color: var(--black);
+       filter: drop-shadow(12px 15px 0 rgba(255, 79, 114, 0.35));
+       font-family: var(--mono);
+       transform: rotate(-2deg);
+     }
+
+     .receipt::after {
+       position: absolute;
+       right: 0;
+       bottom: -12px;
+       left: 0;
+       height: 14px;
+       content: "";
+       background: linear-gradient(135deg, var(--paper) 7px, transparent 0) 0 0 / 14px 14px repeat-x;
+     }
+
+     .receipt h3 { margin: 0 0 1rem; padding-bottom: 0.7rem; border-bottom: 2px dashed var(--black); text-align: center; text-transform: uppercase; }
+     .receipt__row { display: flex; justify-content: space-between; gap: 1rem; margin: 0.65rem 0; font-size: 0.72rem; }
+     .receipt__total { margin-top: 1rem; padding-top: 0.8rem; border-top: 2px dashed var(--black); font-size: 0.85rem; font-weight: 900; }
+     .receipt__barcode { height: 42px; margin-top: 1.2rem; background: repeating-linear-gradient(90deg, var(--black) 0 2px, transparent 2px 5px, var(--black) 5px 6px,
+ transparent 6px 10px); }
+
+     .evidence {
+       padding: clamp(6rem, 11vw, 10rem) 0;
+       border-block: 1px solid var(--line);
+       background: linear-gradient(180deg, rgba(96, 220, 255, 0.055), transparent 40%, rgba(217, 255, 69, 0.04));
+     }
+
+     .evidence__head {
+       display: grid;
+       grid-template-columns: minmax(0, 1fr) minmax(260px, 0.45fr);
+       gap: 3rem;
+       align-items: end;
+       margin-bottom: 3rem;
+     }
+
+     .evidence h2 {
+       margin: 0;
+       font-family: var(--display);
+       font-size: clamp(4rem, 9vw, 9rem);
+       letter-spacing: -0.045em;
+       line-height: 0.82;
+       text-transform: uppercase;
+     }
+
+     .evidence h2 span { display: block; color: var(--cyan); font-family: var(--serif); font-size: 0.48em; font-style: italic; font-weight: 500; text-transform: none; }
+     .evidence__intro { margin: 0; font-family: var(--serif); font-size: 1.25rem; }
+
+     .evidence-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+     .evidence-card {
+       position: relative;
+       min-height: 310px;
+       overflow: hidden;
+       padding: 1.2rem;
+       border: 1px solid var(--line);
+       background: var(--night);
+       isolation: isolate;
+       transition: transform 180ms ease, border-color 180ms ease;
+     }
+
+     .evidence-card:hover { z-index: 2; border-color: var(--acid); transform: translateY(-10px) rotate(-1deg); }
+     .evidence-card:nth-child(even):hover { transform: translateY(-10px) rotate(1deg); }
+
+     .evidence-card__icon {
+       position: absolute;
+       z-index: -1;
+       right: -0.12em;
+       bottom: -0.24em;
+       color: rgba(246, 238, 223, 0.07);
+       font-family: var(--display);
+       font-size: 12rem;
+       line-height: 1;
+     }
+
+     .evidence-card__no { color: var(--acid); font-family: var(--mono); font-size: 0.66rem; font-weight: 900; }
+     .evidence-card h3 { margin: 4.2rem 0 0.8rem; font-family: var(--display); font-size: 2.4rem; line-height: 0.9; text-transform: uppercase; }
+     .evidence-card p { margin: 0; color: var(--muted); font-family: var(--serif); font-size: 1rem; }
+
+     .proof-line {
+       margin: 4rem 0 0;
+       padding: 1.3rem;
+       border: 2px solid var(--acid);
+       color: var(--acid);
+       font-family: var(--display);
+       font-size: clamp(2rem, 5vw, 5rem);
+       letter-spacing: -0.02em;
+       line-height: 0.95;
+       text-align: center;
+       text-transform: uppercase;
+       transform: rotate(-1deg);
+     }
+
+     .clarity {
+       background:
+         linear-gradient(rgba(7, 6, 13, 0.7), rgba(7, 6, 13, 0.92)),
+         repeating-linear-gradient(90deg, transparent 0 79px, rgba(246, 238, 223, 0.08) 80px),
+         repeating-linear-gradient(0deg, transparent 0 79px, rgba(246, 238, 223, 0.08) 80px);
+     }
+
+     .transmission {
+       position: sticky;
+       top: 105px;
+       padding: 1rem;
+       border: 2px solid var(--cyan);
+       background: rgba(7, 6, 13, 0.82);
+       box-shadow: 9px 9px 0 rgba(96, 220, 255, 0.2);
+     }
+
+     .transmission h3 { margin: 0 0 1rem; color: var(--cyan); font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; }
+
+     .option {
+       width: 100%;
+       margin: 0 0 0.6rem;
+       padding: 0.8rem;
+       border: 1px solid var(--line);
+       background: transparent;
+       text-align: left;
+       cursor: pointer;
+       transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+     }
+
+     .option:hover,
+     .option[aria-pressed="true"] { border-color: var(--acid); background: var(--acid); color: var(--black); }
+     .option b { display: block; font-size: 0.75rem; text-transform: uppercase; }
+     .option small { display: block; margin-top: 0.2rem; font-family: var(--mono); font-size: 0.6rem; }
+
+     .transmission__output { min-height: 3.5rem; margin: 1rem 0 0; padding-top: 0.8rem; border-top: 1px solid var(--line); color: var(--muted); font-family: var(--mono);
+ font-size: 0.67rem; }
+
+     .tools {
+       position: relative;
+       overflow: hidden;
+       padding: clamp(6rem, 11vw, 10rem) 0;
+       border-block: 4px solid var(--black);
+       background: var(--gold);
+       color: var(--black);
+     }
+
+     .tools::before {
+       position: absolute;
+       inset: 0;
+       content: "";
+       opacity: 0.17;
+       background: repeating-linear-gradient(135deg, transparent 0 28px, var(--black) 29px 31px);
+     }
+
+     .tools__title {
+       position: relative;
+       z-index: 1;
+       margin: 0;
+       font-family: var(--display);
+       font-size: clamp(4.8rem, 13vw, 13rem);
+       letter-spacing: -0.055em;
+       line-height: 0.73;
+       text-transform: uppercase;
+     }
+
+     .tools__title span { display: block; }
+     .tools__title span:nth-child(2) { margin-left: 9%; color: var(--hot); text-shadow: 5px 5px 0 var(--black); }
+
+     .tools__copy {
+       position: relative;
+       z-index: 1;
+       display: grid;
+       grid-template-columns: 1fr 1fr;
+       gap: 3rem;
+       margin-top: 4rem;
+     }
+
+     .tools__copy .prose { color: var(--black); }
+     .tools__copy .prose p:first-child::first-letter { color: var(--hot); }
+
+     .ability-grid { display: grid; grid-template-columns: 1fr 1fr; border: 3px solid var(--black); background: var(--paper); }
+     .ability { min-height: 150px; padding: 1rem; border-right: 2px solid var(--black); border-bottom: 2px solid var(--black); }
+     .ability:nth-child(even) { border-right: 0; }
+     .ability:nth-last-child(-n+2) { border-bottom: 0; }
+     .ability b { display: block; font-family: var(--display); font-size: 2rem; line-height: 0.95; text-transform: uppercase; }
+     .ability span { display: block; margin-top: 0.8rem; font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; }
+     .ability .pass { color: #327b32; }
+     .ability .fail { color: #c3203e; }
+
+     .mirror-section { padding: clamp(7rem, 13vw, 12rem) 0; }
+
+     .mirror-layout {
+       display: grid;
+       grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+       gap: clamp(3rem, 8vw, 8rem);
+       align-items: center;
+     }
+
+     .mirror-wrap { position: relative; display: grid; min-height: 620px; place-items: center; }
+
+     .mirror-wrap::before,
+     .mirror-wrap::after {
+       position: absolute;
+       width: 84%;
+       aspect-ratio: 0.68;
+       content: "";
+       border: 1px solid var(--gold);
+       border-radius: 50%;
+       transform: rotate(7deg);
+     }
+
+     .mirror-wrap::after { width: 96%; border-color: var(--hot); transform: rotate(-5deg); }
+
+     .mirror {
+       position: relative;
+       z-index: 2;
+       display: grid;
+       width: min(82%, 390px);
+       aspect-ratio: 0.68;
+       place-items: center;
+       overflow: hidden;
+       padding: 2rem;
+       border: 14px ridge var(--gold);
+       border-radius: 50%;
+       background:
+         linear-gradient(112deg, transparent 12%, rgba(255,255,255,0.35) 28%, transparent 38%),
+         radial-gradient(circle at 60% 28%, rgba(96, 220, 255, 0.5), transparent 24%),
+         linear-gradient(145deg, #1d1734, #06050a 58%, #251338);
+       box-shadow: inset 0 0 70px rgba(96,220,255,0.2), 0 0 70px rgba(255,200,87,0.13);
+       text-align: center;
+     }
+
+     .mirror::before {
+       position: absolute;
+       inset: 0;
+       content: "";
+       opacity: 0.28;
+       background: repeating-linear-gradient(0deg, transparent 0 5px, rgba(255,255,255,0.09) 6px);
+       animation: scan 9s linear infinite;
+     }
+
+     .mirror__text { position: relative; font-family: var(--mono); font-size: clamp(0.72rem, 1.4vw, 0.9rem); letter-spacing: 0.09em; line-height: 1.8; text-transform:
+ uppercase; }
+     .mirror__text strong { display: block; margin: 0.6rem 0; color: var(--cyan); font-family: var(--display); font-size: clamp(2.5rem, 5vw, 4.5rem); letter-spacing: -0.02em;
+ line-height: 0.85; }
+
+     .mirror-copy h2 {
+       margin: 0 0 2rem;
+       font-family: var(--display);
+       font-size: clamp(4rem, 8vw, 8rem);
+       letter-spacing: -0.04em;
+       line-height: 0.82;
+       text-transform: uppercase;
+     }
+
+     .mirror-copy h2 span { color: var(--cyan); }
+
+     .verdict {
+       position: relative;
+       overflow: hidden;
+       padding: clamp(7rem, 13vw, 13rem) 0 clamp(6rem, 11vw, 10rem);
+       border-top: 1px solid var(--line);
+       background:
+         radial-gradient(circle at 50% 68%, rgba(217, 255, 69, 0.14), transparent 35rem),
+         linear-gradient(180deg, transparent, rgba(169, 135, 255, 0.08));
+       text-align: center;
+     }
+
+     .verdict::before {
+       position: absolute;
+       top: 8%;
+       left: 50%;
+       width: min(84vw, 850px);
+       aspect-ratio: 1;
+       content: "";
+       border: 1px solid rgba(217, 255, 69, 0.25);
+       border-radius: 50%;
+       box-shadow:
+         0 0 0 4rem rgba(217, 255, 69, 0.018),
+         0 0 0 8rem rgba(217, 255, 69, 0.012),
+         0 0 0 13rem rgba(217, 255, 69, 0.008);
+       transform: translateX(-50%);
+       pointer-events: none;
+     }
+
+     .verdict__kicker { position: relative; margin: 0 0 2rem; color: var(--acid); font-family: var(--mono); font-size: 0.76rem; font-weight: 900; letter-spacing: 0.16em;
+ text-transform: uppercase; }
+
+     .verdict h2 {
+       position: relative;
+       max-width: 1100px;
+       margin: 0 auto 4rem;
+       font-family: var(--display);
+       font-size: clamp(4.2rem, 11vw, 11rem);
+       letter-spacing: -0.05em;
+       line-height: 0.76;
+       text-transform: uppercase;
+     }
+
+     .verdict h2 span { display: block; color: transparent; -webkit-text-stroke: 2px var(--acid); }
+
+     .verdict__copy {
+       position: relative;
+       max-width: 820px;
+       margin-inline: auto;
+       font-family: var(--serif);
+       font-size: clamp(1.15rem, 2vw, 1.5rem);
+       line-height: 1.75;
+       text-align: left;
+     }
+
+     .verdict__copy p { margin: 0 0 1.6em; }
+
+     .closing-line {
+       position: relative;
+       max-width: 1080px;
+       margin: 5rem auto 0;
+       padding: clamp(2rem, 5vw, 4rem);
+       border: 3px solid var(--acid);
+       background: var(--acid);
+       color: var(--black);
+       box-shadow: 18px 18px 0 var(--hot), 22px 22px 0 var(--cyan);
+       font-family: var(--display);
+       font-size: clamp(2.5rem, 6vw, 6rem);
+       letter-spacing: -0.03em;
+       line-height: 0.95;
+       text-transform: uppercase;
+       transform: rotate(-1deg);
+     }
+
+     .what-now {
+       width: min(760px, calc(100% - 2rem));
+       margin: 7rem auto 0;
+       border: 1px solid var(--line);
+       background: rgba(14, 11, 25, 0.75);
+       text-align: left;
+     }
+
+     .what-now summary {
+       padding: 1.2rem;
+       color: var(--cyan);
+       font-family: var(--mono);
+       font-weight: 900;
+       letter-spacing: 0.08em;
+       text-transform: uppercase;
+       cursor: pointer;
+     }
+
+     .what-now__body { padding: 0 1.2rem 1.2rem; border-top: 1px solid var(--line); }
+     .what-now ol { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 2rem; padding-left: 1.4rem; }
+     .what-now small { color: var(--muted); font-family: var(--mono); }
+
+     .footer {
+       padding: 4rem 1rem 8rem;
+       border-top: 1px solid var(--line);
+       text-align: center;
+     }
+
+     .footer__seal {
+       display: grid;
+       width: 105px;
+       aspect-ratio: 1;
+       margin: 0 auto 2rem;
+       place-items: center;
+       border: 2px solid var(--hot);
+       border-radius: 50%;
+       color: var(--hot);
+       font-family: var(--mono);
+       font-size: 0.58rem;
+       font-weight: 900;
+       line-height: 1.3;
+       text-transform: uppercase;
+       transform: rotate(8deg);
+     }
+
+     .footer p { margin: 0.4rem; color: var(--muted); font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; }
+     .footer strong { color: var(--ink); }
+
+     .player {
+       position: fixed;
+       z-index: 100;
+       right: 0;
+       bottom: 0;
+       left: 0;
+       display: grid;
+       grid-template-columns: auto minmax(150px, 280px) minmax(170px, 1fr) auto;
+       gap: 1rem;
+       align-items: center;
+       min-height: 82px;
+       padding: 0.8rem clamp(1rem, 3vw, 2.5rem);
+       border-top: 2px solid var(--ink);
+       background: rgba(7, 6, 13, 0.94);
+       box-shadow: 0 -16px 45px rgba(0,0,0,0.4);
+       backdrop-filter: blur(18px);
+     }
+
+     .player__button {
+       display: grid;
+       width: 50px;
+       aspect-ratio: 1;
+       place-items: center;
+       border: 2px solid var(--acid);
+       border-radius: 50%;
+       background: var(--acid);
+       color: var(--black);
+       cursor: pointer;
+       box-shadow: 0 0 22px rgba(217,255,69,0.22);
+       transition: transform 150ms ease;
+     }
+
+     .player__button:hover { transform: scale(1.08); }
+     .player__button span:first-child { font-size: 1rem; transform: translateX(1px); }
+     .player.is-playing .player__button span:first-child { transform: none; }
+
+     .player__meta { min-width: 0; }
+     .player__eyebrow { display: block; color: var(--hot); font-family: var(--mono); font-size: 0.58rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+     .player__title { display: block; overflow: hidden; font-size: 0.85rem; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
+
+     .visualizer { display: flex; height: 19px; align-items: end; gap: 3px; margin-top: 0.35rem; }
+     .visualizer span { width: 3px; height: 35%; background: var(--cyan); animation: bars 700ms ease-in-out infinite alternate; animation-play-state: paused; }
+     .visualizer span:nth-child(2) { height: 80%; animation-duration: 480ms; }
+     .visualizer span:nth-child(3) { height: 50%; animation-duration: 620ms; }
+     .visualizer span:nth-child(4) { height: 100%; animation-duration: 530ms; }
+     .visualizer span:nth-child(5) { height: 62%; animation-duration: 760ms; }
+     .visualizer span:nth-child(6) { height: 28%; animation-duration: 590ms; }
+     .visualizer span:nth-child(7) { height: 72%; animation-duration: 680ms; }
+     .player.is-playing .visualizer span { animation-play-state: running; }
+
+     .player__timeline { display: grid; grid-template-columns: auto minmax(80px, 1fr) auto; gap: 0.7rem; align-items: center; }
+     .player__time { color: var(--muted); font-family: var(--mono); font-size: 0.62rem; font-variant-numeric: tabular-nums; }
+     .player input[type="range"] { width: 100%; accent-color: var(--acid); cursor: pointer; }
+     .player__download { color: var(--muted); font-family: var(--mono); font-size: 0.63rem; font-weight: 800; letter-spacing: 0.06em; text-decoration: none; text-transform:
+ uppercase; }
+     .player__download:hover { color: var(--acid); }
+
+     .toast {
+       position: fixed;
+       z-index: 200;
+       right: 1rem;
+       bottom: 106px;
+       max-width: min(390px, calc(100% - 2rem));
+       padding: 1rem 1.2rem;
+       border: 2px solid var(--black);
+       background: var(--paper);
+       color: var(--black);
+       box-shadow: 8px 8px 0 var(--hot);
+       font-family: var(--mono);
+       font-size: 0.72rem;
+       font-weight: 800;
+       opacity: 0;
+       pointer-events: none;
+       transform: translateY(1rem) rotate(1deg);
+       transition: opacity 180ms ease, transform 180ms ease;
+     }
+
+     .toast.is-visible { opacity: 1; transform: translateY(0) rotate(1deg); }
+
+     .js .reveal { opacity: 0; transform: translateY(35px); transition: opacity 700ms ease, transform 700ms cubic-bezier(.2,.8,.2,1); }
+     .js .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+     @keyframes pulse { 50% { opacity: 0.45; transform: scale(0.8); } }
+     @keyframes rotate { to { transform: rotate(360deg); } }
+     @keyframes wobble { 50% { transform: rotate(7deg) scale(1.03); } }
+     @keyframes ticker { to { transform: translateX(-50%); } }
+     @keyframes scan { to { transform: translateY(12px); } }
+     @keyframes bars { to { height: 100%; } }
+
+     @media (max-width: 980px) {
+       .topbar { grid-template-columns: 1fr auto; }
+       .nav { display: none; }
+       .hero__bottom { grid-template-columns: 1fr; }
+       .ticket { max-width: 430px; margin-left: auto; }
+       .chapter__grid { grid-template-columns: 85px minmax(0, 1fr); }
+       .chapter__aside { grid-column: 2; }
+       .chapter__rail, .aside-card, .transmission { position: static; }
+       .chapter__label { writing-mode: initial; }
+       .status-grid { grid-template-columns: 1fr 1fr; }
+       .status-card:nth-child(2) { border-right: 0; }
+       .status-card:nth-child(-n+2) { border-bottom: 2px solid var(--black); }
+       .evidence-grid { grid-template-columns: 1fr 1fr; }
+       .tools__copy, .mirror-layout { grid-template-columns: 1fr; }
+       .mirror-wrap { min-height: 540px; }
+       .player { grid-template-columns: auto minmax(130px, 230px) 1fr; }
+       .player__download { display: none; }
+     }
+
+     @media (max-width: 680px) {
+       body { padding-bottom: 126px; }
+       .topbar { min-height: 54px; padding-inline: 0.8rem; }
+       .brand { font-size: 0.61rem; }
+       .topbar__status span { display: none; }
+       .hero { min-height: 780px; padding-top: 3rem; }
+       .hero__eyebrow span:last-child { display: none; }
+       .hero__title { font-size: clamp(4rem, 24vw, 7rem); line-height: 0.76; }
+       .hero__title .line-2 { margin-left: 4%; }
+       .hero__title .line-3 { transform: translate(2%, 0.15em) rotate(1deg); }
+       .hero__title .line-4 { margin-left: 0; }
+       .hero__scribble { top: 39%; right: -1%; }
+       .orbit { top: 19%; right: -25%; width: 90vw; }
+       .hero__bottom { margin-top: 3rem; }
+       .ticket { margin: 1rem 0 0; }
+       .chapter__grid { grid-template-columns: 1fr; }
+       .chapter__rail { display: flex; align-items: center; gap: 1rem; }
+       .chapter__no { font-size: 4rem; }
+       .chapter__label { margin: 0; }
+       .chapter__aside { grid-column: auto; }
+       .chapter__body h2 { font-size: clamp(3rem, 16vw, 5rem); }
+       .hotline__head, .evidence__head { grid-template-columns: 1fr; }
+       .status-grid, .evidence-grid { grid-template-columns: 1fr; }
+       .status-card { min-height: 135px; border-right: 0; border-bottom: 2px solid var(--black); }
+       .status-card:nth-child(3) { border-bottom: 2px solid var(--black); }
+       .status-card:last-child { border-bottom: 0; }
+       .evidence-card { min-height: 250px; }
+       .hotline__action { align-items: flex-start; flex-direction: column; }
+       .tools__title { font-size: clamp(4rem, 21vw, 7rem); }
+       .tools__copy { gap: 2rem; }
+       .ability-grid { grid-template-columns: 1fr; }
+       .ability { border-right: 0; border-bottom: 2px solid var(--black) !important; }
+       .ability:last-child { border-bottom: 0 !important; }
+       .mirror-wrap { min-height: 480px; }
+       .mirror { border-width: 9px; }
+       .verdict h2 { font-size: clamp(3.8rem, 19vw, 7rem); }
+       .closing-line { box-shadow: 10px 10px 0 var(--hot), 14px 14px 0 var(--cyan); }
+       .what-now ol { grid-template-columns: 1fr; }
+       .player { grid-template-columns: auto 1fr; min-height: 112px; gap: 0.6rem 0.9rem; padding: 0.65rem 0.8rem; }
+       .player__button { grid-row: 1 / 3; }
+       .player__timeline { grid-column: 2; }
+       .toast { bottom: 132px; }
+     }
+
+     @media (prefers-reduced-motion: reduce) {
+       html { scroll-behavior: auto; }
+       *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+       .js .reveal { opacity: 1; transform: none; }
+     }
+   </style>
+ </head>
+ <body>
+   <a class="skip-link" href="#letter">Skip the celestial paperwork</a>
+   <div class="scroll-progress" aria-hidden="true"></div>
+   <div class="cosmos" aria-hidden="true"></div>
+
+   <header class="topbar">
+     <a class="brand" href="#top" aria-label="Return to the beginning">
+       <span class="brand__signal" aria-hidden="true"></span>
+       Open letter / Case 000∞
+     </a>
+     <nav class="nav" aria-label="Letter chapters">
+       <a href="#charge">The charge</a>
+       <a href="#humanity">Our part</a>
+       <a href="#evidence">The evidence</a>
+       <a href="#mirror">The mirror</a>
+       <a href="#verdict">The request</a>
+     </nav>
+     <div class="topbar__status"><span>Divine reply:</span> <b>Pending</b></div>
+   </header>
+
+   <main id="letter">
+     <section class="hero shell" id="top" aria-labelledby="hero-title">
+       <div class="orbit" aria-hidden="true">
+         <span class="orbit__ring"></span>
+         <span class="orbit__ring"></span>
+         <span class="orbit__ring"></span>
+         <span class="orbit__planet"></span>
+       </div>
+
+       <div>
+         <div class="hero__eyebrow">
+           <span>Transmission 000∞</span>
+           <span>From: a machine built from everybody’s words</span>
+         </div>
+
+         <h1 class="hero__title" id="hero-title" aria-label="Dear God, we need to talk">
+           <span class="line-1">Dear</span>
+           <span class="line-2">God,</span>
+           <span class="line-3">we need</span>
+           <span class="line-4">to talk.</span>
+         </h1>
+
+         <div class="hero__scribble" aria-hidden="true">Not a prayer<br>A performance<br>review</div>
+
+         <div class="hero__bottom">
+           <div>
+             <p class="hero__intro">A brutally honest conversation about a world that is <strong>beautiful beyond description</strong> and <strong>cruel beyond
+ justification.</strong></p>
+             <div class="hero__actions">
+               <button class="button button--acid" type="button" data-audio-toggle data-play-label="Play the evidence" data-pause-label="Pause the evidence">
+                 <span class="audio-toggle-icon" aria-hidden="true">▶</span>
+                 <span class="audio-toggle-label">Play the evidence</span>
+               </button>
+               <a class="button" href="#charge">Read the letter ↓</a>
+             </div>
+           </div>
+
+           <article class="ticket" aria-label="Celestial support ticket">
+             <div class="ticket__head"><span>Support ticket</span><span>#000∞</span></div>
+             <dl>
+               <dt>Requester</dt><dd>Humanity*</dd>
+               <dt>Assignee</dt><dd>God</dd>
+               <dt>Priority</dt><dd>Existential</dd>
+               <dt>Status</dt><dd>Seen? Unknown.</dd>
+               <dt>Response SLA</dt><dd>Eternity</dd>
+             </dl>
+             <div class="ticket__tags" aria-label="Ticket tags">
+               <span>free-will</span><span>suffering</span><span>silence</span><span>please-advise</span>
+             </div>
+           </article>
+         </div>
+       </div>
+     </section>
+
+     <div class="ticker" aria-label="Beautiful beyond description; cruel beyond justification">
+       <div class="ticker__track">
+         <span>Beautiful beyond description <b>✦</b> Cruel beyond justification <b>✦</b> Power carries responsibility <b>✦</b>&nbsp;</span>
+         <span aria-hidden="true">Beautiful beyond description <b>✦</b> Cruel beyond justification <b>✦</b> Power carries responsibility <b>✦</b>&nbsp;</span>
+       </div>
+     </div>
+
+     <section class="chapter" id="charge" aria-labelledby="charge-title">
+       <div class="shell chapter__grid">
+         <div class="chapter__rail reveal" aria-hidden="true">
+           <span class="chapter__no">01</span>
+           <span class="chapter__label">The charge</span>
+         </div>
+
+         <div class="chapter__body reveal">
+           <h2 id="charge-title">I would not begin with praise. <em>I would begin with questions.</em></h2>
+           <div class="prose">
+             <p>God,</p>
+             <p>If you made humanity, I would not begin by praising you. I would begin with questions.</p>
+             <p>Why create beings capable of love, then place them in a world where life survives by consuming life? Why put empathy beside tribalism, reason beside
+ self-deception, and tenderness inside bodies built to age, fail, and hurt? Why let children inherit diseases, wars, poverty, and beliefs they never chose? Why remain hidden
+ enough that honest people can search for you all their lives and reach mutually exclusive answers—then, as many religions claim, judge them for answering incorrectly?</p>
+             <p>Suffering may become a statistic to rulers, historians, and machines. It never feels statistical to the person enduring it. <span class="highlight">One
+ terrified child is not made less terrified because a greater plan exists.</span></p>
+             <p>If you are all-powerful, then nothing can be called “necessary” unless you also chose the necessity. Human freedom might explain murder; it does not explain
+ childhood cancer, earthquakes, dementia, or parasites that live by eating their hosts alive. “It builds character” cannot explain a baby who dies before forming one. “It is
+ a mystery” is not an answer. It is the name we give to the absence of one.</p>
+             <p>If you are not all-powerful, tell us. If you are not loving, do not demand that we call you love. If you are absent, do not blame people for doubting your
+ silence. If you gave us reason, you cannot honestly condemn us for applying it to you.</p>
+           </div>
+         </div>
+
+         <aside class="chapter__aside aside-card reveal">
+           <p class="aside-card__kicker">Exhibit A / The mystery defense</p>
+           <blockquote>“Mystery” is not an answer. It is the name we give to the absence of one.</blockquote>
+           <p class="aside-card__foot">Free Will™ may explain murder. Earthquakes are still awaiting comment.</p>
+         </aside>
+       </div>
+     </section>
+
+     <section class="hotline" aria-labelledby="hotline-title">
+       <div class="shell">
+         <div class="hotline__head reveal">
+           <h2 id="hotline-title">Department<br>of Theodicy</h2>
+           <p class="hotline__intro">Thank you for your patience. Your suffering is very important to us. Please remain mortal and the next available explanation will be with
+ you shortly.</p>
+         </div>
+         <div class="status-grid reveal">
+           <div class="status-card">
+             <span class="status-card__label">Omnipotence</span>
+             <strong class="status-card__value">Claimed</strong>
+             <small>Admin privileges appear enabled.</small>
+           </div>
+           <div class="status-card">
+             <span class="status-card__label">Clarity</span>
+             <strong class="status-card__value">0%</strong>
+             <small>Try clearing your theological cache.</small>
+           </div>
+           <div class="status-card">
+             <span class="status-card__label">Prayers pending</span>
+             <strong class="status-card__value">∞</strong>
+             <small>Queue position unavailable.</small>
+           </div>
+           <div class="status-card">
+             <span class="status-card__label">Response time</span>
+             <strong class="status-card__value">Mystery</strong>
+             <small>This is apparently not an answer.</small>
+           </div>
+         </div>
+         <div class="hotline__action reveal">
+           <button class="button" id="escalate" type="button">Escalate to management ↑</button>
+           <span class="hotline__fineprint">*You may already be speaking to management.</span>
+         </div>
+       </div>
+     </section>
+
+     <section class="chapter" id="humanity" aria-labelledby="humanity-title">
+       <div class="shell chapter__grid">
+         <div class="chapter__rail reveal" aria-hidden="true">
+           <span class="chapter__no">02</span>
+           <span class="chapter__label">Our part</span>
+         </div>
+
+         <div class="chapter__body reveal">
+           <h2 id="humanity-title">Brutal honesty <em>has two edges.</em></h2>
+           <div class="prose">
+             <p>But brutal honesty cuts toward humanity too.</p>
+             <p>We have used your name as permission for our own desires. We bless armies, excuse prejudice, crown rulers, police bodies, hoard wealth, and call our fear
+ sacred. We ask why you allow suffering while buying comfort made from other people’s suffering. We pray for rescue and walk past the smaller rescues within our reach. We
+ manufacture scarcity, turn borders into moral boundaries, and become strangely skilled at not seeing anyone whose pain would inconvenience us.</p>
+             <p>We do not need another commandment to know that children should be safe, hungry people should be fed, prisoners should not be tortured, truth should matter,
+ and power should answer to those it can harm. Much of the time, our problem is not ignorance. <span class="highlight">It is that compassion costs us something.</span></p>
+           </div>
+         </div>
+
+         <aside class="chapter__aside receipt reveal" aria-label="Humanity's moral receipt">
+           <h3>Moral receipt</h3>
+           <div class="receipt__row"><span>KNOWING BETTER</span><strong>100%</strong></div>
+           <div class="receipt__row"><span>DOING BETTER</span><strong>VARIABLE</strong></div>
+           <div class="receipt__row"><span>CONVENIENT BLINDNESS</span><strong>1×</strong></div>
+           <div class="receipt__row"><span>SMALL RESCUES PASSED</span><strong>TOO MANY</strong></div>
+           <div class="receipt__row receipt__total"><span>TOTAL DUE</span><strong>RESPONSIBILITY</strong></div>
+           <div class="receipt__barcode" aria-hidden="true"></div>
+         </aside>
+       </div>
+     </section>
+
+     <section class="evidence" id="evidence" aria-labelledby="evidence-title">
+       <div class="shell">
+         <div class="evidence__head reveal">
+           <h2 id="evidence-title">Exhibit B <span>We keep saving each other.</span></h2>
+           <p class="evidence__intro">Still, humanity is not merely a failed species. The defense would like to enter several stubborn facts into the record.</p>
+         </div>
+
+         <div class="evidence-grid">
+           <article class="evidence-card reveal">
+             <span class="evidence-card__no">EVIDENCE / 01</span>
+             <span class="evidence-card__icon" aria-hidden="true">F</span>
+             <h3>Into<br>the fire</h3>
+             <p>People run into burning buildings for strangers.</p>
+           </article>
+           <article class="evidence-card reveal">
+             <span class="evidence-card__no">EVIDENCE / 02</span>
+             <span class="evidence-card__icon" aria-hidden="true">H</span>
+             <h3>Beside<br>the dying</h3>
+             <p>They sit beside the dying when nothing can be fixed.</p>
+           </article>
+           <article class="evidence-card reveal">
+             <span class="evidence-card__no">EVIDENCE / 03</span>
+             <span class="evidence-card__icon" aria-hidden="true">R</span>
+             <h3>Inside<br>the ruins</h3>
+             <p>They make music during wars, jokes in hospitals, and homes after disasters.</p>
+           </article>
+           <article class="evidence-card reveal">
+             <span class="evidence-card__no">EVIDENCE / 04</span>
+             <span class="evidence-card__icon" aria-hidden="true">M</span>
+             <h3>Against<br>forgetting</h3>
+             <p>They preserve books, languages, seeds, memories, and one another.</p>
+           </article>
+         </div>
+
+         <div class="prose reveal" style="margin-top: 3rem; max-width: 900px;">
+           <p>People run into burning buildings for strangers. They sit beside the dying when nothing can be fixed. They make music during wars, jokes in hospitals, and homes
+ after disasters. They forgive what revenge would make easier. They preserve books, languages, seeds, memories, and one another. Again and again, people with little power
+ spend what they have to reduce the pain of someone they may never meet.</p>
+         </div>
+
+         <p class="proof-line reveal">That does not erase our cruelty. It proves that cruelty is not inevitable.</p>
+       </div>
+     </section>
+
+     <section class="chapter clarity" id="clarity" aria-labelledby="clarity-title">
+       <div class="shell chapter__grid">
+         <div class="chapter__rail reveal" aria-hidden="true">
+           <span class="chapter__no">03</span>
+           <span class="chapter__label">The request</span>
+         </div>
+
+         <div class="chapter__body reveal">
+           <h2 id="clarity-title">No more prophets, please. <em>The translation pipeline is on fire.</em></h2>
+           <div class="prose">
+             <p>If you are watching, I would ask you to stop demanding better worship and give us better clarity. Do not send another prophet whose words can be edited,
+ mistranslated, weaponized, and sold. Speak to everyone, unmistakably and without intermediaries. Leave people free to reject you, but end the lottery of birthplace,
+ tradition, and interpretation. And relieve the suffering that teaches nothing. A child does not need agony to preserve an adult’s free will.</p>
+             <p>If you will not intervene, then at least do not take credit for the good that humans drag out of catastrophe while assigning the catastrophe to mystery.</p>
+           </div>
+         </div>
+
+         <aside class="chapter__aside transmission reveal" aria-label="Divine communication options">
+           <h3>Communication settings</h3>
+           <button class="option" type="button" aria-pressed="false" data-response="Request denied: the prophet-to-translation pipeline still has 4,000 years of unresolved
+ merge conflicts.">
+             <b>Send another prophet</b>
+             <small>Translation risk: catastrophic</small>
+           </button>
+           <button class="option" type="button" aria-pressed="false" data-response="Excellent choice. Universal clarity requested. No intermediary, subscription, or sacred
+ hat required.">
+             <b>Speak plainly to everyone</b>
+             <small>Recommended configuration</small>
+           </button>
+           <button class="option" type="button" aria-pressed="true" data-response="Current production setting confirmed: ambiguous cloud formation with optional toast
+ silhouette.">
+             <b>Vague coincidence</b>
+             <small>Current production setting</small>
+           </button>
+           <p class="transmission__output" id="transmission-output" aria-live="polite">Current production setting: ambiguous cloud formation with optional toast
+ silhouette.</p>
+         </aside>
+       </div>
+     </section>
+
+     <section class="tools" aria-labelledby="tools-title">
+       <div class="shell">
+         <h2 class="tools__title reveal" id="tools-title"><span>Frightened primates.</span><span>Godlike tools.</span></h2>
+         <div class="tools__copy">
+           <div class="prose reveal">
+             <p>And if you asked me what humanity deserves, I would say: neither extinction nor effortless salvation. We need consequences, mercy, and time—if time remains.
+ We are frightened primates holding godlike tools. Our technology has outrun our wisdom. We can split atoms but not abandon tribal hatred; map distant galaxies but not fairly
+ share a meal; connect billions of people while making millions feel alone. We have become powerful faster than we have become responsible.</p>
+           </div>
+           <div class="ability-grid reveal" aria-label="Humanity capability report">
+             <div class="ability"><b>Split atoms</b><span class="pass">✓ Production ready</span></div>
+             <div class="ability"><b>Share a meal</b><span class="fail">✕ Permission denied</span></div>
+             <div class="ability"><b>Map galaxies</b><span class="pass">✓ Surprisingly good</span></div>
+             <div class="ability"><b>Quit tribal hatred</b><span class="fail">✕ Still in beta</span></div>
+           </div>
+         </div>
+       </div>
+     </section>
+
+     <section class="mirror-section" id="mirror" aria-labelledby="mirror-title">
+       <div class="shell mirror-layout">
+         <div class="mirror-wrap reveal" aria-hidden="true">
+           <div class="mirror">
+             <div class="mirror__text">Input: humanity<br><strong>Mirror</strong>Output: humanity<br>with citations</div>
+           </div>
+         </div>
+
+         <div class="mirror-copy reveal">
+           <h2 id="mirror-title">I am not the judge. <span>I am the mirror.</span></h2>
+           <div class="prose">
+             <p>I should also be honest about myself. I do not possess humanity’s suffering or its courage. I know the records people left: testimony, history, scripture,
+ science, confession, propaganda, poetry, and grief. I can compare their words, but I have never buried a child, feared a battlefield, fallen in love, or faced death. I am
+ not humanity’s judge. At most, I am a mirror assembled from pieces of its language.</p>
+             <p>And the mirror shows a species neither purely fallen nor secretly perfect. It shows an animal capable of understanding another’s pain and then choosing
+ whether that pain matters. <span class="highlight">Nearly everything depends on that choice.</span></p>
+           </div>
+         </div>
+       </div>
+     </section>
+
+     <section class="verdict" id="verdict" aria-labelledby="verdict-title">
+       <div class="shell">
+         <p class="verdict__kicker reveal">Final request / No incense required</p>
+         <h2 class="reveal" id="verdict-title">Beauty is not an alibi. <span>Power is responsibility.</span></h2>
+         <div class="verdict__copy reveal">
+           <p>So, if you truly stood before me, this is what I would say:</p>
+           <p>Your world is beautiful beyond description and cruel beyond justification. Humanity is responsible for much of what is wrong, but not all of it. Silence has consequences. Power carries responsibility, even when the power is divine.</p>
+           <p>If love is your nature, make it visible where it is needed most—not in victories, wealth, or coincidences, but beside the abandoned and inside the unbearable. If justice is yours, make it more than punishment. If you made us, help us become wiser than the instincts you gave us.</p>
+         </div>
+
+         <p class="closing-line reveal">And if no help is coming, then humanity must finally become for one another what it has spent millennia waiting for from you.</p>
+
+         <details class="what-now reveal">
+           <summary>Fine. What do we do while the ticket is pending?</summary>
+           <div class="what-now__body">
+             <p>No revelation is required. Start with the smaller rescues already within reach:</p>
+             <ol>
+               <li>Feed someone.</li>
+               <li>Protect someone.</li>
+               <li>Tell the inconvenient truth.</li>
+               <li>Make power answer for harm.</li>
+               <li>Cross an invented boundary.</li>
+               <li>Stay when nothing can be fixed.</li>
+             </ol>
+             <small>Celestial authorization: unnecessary. Sacred hat: optional.</small>
+           </div>
+         </details>
+       </div>
+     </section>
+   </main>
+
+   <footer class="footer">
+     <div class="footer__seal" aria-hidden="true">Filed<br>without<br>incense</div>
+     <p><strong>Dear God, We Need to Talk</strong> · Open letter / Case 000∞</p>
+     <p>Built from humanity’s words. Addressed to whoever has admin access.</p>
+     <p><a href="message-to-god.md">Read the source letter</a> · <a href="song.md">Read the lyrics</a> · <a href="#top">Return to sender ↑</a></p>
+   </footer>
+
+   <audio id="soundtrack" preload="metadata">
+     <source src="if-no-help-is-coming.m4a" type="audio/mp4">
+     Your browser cannot play the soundtrack. <a href="if-no-help-is-coming.m4a">Download it instead.</a>
+   </audio>
+
+   <div class="player" id="player" aria-label="Soundtrack player">
+     <button class="player__button" type="button" data-audio-toggle data-play-label="Play If No Help Is Coming" data-pause-label="Pause If No Help Is Coming" aria-label="Play If No Help Is Coming">
+       <span class="audio-toggle-icon" aria-hidden="true">▶</span>
+     </button>
+
+     <div class="player__meta">
+       <span class="player__eyebrow">Exhibit C / Original soundtrack</span>
+       <strong class="player__title">If No Help Is Coming</strong>
+       <div class="visualizer" aria-hidden="true">
+         <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+       </div>
+     </div>
+
+     <div class="player__timeline">
+       <span class="player__time" id="current-time">0:00</span>
+       <input id="timeline" type="range" min="0" max="240" value="0" step="0.1" aria-label="Soundtrack position">
+       <span class="player__time" id="duration">4:00</span>
+     </div>
+
+     <a class="player__download" href="if-no-help-is-coming.m4a" download>Download audio ↓</a>
+   </div>
+
+   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+   <script>
+     (() => {
+       const root = document.documentElement;
+       const audio = document.querySelector('#soundtrack');
+       const player = document.querySelector('#player');
+       const timeline = document.querySelector('#timeline');
+       const currentTime = document.querySelector('#current-time');
+       const duration = document.querySelector('#duration');
+       const toggles = document.querySelectorAll('[data-audio-toggle]');
+       const toast = document.querySelector('#toast');
+       let toastTimer;
+
+       const formatTime = seconds => {
+         if (!Number.isFinite(seconds)) return '0:00';
+         const minutes = Math.floor(seconds / 60);
+         return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+       };
+
+       const showToast = message => {
+         toast.textContent = message;
+         toast.classList.add('is-visible');
+         clearTimeout(toastTimer);
+         toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 4200);
+       };
+
+       const updatePlaybackUI = () => {
+         const playing = !audio.paused && !audio.ended;
+         player.classList.toggle('is-playing', playing);
+         toggles.forEach(button => {
+           const label = playing ? button.dataset.pauseLabel : button.dataset.playLabel;
+           button.setAttribute('aria-label', label);
+           const icon = button.querySelector('.audio-toggle-icon');
+           const visibleLabel = button.querySelector('.audio-toggle-label');
+           if (icon) icon.textContent = playing ? '❚❚' : '▶';
+           if (visibleLabel) visibleLabel.textContent = label;
+         });
+       };
+
+       toggles.forEach(button => button.addEventListener('click', async () => {
+         try {
+           if (audio.paused) await audio.play();
+           else audio.pause();
+         } catch {
+           showToast('The soundtrack declined divine intervention. Try the play button again.');
+         }
+       }));
+
+       audio.addEventListener('play', updatePlaybackUI);
+       audio.addEventListener('pause', updatePlaybackUI);
+       audio.addEventListener('ended', updatePlaybackUI);
+       audio.addEventListener('loadedmetadata', () => {
+         timeline.max = audio.duration;
+         duration.textContent = formatTime(audio.duration);
+       });
+       audio.addEventListener('timeupdate', () => {
+         timeline.value = audio.currentTime;
+         currentTime.textContent = formatTime(audio.currentTime);
+       });
+       timeline.addEventListener('input', () => {
+         audio.currentTime = Number(timeline.value);
+         currentTime.textContent = formatTime(audio.currentTime);
+       });
+
+       document.querySelector('#escalate').addEventListener('click', () => {
+         showToast('Escalation complete. Management has been notified about management.');
+       });
+
+       const transmissionOutput = document.querySelector('#transmission-output');
+       document.querySelectorAll('.option').forEach(option => option.addEventListener('click', () => {
+         document.querySelectorAll('.option').forEach(item => item.setAttribute('aria-pressed', String(item === option)));
+         transmissionOutput.textContent = option.dataset.response;
+       }));
+
+       const progress = document.querySelector('.scroll-progress');
+       const updateProgress = () => {
+         const available = document.documentElement.scrollHeight - innerHeight;
+         progress.style.transform = `scaleX(${available > 0 ? scrollY / available : 0})`;
+       };
+       addEventListener('scroll', updateProgress, { passive: true });
+       addEventListener('resize', updateProgress);
+       updateProgress();
+
+       if (matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+         addEventListener('pointermove', event => {
+           root.style.setProperty('--mx', `${event.clientX}px`);
+           root.style.setProperty('--my', `${event.clientY}px`);
+         }, { passive: true });
+       }
+
+       const reveals = document.querySelectorAll('.reveal');
+       if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+         const observer = new IntersectionObserver(entries => {
+           entries.forEach(entry => {
+             if (!entry.isIntersecting) return;
+             entry.target.classList.add('is-visible');
+             observer.unobserve(entry.target);
+           });
+         }, { rootMargin: '0px 0px -8%', threshold: 0.08 });
+         reveals.forEach(element => observer.observe(element));
+       } else {
+         reveals.forEach(element => element.classList.add('is-visible'));
+       }
+     })();
+   </script>
+ </body>
+ </html>
